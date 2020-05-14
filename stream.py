@@ -21,10 +21,11 @@ A = 0
 app = Flask(__name__)
 
 streamList= [
-	"http://192.82.150.11:8083/mjpg/video.mjpg", 
-	"http://cam.butovonet.ru/axis-cgi/mjpg/video.cgi?resolution=480x576&dummy=1460609511992",
-	"http://cam.butovonet.ru/axis-cgi/mjpg/video.cgi?resolution=480x576&dummy=1460609511992",
-	"http://cam.butovonet.ru/axis-cgi/mjpg/video.cgi?resolution=480x576&dummy=1460609511992",
+	#"http://192.82.150.11:8083/mjpg/video.mjpg"
+	"http://95.14.172.123:8081/-wvhttp-01-/GetOneShot?image_size=640x480&frame_count=1000000000",
+	#"blob:https://ipeye.ru/c99b4254-224f-436a-810b-f0d1e8b42429",
+	"http://212.46.249.62:8008/",
+	"http://cam.butovonet.ru/axis-cgi/mjpg/video.cgi?resolution=480x576&dummy=1460609511992"
 	]
 
 frameList = []
@@ -32,6 +33,7 @@ vsList = []
 motionDetectors = []
 grayFrames = []
 total = []
+classes = []
 
 for i in range(len(streamList)):
 	vsList.append(VideoStream(streamList[i]))
@@ -39,6 +41,16 @@ for i in range(len(streamList)):
 	motionDetectors.append(None)
 	grayFrames.append(None)
 	vsList[i].start()
+
+net = cv2.dnn.readNet("c:/Users/User/source/PyOpenCV/LocalExperiments/YOLO/yolov3.weights", "c:/Users/User/source/PyOpenCV/LocalExperiments/YOLO/yolov3.cfg")
+
+with open("c:/Users/User/source/PyOpenCV/LocalExperiments/YOLO/coco.names", "r") as f:
+    classes = [line.strip() for line in f.readlines()]
+
+layers_names = net.getLayerNames()
+outputLayers = [layers_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+colors = np.random.uniform(0,255,size=(len(classes), 3))
+img = None
 
 time.sleep(2.0)
 
@@ -48,10 +60,7 @@ def index():
 	return render_template("index.html")
 
 def detect_motion(frameCount):
-	global vsList, outputFrame, lock
-	
-	for i in range(len(streamList)):
-		motionDetectors[i] = Detector(accumWeight=0.1)
+	global vsList, net, outputFrame, lock
 	
 	for i in range(len(streamList)):
 		total.append(None)
@@ -61,33 +70,57 @@ def detect_motion(frameCount):
 		for streamIndex in range(len(streamList)):
 			frameList[streamIndex] = vsList[streamIndex].read()
 			frameList[streamIndex] = cv2.resize(frameList[streamIndex], (640,480))
+			img = frameList[streamIndex]
+			#img = cv2.resize(img, None, fx=1, fy=1)
+			height, width, channels = img.shape
 
-			grayFrames[streamIndex] = cv2.cvtColor(frameList[streamIndex], cv2.COLOR_BGR2GRAY)
-			grayFrames[streamIndex] = cv2.GaussianBlur(grayFrames[streamIndex], (7, 7), 0)
+			blob = cv2.dnn.blobFromImage(img, 0.0039, (416,416), (0, 0, 0), True, crop=False)
 
-			timestamp = datetime.datetime.now()
-			cv2.putText(frameList[streamIndex], timestamp.strftime(
-				"%A %d %B %Y %I:%M:%S%p"), (10, frameList[streamIndex].shape[0] - 10),
-				cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+			net.setInput(blob)
+			outs = net.forward(outputLayers)
 
-			if total[streamIndex] > frameCount:
-				motion = motionDetectors[streamIndex].detect(grayFrames[streamIndex])
-				
-				if motion is not None:
-					(thresh, (minX, minY, maxX, maxY)) = motion
-					cv2.rectangle(frameList[streamIndex], (minX, minY), (maxX, maxY),
-						(0, 0, 255), 2)			
+			class_ids = []
+			confidences = []
+			boxes = []
 
-			motionDetectors[streamIndex].update(grayFrames[streamIndex])
-			total[streamIndex] += 1
-		
+			for out in outs:
+				for detection in out:
+					scores = detection[5:]
+					class_id = np.argmax(scores)
+					confidence = scores[class_id]
+					if confidence > 0.4: 
+						center_x = int(detection[0] * width)
+						center_y = int(detection[1] * height)
+						w = int(detection[2] * width)
+						h = int(detection[3] * height)
+
+						#cv2.circle(img, (center_x, center_y), 2, (0,0,255), 2)
+						x = int(center_x - w/2)
+						y = int(center_y - h/2)
+						boxes.append([x, y, w, h])
+						confidences.append(float(confidence))
+						class_ids.append(class_id)
+						#cv2.rectangle(img, (x, y), (x + w, y + h), (0,255,0), 2)
+
+			indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+			
+			print(indexes)
+			font = cv2.FONT_HERSHEY_PLAIN
+
+			for i in range(len(boxes)):
+				if i in indexes:
+					x, y, w, h = boxes[i]
+					label = classes[class_ids[i]]
+					color = colors[class_ids[i]]
+					cv2.rectangle(img, (x, y), (x + w, y + h), (0,255,0), 1)
+					cv2.putText(img, label + ": " + str(np.round(confidences[i], 2)), (x, y - 5), font, 1, (0,0,255), 2)
+
 		with lock:
 			im_v = cv2.vconcat([frameList[0], frameList[1]])
-			im_v2 = cv2.vconcat([frameList[2], frameList[3]])
+			im_v2 = cv2.vconcat([frameList[2], frameList[2]])
 			im_v3 = cv2.hconcat([im_v, im_v2])
-
-			#vis = np.concatenate((frameList[0], frameList[1], frameList[2]), axis=1)
-			outputFrame =im_v3.copy()	
+			#vis = np.concatenate((im_v, frameList[0]), axis=1)
+			outputFrame = im_v3
 		
 def generate():
 	global outputFrame, lock
