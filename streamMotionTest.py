@@ -81,7 +81,6 @@ def detect_motion(frameCount):
 			#im_v = cv2.vconcat([frameList[0], frameList[1]])
 			#im_v2 = cv2.vconcat([frameList[2], frameList[3]])
 			#im_v3 = cv2.hconcat([im_v, im_v2])
-
 			#vis = np.concatenate((frameList[0], frameList[1], frameList[2]), axis=1)
 			outputFrame = frameList[0].copy()	
 		

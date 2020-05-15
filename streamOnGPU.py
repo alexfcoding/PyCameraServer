@@ -18,6 +18,7 @@ A = 0
 
 app = Flask(__name__)
 
+
 streamList= [
 	#"http://192.82.150.11:8083/mjpg/video.mjpg"
 	"http://66.57.117.166:8000/mjpg/video.mjpg",
@@ -42,6 +43,7 @@ cars = [0,0,0,0]
 persons = [0,0,0,0]
 boats = [0,0,0,0]
 fileIterator = 0
+
 
 for i in range(len(streamList)):
 	vsList.append(VideoStream(streamList[i]))
@@ -82,8 +84,8 @@ def detect_motion(frameCount):
 		for streamIndex in range(len(streamList)):
 			frameList[streamIndex] = vsList[streamIndex].read()
 			bufferFrames[streamIndex] = frameList[streamIndex].copy()
-			frameList[streamIndex] = cv2.resize(frameList[streamIndex], (640,480))
-			bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (640,480))
+			frameList[streamIndex] = cv2.resize(frameList[streamIndex], (800,600))
+			bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (800,600))
 			#img = frameList[streamIndex].copy()
 			#img = cv2.resize(img, None, fx=1, fy=1)
 			height, width, channels = frameList[streamIndex].shape
