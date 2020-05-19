@@ -1,6 +1,6 @@
 import numpy as np
 import imutils
-from cv2 import cv2
+import cv2
 
 class Detector:
 	def __init__(self, accumWeight=0.5):
