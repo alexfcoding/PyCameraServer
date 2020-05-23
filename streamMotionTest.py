@@ -9,7 +9,7 @@ import datetime
 import imutils
 import time
 import numpy as np
-from cv2 import cv2
+import cv2
 
 outputFrame = None
 lock = threading.Lock()

@@ -1,4 +1,4 @@
-#python streamGPU.py -i 192.168.0.12 -o 8000
+# python localFiles.py -i 192.168.0.12 -o 8000
 
 from processing.motion_detection import Detector
 from imutils.video import VideoStream
@@ -22,15 +22,10 @@ A = 0
 app = Flask(__name__)
 
 streamList= [
-	"http://212.46.249.62:8008/",
-	"http://91.209.234.195/mjpg/video.mjpg",
-	"http://66.57.117.166:8000/mjpg/video.mjpg",
-	"http://209.194.208.53/mjpg/video.mjpg"
+	"videoplayback.mp4"
 	]
 
 # Working adresses:
-# 
-# http://212.186.68.38:1082/-wvhttp-01-/GetOneShot?image_size=640x480&frame_count=1000000000
 # http://94.72.19.58/mjpg/video.mjpg,
 # http://91.209.234.195/mjpg/video.mjpg
 # http://209.194.208.53/mjpg/video.mjpg
@@ -70,7 +65,10 @@ colors = np.random.uniform(0,255,size=(len(classes), 3))
 img = None
 
 time.sleep(2.0)
+cap = cv2.VideoCapture("videoplayback.mp4")
 
+fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+writer = cv2.VideoWriter("testOutput2.avi", fourcc, 30, (1920, 1080), True)
 @app.route("/")
 
 def index():
@@ -84,15 +82,13 @@ def detect_motion(frameCount):
 		total[i] = 0
 
 	while True:
-
 		classesIndex = []
 		startMoment = time.time()
 		for streamIndex in range(len(streamList)):
-			frameList[streamIndex] = vsList[streamIndex].read()
+			ret, frameList[streamIndex] = cap.read()
 			bufferFrames[streamIndex] = frameList[streamIndex].copy()
-
-			frameList[streamIndex] = cv2.resize(frameList[streamIndex], (800,600))
-			bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (800,600))
+			#frameList[streamIndex] = cv2.resize(frameList[streamIndex], (800,600))
+			#bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (800,600))
 			height, width, channels = frameList[streamIndex].shape
 
 			blob = cv2.dnn.blobFromImage(frameList[streamIndex], 0.003, (640,640), (0, 0, 0), True, crop=False)
@@ -120,17 +116,16 @@ def detect_motion(frameCount):
 						class_ids.append(class_id)
 						#cv2.rectangle(bufferFrames[streamIndex], (x, y), (x + w, y + h), (0,255,0), 2)
 
-			indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.2, 0.4)
+			indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.2)
 
 			#print(indexes)
 			print("=========================")
-			font = cv2.FONT_HERSHEY_PLAIN
+			font = cv2.FONT_HERSHEY_SIMPLEX
 			lineType = cv2.LINE_AA
 
 			classesOut = []
 			objectIndex = 0
-			#print (classesCount)
-
+			
 			for i in range(len(boxes)):
 				if i in indexes:
 					x, y, w, h = boxes[i]
@@ -139,28 +134,38 @@ def detect_motion(frameCount):
 
 					classesOut.append(class_ids[i])
 
-					# fileIterator+=1
-					# if (fileIterator % 10 == 0):
-					# 	crop_img = frameList[streamIndex][y:y+h, x:x+w]
-					# 	cv2.imwrite(label + str(fileIterator)+".jpg", crop_img)
+					# if (x<0):
+					# 	x = 0
+					# if (y<0):
+					# 	y=0
+					# fileIterator += 1
+					# #crop_img = frameList[streamIndex][y:y+h, x:x+w]
+					# cv2.imwrite(label + str(fileIterator)+".jpg", crop_img)
+					# #cv2.imshow("sf", crop_img)
 
 					blk = np.zeros(bufferFrames[streamIndex].shape, np.uint8)
 
 					if label == "person":
-						cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 1.5, (0,255,0), 2, lineType = cv2.LINE_AA)
+						cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
 						cv2.rectangle(blk, (x, y), (x + w, y + h), (0,255,0), cv2.FILLED)
+						bufferFrames[streamIndex] = cv2.addWeighted(bufferFrames[streamIndex], 1, blk, 0.2, 0)
 					if label == "car":
-						cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 1.5, (255,0,70), 2, lineType = cv2.LINE_AA)
-						cv2.rectangle(blk, (x, y), (x + w, y + h), (255,0,70), cv2.FILLED)
+						cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (213,160,47), 2, lineType = cv2.LINE_AA)
+						cv2.rectangle(blk, (x, y), (x + w, y + h), (213,160,47), cv2.FILLED)
+						bufferFrames[streamIndex] = cv2.addWeighted(bufferFrames[streamIndex], 1, blk, 0.2, 0)
 					if ((label != "car") & (label != "person")):
-						cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 1.5, color, 2, lineType = cv2.LINE_AA)
+						cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, color, 2, lineType = cv2.LINE_AA)
 						cv2.rectangle(blk, (x, y), (x + w, y + h), color, cv2.FILLED)
+						bufferFrames[streamIndex] = cv2.addWeighted(bufferFrames[streamIndex], 1, blk, 0.5, 0)
+					
+					# 	cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
+					# 	cv2.rectangle(blk, (x, y), (x + w, y + h), (0,255,0), cv2.FILLED)
+					# 	bufferFrames[streamIndex] = cv2.addWeighted(bufferFrames[streamIndex], 1, blk, 0.2, 0)
+					# if (label == "handbag")|(label == "backpack"):
+					# 	cv2.circle(bufferFrames[streamIndex], (x+int(round(w/2)), y+int(round(h/2))), 3, (0, 0, 255), 3)
+					# 	bufferFrames[streamIndex] = cv2.addWeighted(bufferFrames[streamIndex], 1, blk, 0.2, 0)
 
-					cv2.circle(bufferFrames[streamIndex], (x+int(round(w/2)), y+int(round(h/2))), 2, (0, 0, 255), 2)
 					cv2.rectangle(bufferFrames[streamIndex], (x, y), (x + w, y + h), (255,255,255), 2)
-
-					bufferFrames[streamIndex] = cv2.addWeighted(bufferFrames[streamIndex], 1, blk, 0.5, 0)
-
 					#cv2.imshow('123', bufferFrames[streamIndex])
 					#cv2.waitKey()
 					objectIndex+=1
@@ -171,15 +176,18 @@ def detect_motion(frameCount):
 			frameProcessed = frameProcessed + 1
 			elapsedTime = time.time()
 			fps = 1 / (elapsedTime - startMoment)
-
+			print (fps)
 			for streamIndex in range(len(streamList)):
 				classIndexCount = [[0 for x in range(80)] for x in range(len(streamList))]
 				countLocal = [0 for x in range(80)]
+				skipFlag = False
+				passFlag = False
+				#cv2.rectangle(bufferFrames[streamIndex], (20, 30), (400, 86), (0, 0, 0), -1)
+				#cv2.putText(bufferFrames[streamIndex], "BLOB: 320x320", (40, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2, lineType=cv2.LINE_AA)
+				#cv2.rectangle(bufferFrames[streamIndex], (20, 100), (400, 156), (0, 0, 0), -1)
+				#cv2.putText(bufferFrames[streamIndex], "FPS: " + str(round(fps, 2)), (40, 140), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2, lineType=cv2.LINE_AA)
 
-				cv2.rectangle(bufferFrames[streamIndex], (0, 15), (200,48), (0,0,0), -1)
-				cv2.putText(bufferFrames[streamIndex], "FPS: " + str(round(fps,2)), (20,40), font, 1.5, (0,0,255), 2, lineType = cv2.LINE_AA)
-
-				rowIndex = 1
+				rowIndex = 0
 				for m in range(80):
 					for k in range(len(classesIndex[streamIndex])):
 						if (m == classesIndex[streamIndex][k]):
@@ -187,14 +195,37 @@ def detect_motion(frameCount):
 
 					if (classIndexCount[streamIndex][m]!=0):
 						rowIndex+=1
-						cv2.rectangle(bufferFrames[streamIndex], (0, rowIndex*40 - 20), (200,rowIndex*40 + 8), (0,0,0), -1)
-						cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (20,rowIndex*40), font, 1.5, (0,255,0), 2, cv2.LINE_AA)
+						#cv2.rectangle(bufferFrames[streamIndex], (0, rowIndex*40 - 20), (200,rowIndex*40 + 8), (0,0,0), -1)
+						#cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (20,rowIndex*40), font, 0.7, (0,255,0), 2, cv2.LINE_AA)
+						if (classes[m]=="person"):
+							cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex * 70 - 40), (400, rowIndex * 70 + 16), (0, 0, 0), -1)
+							cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4, (0,255,0), 2, lineType=cv2.LINE_AA)
+						if (classes[m]=="car"):
+							cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex * 70 - 40), (400, rowIndex * 70 + 16), (0, 0, 0), -1)
+							cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4, (213,160,47), 2, lineType=cv2.LINE_AA)
+						if ((classes[m] != "car") & (classes[m] != "person")):
+							cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex * 70 - 40), (400, rowIndex * 70 + 16), (0, 0, 0), -1)
+							cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4, colors[m], 2, lineType=cv2.LINE_AA)
+						
+						if (classes[m]=="handbag")|(classes[m]=="backpack"):
+							passFlag = True
+							print("handbag detected! -> PASS")
+				if writer is not None:
+					writer.write(bufferFrames[streamIndex])
+					resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+					cv2.imshow("video", resized)
+					key = cv2.waitKey(1) & 0xFF
 
-			im_v = cv2.vconcat([bufferFrames[0], bufferFrames[1]])
-			im_v2 = cv2.vconcat([bufferFrames[2], bufferFrames[3]])
-			im_v3 = cv2.hconcat([im_v, im_v2])
+			# if (skipFlag == False)&(passFlag==True):			
+			# 	writer.write(bufferFrames[streamIndex])
+			# 	resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+			# 	cv2.imshow("video", resized)
+			# 	key = cv2.waitKey(1) & 0xFF
+			#im_v = cv2.vconcat([bufferFrames[0], bufferFrames[1]])
+			#im_v2 = cv2.vconcat([bufferFrames[2], bufferFrames[3]])
+			#im_v3 = cv2.hconcat([im_v, im_v2])
 			#vis = np.concatenate((im_v, frameList[0]), axis=1)
-			outputFrame = im_v3.copy()
+			#outputFrame = im_v3.copy()
 
 def generate():
 	global outputFrame, lock
