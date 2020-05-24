@@ -65,17 +65,21 @@ colors = np.random.uniform(0,255,size=(len(classes), 3))
 img = None
 
 time.sleep(2.0)
-cap = cv2.VideoCapture("videoplayback.mp4")
+
 
 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-writer = cv2.VideoWriter("testOutput2.avi", fourcc, 30, (1920, 1080), True)
+writer = None
+
 @app.route("/")
 
 def index():
 	return render_template("index.html")
 
 def detect_motion(frameCount):
-	global vsList, net, fileIterator, frameProcessed, outputFrame, lock
+	global vsList, writer, net, fileIterator, frameProcessed, outputFrame, lock
+
+	fileToRender=args["source"]
+	cap = cv2.VideoCapture(fileToRender)
 
 	for i in range(len(streamList)):
 		total.append(None)
@@ -186,7 +190,7 @@ def detect_motion(frameCount):
 				#cv2.putText(bufferFrames[streamIndex], "BLOB: 320x320", (40, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2, lineType=cv2.LINE_AA)
 				#cv2.rectangle(bufferFrames[streamIndex], (20, 100), (400, 156), (0, 0, 0), -1)
 				#cv2.putText(bufferFrames[streamIndex], "FPS: " + str(round(fps, 2)), (40, 140), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2, lineType=cv2.LINE_AA)
-
+				
 				rowIndex = 0
 				for m in range(80):
 					for k in range(len(classesIndex[streamIndex])):
@@ -194,11 +198,13 @@ def detect_motion(frameCount):
 							classIndexCount[streamIndex][m]+=1
 
 					if (classIndexCount[streamIndex][m]!=0):
-						rowIndex+=1
-						#cv2.rectangle(bufferFrames[streamIndex], (0, rowIndex*40 - 20), (200,rowIndex*40 + 8), (0,0,0), -1)
-						#cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (20,rowIndex*40), font, 0.7, (0,255,0), 2, cv2.LINE_AA)
+						rowIndex += 1
+						
+						# cv2.rectangle(bufferFrames[streamIndex], (0, rowIndex*40 - 20), (200,rowIndex*40 + 8), (0,0,0), -1)
+						# cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (20,rowIndex*40), font, 0.7, colors[m], 2, cv2.LINE_AA)
+						
 						if (classes[m]=="person"):
-							cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex * 70 - 40), (400, rowIndex * 70 + 16), (0, 0, 0), -1)
+							cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex* 70 - 40), (400,rowIndex * 70 + 16), (0,0,0), -1)
 							cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4, (0,255,0), 2, lineType=cv2.LINE_AA)
 						if (classes[m]=="car"):
 							cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex * 70 - 40), (400, rowIndex * 70 + 16), (0, 0, 0), -1)
@@ -210,12 +216,15 @@ def detect_motion(frameCount):
 						if (classes[m]=="handbag")|(classes[m]=="backpack"):
 							passFlag = True
 							print("handbag detected! -> PASS")
-				if writer is not None:
-					writer.write(bufferFrames[streamIndex])
-					resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
-					cv2.imshow("video", resized)
-					key = cv2.waitKey(1) & 0xFF
 
+				if writer is None:
+					writer = cv2.VideoWriter("testOutput2.avi", fourcc, 30,(bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)			
+				else:
+					writer.write(bufferFrames[streamIndex])
+					#resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+					cv2.imshow("video", bufferFrames[streamIndex])
+					key = cv2.waitKey(1) & 0xFF
+				
 			# if (skipFlag == False)&(passFlag==True):			
 			# 	writer.write(bufferFrames[streamIndex])
 			# 	resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
@@ -226,6 +235,7 @@ def detect_motion(frameCount):
 			#im_v3 = cv2.hconcat([im_v, im_v2])
 			#vis = np.concatenate((im_v, frameList[0]), axis=1)
 			#outputFrame = im_v3.copy()
+			outputFrame = bufferFrames[streamIndex]
 
 def generate():
 	global outputFrame, lock
@@ -241,9 +251,10 @@ def generate():
 				continue
 
 		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-			bytearray(encodedImage) + b'\r\n')
+			bytearray(encodedImage)  + b'\r\n')
 
-@app.route("/video_feed")
+@app.route("/video")
+
 def video_feed():
 	return Response(generate(),
 		mimetype = "multipart/x-mixed-replace; boundary=frame")
@@ -255,8 +266,11 @@ if __name__ == '__main__':
 		help="ip address of the device")
 	ap.add_argument("-o", "--port", type=int, required=True,
 		help="ephemeral port number of the server (1024 to 65535)")
+	ap.add_argument("-s", "--source", type=str, default=32,
+		help="# file to render")
 	ap.add_argument("-f", "--frame-count", type=int, default=32,
 		help="# of frames used to construct the background model")
+	
 	args = vars(ap.parse_args())
 
 	t = threading.Thread(target=detect_motion, args=(
