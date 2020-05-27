@@ -29,7 +29,7 @@ streamList= [
 	]
 
 # Working adresses:
-# 
+#
 # http://212.186.68.38:1082/-wvhttp-01-/GetOneShot?image_size=640x480&frame_count=1000000000
 # http://94.72.19.58/mjpg/video.mjpg,
 # http://91.209.234.195/mjpg/video.mjpg
@@ -84,7 +84,6 @@ def detect_motion(frameCount):
 		total[i] = 0
 
 	while True:
-
 		classesIndex = []
 		startMoment = time.time()
 		for streamIndex in range(len(streamList)):

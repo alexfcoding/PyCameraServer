@@ -1,8 +1,18 @@
 <html>
   <head>
     <title>Video Server</title>
+    <style>
+      a:hover {
+        background-color: rgb(255, 196, 0);
+      }
+    </style>
   </head>
   <body>
-    <img src="{{ url_for('video_feed') }}">
+    <img style="width:1280px;height:720px;" src="{{ url_for('video_feed') }}">
+    {% block content %}
+    <div style="font-size: 32;" >
+      <p><a href="{{pathToRenderedFile}}">СКАЧАТЬ ОБРАБОТАННОЕ ВИДЕО</a></p>
+    </div>
+    {% endblock %}
   </body>
 </html>
