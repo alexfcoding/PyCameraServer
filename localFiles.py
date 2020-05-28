@@ -1,8 +1,8 @@
-# python localFiles.py -i 192.168.0.12 -o 8000
+# python localFiles.py -i 192.168.0.12 -o 8000 -videofile.xxx
 
 from processing.motion_detection import Detector
 from imutils.video import VideoStream
-from flask import Response, redirect
+from flask import Response, redirect, jsonify
 from flask import Flask
 from flask import render_template
 import threading
@@ -15,10 +15,17 @@ import cv2
 import time
 import os
 from flask import stream_with_context, request, Response, url_for
+import base64
 
 workingOn = True
 
 outputFrame = None
+resized = None
+value = 0
+running = False
+progress = 0
+fps = 0
+
 lock = threading.Lock()
 A = 0
 
@@ -45,6 +52,7 @@ classes = []
 
 frameProcessed = 0
 fileIterator = 0
+totalFrames = 0
 
 for i in range(len(streamList)):
 	vsList.append(VideoStream(streamList[i]))
@@ -60,7 +68,7 @@ net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
 net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 with open("coco.names", "r") as f:
-    classes = [line.strip() for line in f.readlines()]
+	classes = [line.strip() for line in f.readlines()]
 
 layers_names = net.getLayerNames()
 outputLayers = [layers_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
@@ -74,16 +82,23 @@ fourcc = cv2.VideoWriter_fourcc(*"MJPG")
 writer = None
 
 def ProcessFrame(frameCount):
-	global cap, vsList, writer, net, fileIterator, frameProcessed, outputFrame, lock
+	global cap, totalFrames, progress, fps, resized, workingOn, vsList, writer, net, fileIterator, frameProcessed, outputFrame, lock
 
 	workingOn = True
 
 	fileToRender=args["source"]
 	cap = cv2.VideoCapture(fileToRender)
 
-	for i in range(len(streamList)):
-		total.append(None)
-		total[i] = 0
+	while True:
+		# grab the current frame
+		(grabbed, frame) = cap.read()
+
+		if not grabbed:
+			break
+
+		totalFrames = totalFrames + 1
+
+	cap = cv2.VideoCapture(fileToRender)
 
 	while workingOn == True:
 		classesIndex = []
@@ -221,23 +236,20 @@ def ProcessFrame(frameCount):
 						if writer is None:
 							writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 30,(bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
 						else:
-							progress = frameProcessed / int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) * 100
+							resized = bufferFrames[streamIndex].copy()
 
-							if (progress == 100):
-								progress = "DONE"
+							progress = frameProcessed / totalFrames * 100
 
-							cv2.rectangle(bufferFrames[streamIndex], (20, 1 * 70 - 40), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) - 20, 1 * 70 + 16), (0, 0, 0), -1)
+							cv2.rectangle(resized, (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) - 20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 0, 0), -1)
 
 							if (progress != "DONE"):
-								cv2.rectangle(bufferFrames[streamIndex], (20, 1 * 70 - 40), (int( cap.get(cv2.CAP_PROP_FRAME_WIDTH) * progress / 100) - 20, 1 * 70 + 16), (0, 255, 0), -1)
-								cv2.putText(bufferFrames[streamIndex], str(int(progress)) + "%" + " | FPS: " + str(round(fps,2)), (40, 70), font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
-							else:
-								cv2.rectangle(bufferFrames[streamIndex], (20, 1 * 40 - 40), (int( cap.get(cv2.CAP_PROP_FRAME_WIDTH)) - 20, 1 * 70 + 16), (0, 255, 0), -1)
-								cv2.putText(bufferFrames[streamIndex], str(progress), (40, 70), font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
+								cv2.rectangle(resized, (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80), (int( cap.get(cv2.CAP_PROP_FRAME_WIDTH) * progress / 100) - 20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 255, 0), -1)
+								cv2.putText(resized, str(int(progress)) + "%" + " | FPS: " + str(round(fps,2)), (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40), font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
 
 							writer.write(bufferFrames[streamIndex])
 							cv2.imwrite("static/t.jpg", bufferFrames[streamIndex])
-							resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+
+							resized = cv2.resize(resized, (1280, 720))
 							cv2.imshow("video", resized)
 							key = cv2.waitKey(1) & 0xFF
 
@@ -251,7 +263,8 @@ def ProcessFrame(frameCount):
 					#im_v3 = cv2.hconcat([im_v, im_v2])
 					#vis = np.concatenate((im_v, frameList[0]), axis=1)
 					#outputFrame = im_v3.copy()
-					outputFrame = bufferFrames[streamIndex]
+					#outputFrame = bufferFrames[streamIndex]
+					outputFrame = resized
 
 			else:
 				#return redirect(f"http://192.168.0.12:{args['port']}/results.html")
@@ -262,9 +275,7 @@ def ProcessFrame(frameCount):
 def generate():
 	global outputFrame, frameProcessed, lock, workingOn
 
-	length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-	while frameProcessed < length:
+	while workingOn:
 		#if frameProcessed < 100:
 		with lock:
 			if outputFrame is None:
@@ -274,16 +285,18 @@ def generate():
 
 			if not flag:
 				continue
-		if (workingOn == True):
-			yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-				bytearray(encodedImage) + b'\r\n')
+
+		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+			bytearray(encodedImage) + b'\r\n')
 		#else:
-			#redirect(url_for("results"))
+			#return redirect(url_for("results"))
 			#return redirect('/results')
 
-@app.route("/")
+@app.route('/')
+@app.route('/<device>/<action>')
 
-def index():
+def index(device=None, action=None):
+
 	return render_template("index.html", frameProcessed=frameProcessed, pathToRenderedFile=f"static/output{args['port']}.avi")
 
 @app.route("/video")
@@ -298,6 +311,16 @@ def video_feed():
 
 def results():
 	return render_template("results.html")
+
+@app.route('/update', methods=['POST'])
+def update():
+	return jsonify({
+		'value': frameProcessed,
+		'totalFrames': totalFrames,
+		'progress': round(progress, 2),
+		'fps': round(fps, 2),
+		#'time': datetime.datetime.now().strftime("%H:%M:%S"),
+	})
 
 # check to see if this is the main thread of execution
 if __name__ == '__main__':

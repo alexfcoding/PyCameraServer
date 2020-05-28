@@ -9,7 +9,6 @@ import sys
 import subprocess
 import time
 
-
 UPLOAD_FOLDER = ''
 ALLOWED_EXTENSIONS = set(
 	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi'])
@@ -22,7 +21,6 @@ connectionPort = 8000
 def allowed_file(filename):
 	return '.' in filename and \
 		   filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -58,7 +56,6 @@ def uploaded_file(filename):
 	return send_from_directory(app.config['UPLOAD_FOLDER'],
 							   filename)
 
-
 @app.route("/")
 def start_analysis(portToRender, fileToRender):
 	# return Response(generate(),
@@ -66,9 +63,9 @@ def start_analysis(portToRender, fileToRender):
 	# os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")
 	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
 					  '-o', str(portToRender), '-s', str(fileToRender)])
-	time.sleep(8)
+	time.sleep(6)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
-	return redirect(f"http://178.140.230.247:{portToRender}")
+	return redirect(f"http://192.168.0.12:{portToRender}")
 
 	# return os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")
 
