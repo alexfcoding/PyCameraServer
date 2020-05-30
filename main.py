@@ -5,6 +5,7 @@ import argparse
 from flask import Flask, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
+from flask import render_template
 import sys
 import subprocess
 import time
@@ -13,7 +14,7 @@ UPLOAD_FOLDER = ''
 ALLOWED_EXTENSIONS = set(
 	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi'])
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 connectionPort = 8000
@@ -29,6 +30,11 @@ def upload_file():
 		if file and allowed_file(file.filename):
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+			CRED = '\033[91m'
+			CEND = '\033[0m'
+			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
+
 			# return redirect(url_for('start_analysis', prt=8001, filee=filename))
 			global connectionPort
 			connectionPort = connectionPort + 1
@@ -36,20 +42,7 @@ def upload_file():
 			# return f"Файл {filename} загружен. Запускаю сервер обработки..."
 			# return redirect(url_for('video_feed',prt=8000))
 
-	return '''
-	<!doctype html>
-	<title>Upload new File</title>
-	<h1>Выберите видеофайл для загрузки</h1>
-	<form action="" method=post enctype=multipart/form-data>
-		<p><input type=file name=file></p>
-		<p><input type=submit value=Загрузить></p>
-		<p><input type="checkbox" name="check" value="edit">Наложить все указанные объекты на видео</p>
-		<p><input type="checkbox" name="check2" value="edit">Вырезать все кадры из видео с указанными объектами</p>
-		<p><input type="checkbox" name="check3" value="edit">Вырезать все кадры из видео, кроме кадров с объектами</p>
-		<p><input type="checkbox" name="check4" value="edit">Размыть указанные объекты на видео</p>
-		<p><input type="checkbox" name="check5" value="edit">Залить цветом указанные объекты на видео</p>
-	</form>
-	'''
+	return render_template('main.html')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):

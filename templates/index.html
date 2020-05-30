@@ -1,102 +1,84 @@
-<html>
-	<head>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-		<title>Video Server</title>
-		<style>
-			a {
-					color: rgb(255, 255, 255);
-					paddingrgb(0, 0, 0) 1.5em;
-					text-decoration: none;
-					text-transform: uppercase;
-				}
-
-			btn:hover {
-				background: #ffa600;
-			}
-
-			#grid {
-				display: inline-grid;
-				grid-template-rows: 1fr;
-				grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-				grid-gap: 10px;
-				width: 1280px;
-				color: #272822;
-				margin-top: 10px;
-				margin-bottom: 30px;
-			}
-
-			#grid > div {
-				box-shadow: 5px 5px 5px black;
-				border-radius: 20px;
-				color: #ffab00;
-				font-size: 14px;
-				padding: 1px;
-				background: #383838;
-				text-align: center;
-			}
-		</style>
-	</head>
-
-	<body style="background-color:#1d1d1d;">
-		<div style="text-align: center;">
-			<img style="width:1280px;height:720px; border-radius: 20px; box-shadow: 5px 5px 5px black;" src="{{ url_for('video_feed') }}">
-
-				<div id="grid">
-					<div>
-						<h2>RENDERED</h2>
-						<h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
-					</div>
-						<div><h2>TOTAL:</h2>
-						<h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
-					</div>
-					<div>
-						<h2>PROGRESS:</h2>
-						<h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
-					</div>
-					<div>
-						<h2>FPS:</h2>
-						<h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
-					</div>
-
-					<div>
-						<h2>CPU LOAD</h2>
-						<h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
-					</div>
-						<div><h2>CUDA:</h2>
-						<h1 id="" style="color: rgb(255, 255, 255);">Enabled</h1>
-					</div>
-					<div>
-						<h2>ESTIMATE:</h2>
-						<h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
-					</div>
-					<div>
-						<h2>FRAME SIZE:</h2>
-						<h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
-					</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<title>Video Editor</title>
+	<link rel="stylesheet" href="static/main.css">
+</head>
+<body style="background-color:#1d1d1d;">
+	<div style="text-align: center;">
+		<img style="width:1280px;height:720px; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}">
+			<div id="grid">
+				<div>
+					<h2>RENDERED</h2>
+					<h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
+				</div>
+					<div><h2>TOTAL:</h2>
+					<h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
+				</div>
+				<div>
+					<h2>PROGRESS:</h2>
+					<h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
+				</div>
+				<div>
+					<h2>FPS:</h2>
+					<h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
 				</div>
 
 				<div>
-					<a style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; box-shadow: 0px 0px 12px #ffa600;" href="{{pathToRenderedFile}}">Download video</a>
-					<a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 0px 0px 12px rgb(255, 255, 255);" href="http://192.168.0.12:8000">Upload new video</a>
+					<h2>CPU LOAD</h2>
+					<h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
 				</div>
+					<div><h2>FREE RAM</h2>
+					<h1 id="freeRam" style="color: rgb(255, 255, 255);"></h1>
+				</div>
+				<div>
+					<h2>CUDA:</h2>
+					<h1 id="progress" style="color: rgb(255, 255, 255);">enabled</h1>
+				</div>
+				<div>
+					<h2>FRAME SIZE:</h2>
+					<h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
+				</div>
+			</div>
 
-			<script>
-					setInterval(function(){$.ajax({
-							url: '/update',
-							type: 'POST',
-							success: function(response) {
-									console.log(response);
-									//$("#num").html(response["value"]);
-									$("#num").html(response["value"]);
-									$("#framesCount").html(response["totalFrames"]);
-									$("#progress").html(response["progress"]+"%");
-									$("#fps").html(response["fps"]);
-							},
-							error: function(error) {
-									console.log(error);
-							}
-					})}, 500);
-			</script>
-	</div>
-	</body>
-</html>
+			<div >
+				<a  class="glow" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; box-shadow: 6px 4px 8px #000000;" href="{{pathToRenderedFile}}">Download video</a>
+				<a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;" href="http://192.168.0.12:8000">Make new video</a>
+			</div>
+
+		<script>
+			var working = 0;
+			var frameWidth = 0;
+			var frameHeight = 0;
+
+			var myTimer = setInterval(function(){$.ajax({
+						url: '/update',
+						type: 'POST',
+						success: function(response) {
+								console.log(response);
+								//$("#num").html(response["value"]);
+								$("#num").html(response["value"]);
+								$("#framesCount").html(response["totalFrames"]);
+								$("#progress").html(response["progress"]+"%");
+								$("#fps").html(response["fps"]);
+								$("#cpu").html(response["cpuUsage"]+"%");
+								$("#freeRam").html(response["freeRam"]+"GB");
+								frameWidth = response["frameWidth"]
+								frameHeight = response["frameHeight"]
+								$("#frameSize").html(frameWidth + "x" + frameHeight);
+
+								working = response["workingOn"];
+
+								//if (working == false) {
+									//clearInterval(myTimer);
+								//}
+
+						},
+						error: function(error) {
+								console.log(error);
+						}
+				})}, 300);
+		</script>
+</div>
+</body>

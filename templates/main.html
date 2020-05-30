@@ -1,0 +1,62 @@
+<head>
+    <title>Upload new File</title>
+    <link rel="stylesheet" href="static/main.css">
+    <style>
+        #getFile {
+        display: none;
+        }
+
+        #sendFile {
+            display: none;
+        }
+
+        .getFileLabel {
+            display: inline-block;
+            background: red;
+            color: rgb(255, 255, 255);
+            width: 200px;
+            font-size: 24px;
+            box-shadow: 6px 4px 8px #000000;
+        }
+
+        .getFileLabel:hover {
+
+            color: #ffa600;
+            box-shadow: 0px 0px 8px #ffa600;
+        }
+
+        .opt {
+            display: inline-block;
+            border-radius: 16px;
+            font-size: 24px;
+            color: white;
+            background-color: #383838;
+            max-width: 700px;
+            padding: 20px;
+            box-shadow: 6px 4px 8px #000000;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body style="background-color:#1d1d1d;">
+
+<div style="text-align: center;">
+    <form action="" method=post enctype=multipart/form-data>
+
+    <div class="opt">
+        <p><input type="checkbox" name="check" value="edit">Save frames with people only</p>
+        <p><input type="checkbox" name="check" value="edit">Blur people</p>
+    </div>
+
+    <div>
+    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: #ffa600;"  for="getFile">OPEN FILE</label>
+        <input type="file" name="file" id="getFile" />
+        <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: rgb(0, 255, 13);"  for="sendFile">UPLOAD</label>
+        <input type="submit" id="sendFile"/>
+    </div>
+
+</div>
+
+</body>
+</form>

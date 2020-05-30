@@ -16,7 +16,11 @@ import time
 import os
 from flask import stream_with_context, request, Response, url_for
 import base64
+import sys
+import gc
+import psutil
 
+thr = None
 workingOn = True
 
 outputFrame = None
@@ -82,7 +86,7 @@ fourcc = cv2.VideoWriter_fourcc(*"MJPG")
 writer = None
 
 def ProcessFrame(frameCount):
-	global cap, totalFrames, progress, fps, resized, workingOn, vsList, writer, net, fileIterator, frameProcessed, outputFrame, lock
+	global cap, frameList, bufferFrames, totalFrames, progress, fps, resized, workingOn, vsList, writer, net, fileIterator, frameProcessed, outputFrame, lock
 
 	workingOn = True
 
@@ -101,6 +105,7 @@ def ProcessFrame(frameCount):
 	cap = cv2.VideoCapture(fileToRender)
 
 	while workingOn == True:
+		print("working...")
 		classesIndex = []
 		startMoment = time.time()
 		for streamIndex in range(len(streamList)):
@@ -193,6 +198,8 @@ def ProcessFrame(frameCount):
 				classesIndex.append(classesOut)
 
 				with lock:
+					personDetected = False
+
 					frameProcessed = frameProcessed + 1
 					elapsedTime = time.time()
 					fps = 1 / (elapsedTime - startMoment)
@@ -206,6 +213,7 @@ def ProcessFrame(frameCount):
 						#cv2.putText(bufferFrames[streamIndex], "BLOB: 320x320", (40, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2, lineType=cv2.LINE_AA)
 						#cv2.rectangle(bufferFrames[streamIndex], (20, 100), (400, 156), (0, 0, 0), -1)
 						#cv2.putText(bufferFrames[streamIndex], "FPS: " + str(round(fps, 2)), (40, 140), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2, lineType=cv2.LINE_AA)
+
 
 						rowIndex = 1
 						for m in range(80):
@@ -222,6 +230,7 @@ def ProcessFrame(frameCount):
 								if (classes[m]=="person"):
 									cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex * 70 - 40), (400,rowIndex * 70 + 16), (0,0,0), -1)
 									cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4, (0,255,0), 2, lineType=cv2.LINE_AA)
+									personDetected = True
 								if (classes[m]=="car"):
 									cv2.rectangle(bufferFrames[streamIndex], (20, rowIndex * 70 - 40), (400, rowIndex * 70 + 16), (0, 0, 0), -1)
 									cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4, (213,160,47), 2, lineType=cv2.LINE_AA)
@@ -246,7 +255,9 @@ def ProcessFrame(frameCount):
 								cv2.rectangle(resized, (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80), (int( cap.get(cv2.CAP_PROP_FRAME_WIDTH) * progress / 100) - 20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 255, 0), -1)
 								cv2.putText(resized, str(int(progress)) + "%" + " | FPS: " + str(round(fps,2)), (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40), font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
 
-							writer.write(bufferFrames[streamIndex])
+							if (personDetected == True):
+								writer.write(bufferFrames[streamIndex])
+
 							cv2.imwrite("static/t.jpg", bufferFrames[streamIndex])
 
 							resized = cv2.resize(resized, (1280, 720))
@@ -271,6 +282,9 @@ def ProcessFrame(frameCount):
 				outputFrame = bufferFrames[streamIndex]
 				workingOn = False
 				print("finished")
+				cap.release()
+				writer.release()
+				cv2.destroyAllWindows()
 
 def generate():
 	global outputFrame, frameProcessed, lock, workingOn
@@ -291,6 +305,7 @@ def generate():
 		#else:
 			#return redirect(url_for("results"))
 			#return redirect('/results')
+	print("yield finished")
 
 @app.route('/')
 @app.route('/<device>/<action>')
@@ -307,11 +322,6 @@ def video_feed():
 		mimetype="multipart/x-mixed-replace; boundary=frame")
 		#return Response(stream_with_context(generate()))
 
-@app.route("/results")
-
-def results():
-	return render_template("results.html")
-
 @app.route('/update', methods=['POST'])
 def update():
 	return jsonify({
@@ -319,8 +329,25 @@ def update():
 		'totalFrames': totalFrames,
 		'progress': round(progress, 2),
 		'fps': round(fps, 2),
+		'workingOn': workingOn,
+		'cpuUsage': psutil.cpu_percent(),
+		'freeRam': round((psutil.virtual_memory()[1]/2.**30), 2),
+		'ramPercent': psutil.virtual_memory()[2],
+		'frameWidth': cap.get(cv2.CAP_PROP_FRAME_WIDTH),
+		'frameHeight': cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 		#'time': datetime.datetime.now().strftime("%H:%M:%S"),
 	})
+
+def shutdown_server():
+	func = request.environ.get('werkzeug.server.shutdown')
+	if func is None:
+		raise RuntimeError('Not running with the Werkzeug Server')
+	func()
+
+@app.route('/shutdown', methods=['GET'])
+def shutdown():
+	shutdown_server()
+	return 'Server shutting down...'
 
 # check to see if this is the main thread of execution
 if __name__ == '__main__':
@@ -340,7 +367,6 @@ if __name__ == '__main__':
 		args["frame_count"],))
 	t.daemon = True
 	t.start()
-
 	app.run(host=args["ip"], port=args["port"], debug=False,
 		threaded=True, use_reloader=False)
 
