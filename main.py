@@ -12,7 +12,7 @@ import time
 
 UPLOAD_FOLDER = ''
 ALLOWED_EXTENSIONS = set(
-	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi'])
+	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v'])
 
 app = Flask(__name__, static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -40,6 +40,7 @@ def upload_file():
 			global connectionPort
 			connectionPort = connectionPort + 1
 			return start_analysis(connectionPort, filename, options)
+
 			# return f"Файл {filename} загружен. Запускаю сервер обработки..."
 			# return redirect(url_for('video_feed',prt=8000))
 
@@ -47,6 +48,7 @@ def upload_file():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+
 	return send_from_directory(app.config['UPLOAD_FOLDER'],
 							   filename)
 
@@ -63,6 +65,7 @@ def start_analysis(portToRender, fileToRender, options):
 
 	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
 					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList])
+
 	time.sleep(6)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
 	return redirect(f"http://192.168.0.12:{portToRender}")

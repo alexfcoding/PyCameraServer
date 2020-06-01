@@ -1,15 +1,17 @@
 <head>
     <title>Upload new File</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
     <link rel="stylesheet" href="static/main.css">
     <style>
         #getFile {
-        display: none;
+            display: none;
         }
-
+        
         #sendFile {
             display: none;
         }
-
+        
         .getFileLabel {
             display: inline-block;
             background: red;
@@ -18,13 +20,12 @@
             font-size: 24px;
             box-shadow: 6px 4px 8px #000000;
         }
-
+        
         .getFileLabel:hover {
-
             color: #ffa600;
             box-shadow: 0px 0px 8px #ffa600;
         }
-
+        
         .opt {
             display: inline-block;
             border-radius: 16px;
@@ -36,27 +37,152 @@
             box-shadow: 6px 4px 8px #000000;
             text-align: left;
         }
+        
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #loader {
+            display: block;
+            position: relative;
+            left: 50%;
+            top: 50%;
+            width: 150px;
+            height: 150px;
+            margin: -75px 0 0 -75px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #9370DB;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+        
+        #loader:before {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #BA55D3;
+            -webkit-animation: spin 3s linear infinite;
+            animation: spin 3s linear infinite;
+        }
+        
+        #loader:after {
+            content: "";
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #FF00FF;
+            -webkit-animation: spin 1.5s linear infinite;
+            animation: spin 1.5s linear infinite;
+        }
+        
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+                -ms-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(360deg);
+                -ms-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+                -ms-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(360deg);
+                -ms-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+        
+        .progress-wrapper {
+            display: inline-block;
+            width: 345px;
+        }
+        
+        .progress-wrapper .progress {
+            background-color: #ffa600;
+            width: 0%;
+            padding: 5px 0px 5px 0px;
+        }
     </style>
 </head>
 
 <body style="background-color:#1d1d1d;">
+    <div style="text-align: center;">
+        <form action="" method=post enctype=multipart/form-data>
 
-<div style="text-align: center;">
-    <form action="" method=post enctype=multipart/form-data>
+            <div id="loaddiv" style="display: none;">
+                <div id="preloader">
+                    <div id="loader"></div>
+                </div>
+            </div>
 
-    <div class="opt">
-        <p><input type="checkbox" name="check" value="0">Save frames with people only</p>
-        <p><input type="checkbox" name="check" value="1">Blur people</p>
+            <div id="content">
+                <div class="opt">
+                    <p><input type="checkbox" name="check" value="0">Save frames with people only</p>
+                    <p><input type="checkbox" name="check" value="1">Blur people</p>
+                </div>
+                <div>
+                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                    <input type="file" name="file" id="getFile" />
+
+                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: rgb(0, 255, 13);" for="sendFile">START</label>
+                    <input type="submit" id="sendFile" onclick="postFile()" />
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div id="progress-bar-file1" class="progress"></div>
+            </div>
+
+            <script>
+                function postFile() {
+                    var formdata = new FormData();
+
+                    formdata.append('getFile', $('#getFile')[0].files[0]);
+
+                    var request = new XMLHttpRequest();
+
+                    request.upload.addEventListener('progress', function(e) {
+                        var file1Size = $('#getFile')[0].files[0].size;
+
+                        if (e.loaded <= file1Size) {
+                            var percent = Math.round(e.loaded / file1Size * 100);
+                            $('#progress-bar-file1').width(percent + '%').html(percent + '%');
+                        }
+
+                        if (e.loaded == e.total) {
+                            $('#progress-bar-file1').width(100 + '%').html(100 + '%');
+                            $("#loaddiv ").show();
+                        }
+                    });
+
+                    request.open('post', '/');
+                    request.timeout = 45000;
+                    request.send(formdata);
+                }
+            </script>
     </div>
-
-    <div>
-    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: #ffa600;"  for="getFile">OPEN FILE</label>
-        <input type="file" name="file" id="getFile" />
-        <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: rgb(0, 255, 13);"  for="sendFile">START</label>
-        <input type="submit" id="sendFile"/>
-    </div>
-
-</div>
-
 </body>
 </form>

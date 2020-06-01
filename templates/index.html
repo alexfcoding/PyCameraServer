@@ -1,84 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<title>Video Editor</title>
-	<link rel="stylesheet" href="static/main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>Video Editor</title>
+    <link rel="stylesheet" href="static/main.css">
 </head>
+
 <body style="background-color:#1d1d1d;">
-	<div style="text-align: center;">
-		<img style="width:1280px;height:720px; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}">
-			<div id="grid">
-				<div>
-					<h2>RENDERED</h2>
-					<h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
-				</div>
-					<div><h2>TOTAL:</h2>
-					<h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
-				</div>
-				<div>
-					<h2>PROGRESS:</h2>
-					<h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
-				</div>
-				<div>
-					<h2>FPS:</h2>
-					<h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
-				</div>
+    <div style="text-align: center;">
+        <img style="width:1280px;height:720px; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}">
+        <div id="grid">
+            <div>
+                <h2>RENDERED</h2>
+                <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h2>TOTAL:</h2>
+                <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h2>PROGRESS:</h2>
+                <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h2>FPS:</h2>
+                <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
 
-				<div>
-					<h2>CPU LOAD</h2>
-					<h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
-				</div>
-					<div><h2>FREE RAM</h2>
-					<h1 id="freeRam" style="color: rgb(255, 255, 255);"></h1>
-				</div>
-				<div>
-					<h2>CUDA:</h2>
-					<h1 id="progress" style="color: rgb(255, 255, 255);">enabled</h1>
-				</div>
-				<div>
-					<h2>FRAME SIZE:</h2>
-					<h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
-				</div>
-			</div>
+            <div>
+                <h2>CPU LOAD</h2>
+                <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h2>FREE RAM</h2>
+                <h1 id="freeRam" style="color: rgb(255, 255, 255);"></h1>
+            </div>
+            <div>
+                <h2>CUDA:</h2>
+                <h1 id="progress" style="color: rgb(255, 255, 255);">enabled</h1>
+            </div>
+            <div>
+                <h2>FRAME SIZE:</h2>
+                <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+        </div>
 
-			<div >
-				<a  class="glow" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; box-shadow: 6px 4px 8px #000000;" href="{{pathToRenderedFile}}">Download video</a>
-				<a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;" href="http://192.168.0.12:8000">Make new video</a>
-			</div>
+        <div>
+            <a class="glow" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; box-shadow: 6px 4px 8px #000000;" href="{{pathToRenderedFile}}">Download video</a>
+            <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;" href="http://192.168.0.12:8000">Make new video</a>
+        </div>
 
-		<script>
-			var working = 0;
-			var frameWidth = 0;
-			var frameHeight = 0;
+        <script>
+            var working = 0;
+            var frameWidth = 0;
+            var frameHeight = 0;
 
-			var myTimer = setInterval(function(){$.ajax({
-						url: '/update',
-						type: 'POST',
-						success: function(response) {
-								console.log(response);
-								//$("#num").html(response["value"]);
-								$("#num").html(response["value"]);
-								$("#framesCount").html(response["totalFrames"]);
-								$("#progress").html(response["progress"]+"%");
-								$("#fps").html(response["fps"]);
-								$("#cpu").html(response["cpuUsage"]+"%");
-								$("#freeRam").html(response["freeRam"]+"GB");
-								frameWidth = response["frameWidth"]
-								frameHeight = response["frameHeight"]
-								$("#frameSize").html(frameWidth + "x" + frameHeight);
+            var myTimer = setInterval(function() {
+                $.ajax({
+                    url: '/update',
+                    type: 'POST',
+                    success: function(response) {
+                        console.log(response);
+                        //$("#num").html(response["value"]);
+                        $("#num").html(response["value"]);
+                        $("#framesCount").html(response["totalFrames"]);
+                        $("#progress").html(response["progress"] + "%");
+                        $("#fps").html(response["fps"]);
+                        $("#cpu").html(response["cpuUsage"] + "%");
+                        $("#freeRam").html(response["freeRam"] + "GB");
+                        frameWidth = response["frameWidth"]
+                        frameHeight = response["frameHeight"]
+                        $("#frameSize").html(frameWidth + "x" + frameHeight);
 
-								working = response["workingOn"];
+                        working = response["workingOn"];
 
-								//if (working == false) {
-									//clearInterval(myTimer);
-								//}
+                        //if (working == false) {
+                        //clearInterval(myTimer);
+                        //}
 
-						},
-						error: function(error) {
-								console.log(error);
-						}
-				})}, 1000);
-		</script>
-</div>
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                })
+            }, 1000);
+        </script>
+    </div>
 </body>
