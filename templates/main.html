@@ -124,6 +124,7 @@
             background-color: #ffa600;
             width: 0%;
             padding: 5px 0px 5px 0px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -141,7 +142,9 @@
             <div id="content">
                 <div class="opt">
                     <p><input type="checkbox" name="check" value="0">Save frames with people only</p>
-                    <p><input type="checkbox" name="check" value="1">Blur people</p>
+                    <p><input type="checkbox" name="check" value="1">Render with text</p>
+                    <p><input type="checkbox" name="check" value="2">Canny people effect</p>
+                    <p><input type="checkbox" name="check" value="3">Canny full screen effect</p>
                 </div>
                 <div>
                     <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
@@ -150,11 +153,12 @@
                     <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: rgb(0, 255, 13);" for="sendFile">START</label>
                     <input type="submit" id="sendFile" onclick="postFile()" />
                 </div>
+                <div class="progress-wrapper">
+                    <div id="progress-bar-file1" class="progress"></div>
+                </div>
             </div>
 
-            <div class="progress-wrapper">
-                <div id="progress-bar-file1" class="progress"></div>
-            </div>
+
 
             <script>
                 function postFile() {
@@ -174,7 +178,8 @@
 
                         if (e.loaded == e.total) {
                             $('#progress-bar-file1').width(100 + '%').html(100 + '%');
-                            $("#loaddiv ").show();
+                            $("#loaddiv").show();
+                            $("#content ").hide();
                         }
                     });
 

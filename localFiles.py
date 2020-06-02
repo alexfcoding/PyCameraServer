@@ -49,7 +49,7 @@ saveOnlyWithPeople = False
 blurPeople = False
 cannyPeople = False
 cannyFull = False
-showAllObjects = True
+showAllObjects = False
 textRender = False
 
 frameList = []
@@ -94,7 +94,7 @@ writer = None
 
 
 def ProcessFrame(frameCount):
-    global cap, saveOnlyWithPeople, blurPeople, frameList, bufferFrames, totalFrames, progress, fps, resized, workingOn, vsList, writer, net, fileIterator, frameProcessed, outputFrame, lock
+    global cap, textRender, cannyFull, cannyPeople,  saveOnlyWithPeople, blurPeople, frameList, bufferFrames, totalFrames, progress, fps, resized, workingOn, vsList, writer, net, fileIterator, frameProcessed, outputFrame, lock
 
     workingOn = True
 
@@ -106,7 +106,13 @@ def ProcessFrame(frameCount):
             saveOnlyWithPeople = True
             print("saveOnlyWithPeople")
         if (char == "1"):
-            blurPeople = True
+            textRender = True
+            print("blurPeople")
+        if (char == "2"):
+            cannyPeople = True
+            print("blurPeople")
+        if (char == "3"):
+            cannyFull = True
             print("blurPeople")
 
     cap = cv2.VideoCapture(fileToRender)
@@ -162,7 +168,6 @@ def ProcessFrame(frameCount):
                             confidences.append(float(confidence))
                             class_ids.append(class_id)
                             #cv2.rectangle(bufferFrames[streamIndex], (x, y), (x + w, y + h), (0,255,0), 2)
-
                 indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.2)
 
                 # print(indexes)
@@ -238,9 +243,9 @@ def ProcessFrame(frameCount):
                                 bufferFrames[streamIndex][y:y +
                                                           h, x:x + w] = cropImg
 
-                            if (blurPeople == False):
-                                cv2.rectangle(
-                                    bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
+                            # if (blurPeople == False):
+                            #     cv2.rectangle(
+                            #         bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
 
                             objectIndex += 1
 
@@ -287,9 +292,9 @@ def ProcessFrame(frameCount):
                                 bufferFrames[streamIndex] = cv2.addWeighted(
                                     bufferFrames[streamIndex], 1, blk, 0.2, 0)
 
-                            if (blurPeople == False):
-                                cv2.rectangle(
-                                    bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
+                            # if (blurPeople == False):
+                            #     cv2.rectangle(
+                            #         bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
 
                             objectIndex += 1
 
@@ -311,9 +316,12 @@ def ProcessFrame(frameCount):
                                 y = 0
 
                             cropImg = frameList[streamIndex][y:y + h, x:x + w]
-                            cropImg = cv2.GaussianBlur(cropImg, (11, 11), 9)
-                            #cropImg = auto_canny(cropImg)
-                            cropImg = cv2.Canny(cropImg, 10, 100)
+
+                            #cropImg = cv2.cvtColor(cropImg, cv2.COLOR_BGR2GRAY)
+                            cv2.imshow("df", cropImg)
+                            cropImg = cv2.GaussianBlur(cropImg, (5, 5), 5)
+                            cropImg = auto_canny(cropImg)
+                            #cropImg = cv2.Canny(cropImg, 100, 200)
                             blank_image = np.zeros(
                                 (cropImg.shape[0], cropImg.shape[1], 3), np.uint8)
 
@@ -326,26 +334,53 @@ def ProcessFrame(frameCount):
                                 bufferFrames[streamIndex].shape, np.uint8)
 
                             cropImg = cv2.cvtColor(cropImg, cv2.COLOR_GRAY2RGB)
-                            src = cropImg
-                            tmp = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-                            _, alpha = cv2.threshold(
-                                tmp, 0, 255, cv2.THRESH_BINARY)
-                            b, g, r = cv2.split(src)
-                            rgba = [b, g, r, alpha]
-                            dst = cv2.merge(rgba, 4)
+                            # src = cropImg
+                            # tmp = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+                            # _, alpha = cv2.threshold(
+                            #     tmp, 0, 255, cv2.THRESH_BINARY)
+                            # b, g, r = cv2.split(src)
+                            # rgba = [b, g, r, alpha]
+                            # dst = cv2.merge(rgba, 4)
 
-                            blk2[y:y + h, x:x + w] = cropImg
+                            #image = cropImg
+                            mask = np.zeros_like(cropImg)
+                            rows, cols,_ = mask.shape
+                            mask=cv2.ellipse(mask, center=(int(cols/2), int(rows/2)), axes=(int(cols/2), int(rows/2)), angle=0, startAngle=0, endAngle=360, color=(255,255,255), thickness=-1)
+
+                            #mask = cv2.GaussianBlur(mask, (7, 7), 5)
+
+                            result = np.bitwise_and(cropImg,mask)
+                            # image_rgb = cv2.cvtColor(cropImg, cv2.COLOR_BGR2RGB)
+                            # mask_rgb = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
+                            # result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                            # plt.imshow(image_rgb)
+                            # plt.imshow(mask_rgb)
+                            # plt.imshow(result_rgb)
+
+
+                            #///////////////////////////////////////////////////////////////////
+
+
+                            result = adjust_gamma(result, gamma=0.3)
+
+                            mult = (w * h / 20000)
+
+                            if (mult<1):
+                                result[result != 0] = 255 * mult
+
+
+                            blk2[y:y + h, x:x + w] = result
 
                             if label == "person":
                                 #cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
-                                cv2.rectangle(
-                                    blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
-                                bufferFrames[streamIndex] = cv2.addWeighted(
-                                    bufferFrames[streamIndex], 1, blk2, 1, 0)
+                                #cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
+                                bufferFrames[streamIndex] = cv2.addWeighted(bufferFrames[streamIndex], 1, blk2, 1, 0)
+                                circleSize = int(w*h/7000)
+                                cv2.circle(bufferFrames[streamIndex], (x + int(w/2), y - int(h/5)), 2, (0,0,255), circleSize)
 
-                            if (blurPeople == False):
-                                cv2.rectangle(
-                                    bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
+                            # if (blurPeople == False):
+                            #     cv2.rectangle(
+                            #         bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
 
                             objectIndex += 1
 
@@ -368,7 +403,8 @@ def ProcessFrame(frameCount):
 
                             cropImg = frameList[streamIndex][y:y + h, x:x + w]
                             cropImg = cv2.GaussianBlur(cropImg, (11, 11), 9)
-                            cropImg = cv2.Canny(cropImg, 10, 100)
+                            cropImg = auto_canny(cropImg)
+                            #cropImg = cv2.Canny(cropImg, 10, 100)
                             blank_image = np.zeros(
                                 (cropImg.shape[0], cropImg.shape[1], 3), np.uint8)
 
@@ -377,9 +413,9 @@ def ProcessFrame(frameCount):
                             blk = np.zeros(
                                 bufferFrames[streamIndex].shape, np.uint8)
 
-                            if (blurPeople == False):
-                                cv2.rectangle(
-                                    bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
+                            # if (blurPeople == False):
+                            #     cv2.rectangle(
+                            #         bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
 
                             objectIndex += 1
 
@@ -468,6 +504,13 @@ def ProcessFrame(frameCount):
                 writer.release()
                 cv2.destroyAllWindows()
 
+def adjust_gamma(image, gamma=5.0):
+
+   invGamma = 1.0 / gamma
+   table = np.array([((i / 255.0) ** invGamma) * 255
+      for i in np.arange(0, 256)]).astype("uint8")
+
+   return cv2.LUT(image, table)
 
 def auto_canny(image, sigma=0.33):
     """
