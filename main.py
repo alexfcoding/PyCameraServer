@@ -1,4 +1,4 @@
-# python main.py -i 192.168.0.12 -o 5000
+# python main.py -i 192.168.0.12 -o 8000
 
 import os
 import argparse
@@ -12,7 +12,7 @@ import time
 
 UPLOAD_FOLDER = ''
 ALLOWED_EXTENSIONS = set(
-	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v'])
+	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v', 'webm'])
 
 app = Flask(__name__, static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -66,13 +66,13 @@ def start_analysis(portToRender, fileToRender, options):
 	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
 					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList])
 
-	time.sleep(6)
+	time.sleep(10)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
 	return redirect(f"http://192.168.0.12:{portToRender}")
+	#return redirect(f"http://178.140.230.247:{portToRender}")
 
 	# return os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")
 
-# check to see if this is the main thread of execution
 if __name__ == '__main__':
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--ip", type=str, required=True,
@@ -83,5 +83,5 @@ if __name__ == '__main__':
 					help="# of frames used to construct the background model")
 	args = vars(ap.parse_args())
 
-	app.run(host=args["ip"], port=args["port"], debug=True,
+	app.run(host=args["ip"], port=args["port"], debug=False,
 			threaded=True, use_reloader=False)

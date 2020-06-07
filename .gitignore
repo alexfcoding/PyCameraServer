@@ -31,4 +31,6 @@ IMG-b0a12d5d51d47a2b330c1d3eef6fb256-V.jpg
 *.mp4
 *.avi
 *.m4v
+*.webm
+*.jpg
 templates/.prettierrc
