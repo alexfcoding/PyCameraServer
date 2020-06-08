@@ -20,8 +20,6 @@ import sys
 import gc
 import psutil
 from random import randint
-from colorizer import colorize, initNetwork
-from upscaler import upscaleImage, initNetworkUpscale
 
 thr = None
 workingOn = True
@@ -84,13 +82,12 @@ for i in range(len(streamList)):
 	# vsList[i].start()
 
 net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
-netColorizer = initNetwork()
 
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
 net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-netColorizer.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-netColorizer.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+# netColorizer.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+# netColorizer.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 
 with open("coco.names", "r") as f:

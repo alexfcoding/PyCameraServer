@@ -8,7 +8,7 @@
             "name": "Python: imageScanner",
             "type": "python",
             "request": "launch",
-            "program": "imageSimilarityCleaner.py",
+            "program": "imageHash.py",
             "console": "integratedTerminal",
             "args": [
 
