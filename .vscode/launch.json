@@ -5,10 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: imageScanner",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "imageSimilarityCleaner.py",
+            "console": "integratedTerminal",
+            "args": [
+
+            ]
+        },
+        {
+            "name": "Python: Server",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
             "console": "integratedTerminal",
             "args": [
                 "-i",

@@ -34,3 +34,5 @@ IMG-b0a12d5d51d47a2b330c1d3eef6fb256-V.jpg
 *.webm
 *.jpg
 templates/.prettierrc
+__pycache__/colorizer.cpython-38.pyc
+__pycache__/upscaler.cpython-38.pyc
