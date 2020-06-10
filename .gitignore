@@ -36,3 +36,15 @@ IMG-b0a12d5d51d47a2b330c1d3eef6fb256-V.jpg
 templates/.prettierrc
 __pycache__/colorizer.cpython-38.pyc
 __pycache__/upscaler.cpython-38.pyc
+model/colorization_deploy_v2.prototxt
+model/colorization_release_v2.caffemodel
+model/pts_in_hull.npy
+.vscode/launch.json
+.idea/vcs.xml
+.idea/PyCameraServer.iml
+.idea/other.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.vscode/launch.json
+.vscode/launch.json

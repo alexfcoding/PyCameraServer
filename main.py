@@ -64,9 +64,9 @@ def start_analysis(portToRender, fileToRender, options):
 		strFromList += item
 
 	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
-					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList])
+					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', "video"])
 
-	time.sleep(10)
+	time.sleep(6)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
 	return redirect(f"http://192.168.0.12:{portToRender}")
 	#return redirect(f"http://178.140.230.247:{portToRender}")

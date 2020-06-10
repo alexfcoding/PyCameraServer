@@ -11,6 +11,15 @@
             "program": "imageHash.py",
             "console": "integratedTerminal",
             "args": [
+                "-i",
+                "images/all_images",
+                "-o",
+                "images/s",
+                "-s",
+                "16",
+                "-t",
+                "70"
+
 
             ]
         },
