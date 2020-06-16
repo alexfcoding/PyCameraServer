@@ -2,8 +2,19 @@
     <title>Upload new File</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-    <link rel="stylesheet" href="static/main.css">
     <style>
+
+        #grid {
+            display: inline-grid;
+            grid-template-rows: 1fr;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 10px;
+            width: 1280px;
+            color: #272822;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            }
+
         #getFile {
             display: none;
         }
@@ -29,13 +40,15 @@
         .opt {
             display: inline-block;
             border-radius: 16px;
-            font-size: 24px;
+            font-size: 18px;
             color: white;
             background-color: #383838;
-            max-width: 700px;
+            max-width: 740px;
+
             padding: 20px;
             box-shadow: 6px 4px 8px #000000;
             text-align: left;
+            margin: 20px;
         }
         
         #preloader {
@@ -117,58 +130,328 @@
         
         .progress-wrapper {
             display: inline-block;
-            width: 345px;
+            width: 75%;
+            height: 30px;
+            text-align: center;
+            position: absolute;
+            left: 10%;
+            top: 45%;
         }
         
-        .progress-wrapper .progress {
+        .progress {
+            display: none;
+            color: black;
+            text-align: center;
+            font-size: 24px;
             background-color: #ffa600;
             width: 0%;
-            padding: 5px 0px 5px 0px;
+            height: 100%;
+            top: 45%;
+            padding: 5px 5px 5px 5px;
             border-radius: 10px;
         }
+
     </style>
 </head>
 
 <body style="background-color:#1d1d1d;">
     <div style="text-align: center;">
         <form action="" method=post enctype=multipart/form-data>
-
             <div id="loaddiv" style="display: none;">
                 <div id="preloader">
                     <div id="loader"></div>
                 </div>
             </div>
 
-            <div id="content">
-                <div class="opt">
-                    <p><input type="checkbox" name="check" value="a">Show all YOLO objects (YOLO network)</p>
-                    <p><input type="checkbox" name="check" value="b">Render with text (YOLO network)</p>
-                    <p><input type="checkbox" name="check" value="c">People edge detection on black (YOLO network)</p>
-                    <p><input type="checkbox" name="check" value="d">People edge detection on background (YOLO network)</p>
-                    <p><input type="checkbox" name="check" value="e">Full screen edge detection</p>
-                    <p><input type="checkbox" name="check" value="f">Video colorization (Caffe network)</p>
-                    <p><input type="checkbox" name="check" value="g">Canny people effect on black background (MASK R-CNN network)</p>
-                    <p><input type="checkbox" name="check" value="h">Canny blacked people effect on background (MASK R-CNN network)</p>
-                    <p><input type="checkbox" name="check" value="i">Canny people effect + replace background with video (MASK R-CNN network)</p>
-                    <p><input type="checkbox" name="check" value="j">Canny people effect on canny background (MASK R-CNN network)</p>
-                    <p><input type="checkbox" name="check" value="k">Convert background to grayscale (MASK R-CNN network)</p>
-                    <p><input type="checkbox" name="check" value="l">Convert background to grayscale + gaussian blur (MASK R-CNN network)</p>
-                    <p><input type="checkbox" name="check" value="m">Super resolution x4 image upscaler (EDSR, FSRCNN, LapSRN)</p>
-                </div>
-                <div>
-                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                    <input type="file" name="file" id="getFile" />
+            <div class="progress-wrapper">
+                <div id="progress-bar-file1" class="progress"></div>
+            </div>
 
-                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; color: rgb(0, 255, 13);" for="sendFile">START</label>
-                    <input type="submit" id="sendFile" onclick="postFile()" />
+            <div id="content">
+                <div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" id="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileA">START</label>
+                                <input style="display: none;" name = "check" value="a" type="submit" id="sendFileA" onclick="postFile()" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileB">START</label>
+                                <input style="display: none;" name = "check" value="b" type="submit" id="sendFileB" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileC">START</label>
+                                <input style="display: none;" name = "check" value="c" type="submit" id="sendFileC" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileD">START</label>
+                                <input style="display: none;" name = "check" value="d" type="submit" id="sendFileD" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileE">START</label>
+                                <input style="display: none;" name = "check" value="e" type="submit" id="sendFileE" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileF">START</label>
+                                <input style="display: none;" name = "check" value="f" type="submit" id="sendFileF" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                         <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileG">START</label>
+                                <input style="display: none;" name = "check" value="g" type="submit" id="sendFileG" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileH">START</label>
+                                <input style="display: none;" name = "check" value="h" type="submit" id="sendFileH" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileI">START</label>
+                                <input style="display: none;" name = "check" value="i" type="submit" id="sendFileI" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileJ">START</label>
+                                <input style="display: none;" name = "check" value="j" type="submit" id="sendFileJ" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileK">START</label>
+                                <input style="display: none;" name = "check" value="k" type="submit" id="sendFileK" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileL">START</label>
+                                <input style="display: none;" name = "check" value="l" type="submit" id="sendFileL" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                        <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileM">START</label>
+                                <input style="display: none;" name = "check" value="m" type="submit" id="sendFileM" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+                         <div class="opt">
+                            <div>
+                                <div style="margin-bottom: 15px">
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                </div>
+
+                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                            </div>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
+                                <input style="display: none;" type="file" name="file" for="getFile" />
+
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileN">START</label>
+                                <input style="display: none;" name = "check" value="n" type="submit" id="sendFileN" onclick="postFile('progress-bar-file1', 'progress')" />
+                            </div>
+
+                        </div>
+
+
+                    <div>
+                        <div class="opt">
+                            <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);">START</label>
+                            <input style="display: none;" name = "check" value="a" type="submit"/>
+
+                            <p><input type="radio" name="check" value="a">Show all YOLO objects (YOLO)</p>
+                            <p><input type="radio" name="check" value="b">Render with text (YOLO)</p>
+                            <p><input type="checkbox" name="check" value="c">Edge detection on black (YOLO)</p>
+                            <p><input type="checkbox" name="check" value="d">Edge detection on background (YOLO)</p>
+                            <p><input type="checkbox" name="check" value="e">Full screen edge detection</p>
+                            <p><input type="checkbox" name="check" value="f">Grayscale colorization (Caffe)</p>
+                            <p><input type="checkbox" name="check" value="g">Canny on black background (MASK R-CNN)</p>
+                            <p><input type="checkbox" name="check" value="h">Canny blacked on background (MASK R-CNN)</p>
+                            <p><input type="checkbox" name="check" value="i">Canny + replace background (MASK R-CNN)</p>
+                            <p><input type="checkbox" name="check" value="j">Canny on canny background (MASK R-CNN)</p>
+                            <p><input type="checkbox" name="check" value="k">Convert background to grayscale (MASK R-CNN)</p>
+                            <p><input type="checkbox" name="check" value="l">Convert background to grayscale + blur (MASK R-CNN)</p>
+                            <p><input type="checkbox" name="check" value="m">Super resolution x4 image upscaler (EDSR)</p>
+
+                        </div>
+                    </div>
                 </div>
-                <div class="progress-wrapper">
-                    <div id="progress-bar-file1" class="progress"></div>
-                </div>
+
             </div>
 
             <script>
                 function postFile() {
+                    $("#content ").hide();
+                    $("#progress-bar-file1 ").show();
                     var formdata = new FormData();
 
                     formdata.append('getFile', $('#getFile')[0].files[0]);
@@ -186,7 +469,9 @@
                         if (e.loaded == e.total) {
                             $('#progress-bar-file1').width(100 + '%').html(100 + '%');
                             $("#loaddiv").show();
-                            $("#content ").hide();
+                            $("#content").hide();
+                             $("#progress-bar-file1").hide();
+
                         }
                     });
 
@@ -195,6 +480,6 @@
                     request.send(formdata);
                 }
             </script>
+            </form>
     </div>
 </body>
-</form>

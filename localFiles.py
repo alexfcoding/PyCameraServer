@@ -196,12 +196,12 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
             blk = np.zeros(
                 inputFrame.shape, np.uint8)
 
-            if label == "person":
+            #if label == "person":
                 # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
-                cv2.rectangle(
-                    blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
-                inputFrame[y:y +
-                             h, x:x + w] = cropImg
+            cv2.rectangle(
+                blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
+            inputFrame[y:y +
+                         h, x:x + w] = cropImg
 
             # if (blurPeople == False):
             #     cv2.rectangle(
@@ -395,6 +395,16 @@ def cannyPeopleOnBlackYolo(inputFrame, boxes, indexes, classIds):
                 circleSize = int(w * h / 7000)
                 cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 0, 255), circleSize)
 
+            if (label != "person" and label != "car" and label != "truck" and label != "bus"):
+                # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
+                # cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
+                inputFrame = cv2.ellipse(inputFrame,
+                                         center=(x + int(w / 2), y + int(h / 2)),
+                                         axes=(int(w / 2), int(h / 2)), angle=0, startAngle=0,
+                                         endAngle=360, color=(0, 0, 0), thickness=-1)
+                inputFrame = cv2.addWeighted(inputFrame, 1, blk2, 1, 0)
+                circleSize = int(w * h / 7000)
+                cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 0, 255), circleSize)
             # if (blurPeople == False):
             #     cv2.rectangle(
             #         bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
@@ -462,20 +472,23 @@ def cannyPeopleOnBackgroundYolo(inputFrame, boxes, indexes, classIds):
                 circleSize = int(w * h / 7000)
                 cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 0, 255), circleSize)
 
-            if label == "car":
-                # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
-                # cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
+            # if label == "car":
+            #     # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
+            #     # cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
+            #     inputFrame = cv2.addWeighted(inputFrame, 1, blk2, 1, 0)
+            #     circleSize = int(w * h / 7000)
+            #     cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 0, 255), circleSize)
+            #
+            # if label == "bicycle":
+            #     # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
+            #     # cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
+            #     inputFrame = cv2.addWeighted(inputFrame, 1, blk2, 1, 0)
+            #     circleSize = int(w * h / 7000)
+            #     cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 0, 255), circleSize)
+            else:
                 inputFrame = cv2.addWeighted(inputFrame, 1, blk2, 1, 0)
                 circleSize = int(w * h / 7000)
-                cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 0, 255), circleSize)
-
-            if label == "bicycle":
-                # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
-                # cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
-                inputFrame = cv2.addWeighted(inputFrame, 1, blk2, 1, 0)
-                circleSize = int(w * h / 7000)
-                cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 0, 255), circleSize)
-
+                cv2.circle(inputFrame, (x + int(w / 2), y - int(h / 5)), 2, (0, 255, 0), circleSize)
             objectIndex += 1
 
     return inputFrame
@@ -561,6 +574,7 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
                 inputFrame[startY:endY, startX:endX][mask] = frm
 
     # text = "{}[{:.2f}]".format(LABELS[classID], confidence)
+    #fontSize = (np.sqrt(boxW * boxH) / 200)
     # cv2.putText(frameCanny, text, (startX, startY - 50),
     # cv2.FONT_HERSHEY_SIMPLEX, fontSize, (255,255,255), 2)
 
@@ -569,9 +583,14 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
 
 def colorCannyRcnn(inputFrame, boxes, masks, labels):
     classesOut = []
-    frameCanny = autoCanny(inputFrame)
+    #frameCanny = autoCanny(inputFrame)
+    inputFrame = cv2.GaussianBlur(inputFrame, (5, 5), 5)
+
+    #frameCanny = cv2.Canny(inputFrame, 50,100)
+    frameCanny = autoCanny(inputFrame, 0)
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
     frameOut = np.zeros(inputFrame.shape, np.uint8)
+
     inputFrame = np.zeros(inputFrame.shape, np.uint8)
     frameCanny *= np.array((1, 1, 0), np.uint8)
 
@@ -579,7 +598,7 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.1:
+        if confidence > 0.5:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -597,13 +616,58 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels):
                 frm = frameCanny[startY:endY, startX:endX][mask]
                 frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
                 inputFrame[startY:endY, startX:endX][mask] = frm
-            else:
+            if (labels[classID] == "car"):
                 frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
+                inputFrame[startY:endY, startX:endX][mask] = frm
+            if (labels[classID] == "truck"):
+                frm = frameCanny[startY:endY, startX:endX][mask]
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
+                inputFrame[startY:endY, startX:endX][mask] = frm
+            if (labels[classID] == "bus"):
+                frm = frameCanny[startY:endY, startX:endX][mask]
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
                 inputFrame[startY:endY, startX:endX][mask] = frm
 
     #frameOut = cv2.addWeighted(inputFrame, 1, frameCanny, 1, 0)
-    frameOut = np.bitwise_xor(inputFrame, frameCanny)
+    frameCanny = cv2.GaussianBlur(frameCanny, (13, 13), 13)
+
+    for i in range(0, boxes.shape[2]):
+        classID = int(boxes[0, 0, i, 1])
+        confidence = boxes[0, 0, i, 2]
+
+        if confidence > 0.5:
+            classesOut.append(classID)
+
+            (H, W) = inputFrame.shape[:2]
+            box = boxes[0, 0, i, 3:7] * np.array([W, H, W, H])
+            (startX, startY, endX, endY) = box.astype("int")
+
+            boxW = endX - startX
+            boxH = endY - startY
+
+            if (labels[classID] == "person"):
+                text = "{}[{:.2f}]".format(labels[classID], confidence)
+                fontSize = (np.sqrt(boxW * boxH) / 200)
+                cv2.putText(frameCanny, text, (startX, startY - 50),
+                            cv2.FONT_HERSHEY_SIMPLEX, fontSize, (0, 255, 255), 2)
+            if (labels[classID] == "car"):
+                text = "{}[{:.2f}]".format(labels[classID], confidence)
+                fontSize = (np.sqrt(boxW * boxH) / 200)
+                cv2.putText(frameCanny, text, (startX, startY - 50),
+                            cv2.FONT_HERSHEY_SIMPLEX, fontSize, (255, 0, 255), 2)
+            if (labels[classID] == "truck"):
+                text = "{}[{:.2f}]".format(labels[classID], confidence)
+                fontSize = (np.sqrt(boxW * boxH) / 200)
+                cv2.putText(frameCanny, text, (startX, startY - 50),
+                            cv2.FONT_HERSHEY_SIMPLEX, fontSize, (255, 0, 255), 2)
+            if (labels[classID] == "bus"):
+                text = "{}[{:.2f}]".format(labels[classID], confidence)
+                fontSize = (np.sqrt(boxW * boxH) / 200)
+                cv2.putText(frameCanny, text, (startX, startY - 50),
+                            cv2.FONT_HERSHEY_SIMPLEX, fontSize, (255, 0, 255), 2)
+
+    frameOut = np.bitwise_or(inputFrame, frameCanny)
     return frameOut
 
 def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
@@ -661,7 +725,7 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.1:
+        if confidence > 0.5:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -671,8 +735,8 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
             boxW = endX - startX
             boxH = endY - startY
 
-            smallerX = int(boxW / 20)
-            smallerY = int(boxH / 20)
+            smallerX = int(boxW / 50)
+            smallerY = int(boxH / 50)
 
             if (smallerX % 2 != 0):
                 smallerX += 1
@@ -691,7 +755,7 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
 
             mask = masks[i, classID]
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
-            mask = (mask > 0.3)
+            mask = (mask > 0.2)
 
             frm = frameCopy[startY + int(smallerY / 2): endY - int(smallerY / 2),
                   startX + int(smallerX / 2): endX - int(smallerX / 2)][mask]
@@ -721,8 +785,9 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
     needGRAY2BGR = True
     alreadyBGR = False
     frameCopy = inputFrame
+
     inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2GRAY)
-    inputFrame = cv2.GaussianBlur(inputFrame, (19, 19), 19)
+    inputFrame = cv2.GaussianBlur(inputFrame, (17, 17), 17)
     frameCanny = autoCanny(inputFrame)
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
 
@@ -732,7 +797,7 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.5:
+        if confidence > 0.4:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -744,6 +809,8 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
 
             smallerX = int(boxW / 20)
             smallerY = int(boxH / 20)
+            # smallerX = 0
+            # smallerY = 0
 
             if (smallerX % 2 != 0):
                 smallerX += 1
@@ -762,7 +829,7 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
 
             mask = masks[i, classID]
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
-            mask = (mask > 0.3)
+            mask = (mask > 0.2)
 
             frm = frameCopy[startY + int(smallerY / 2): endY - int(smallerY / 2), startX + int(smallerX / 2): endX - int(smallerX / 2)][mask]
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
@@ -785,8 +852,79 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
     frameOut = inputFrame
     return frameOut
 
+def PeopleRcnnWithBlur(inputFrame, boxes, masks):
+    classesOut = []
+    needGRAY2BGR = True
+    alreadyBGR = False
+    frameCopy = inputFrame
+    #inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2GRAY)
+    inputFrame = cv2.GaussianBlur(inputFrame, (23, 23), 23)
+    frameCanny = autoCanny(inputFrame)
+    frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
+
+    frameCanny *= np.array((1, 1, 0), np.uint8)
+
+    for i in range(0, boxes.shape[2]):
+        classID = int(boxes[0, 0, i, 1])
+        confidence = boxes[0, 0, i, 2]
+
+        if confidence > 0.4:
+            classesOut.append(classID)
+
+            (H, W) = inputFrame.shape[:2]
+            box = boxes[0, 0, i, 3:7] * np.array([W, H, W, H])
+            (startX, startY, endX, endY) = box.astype("int")
+
+            boxW = endX - startX
+            boxH = endY - startY
+
+            smallerX = int(boxW / 20)
+            smallerY = int(boxH / 50)
+            # smallerX = 0
+            # smallerY = 0
+
+            if (smallerX % 2 != 0):
+                smallerX += 1
+            if (smallerY % 2 != 0):
+                smallerY += 1
+
+            if (boxW > smallerX):
+                boxW -= smallerX
+            else:
+                smallerX = 0
+
+            if (boxH > smallerY):
+                boxH -= smallerY
+            else:
+                smallerY = 0
+
+            mask = masks[i, classID]
+            mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
+            mask = (mask > 0.2)
+
+            frm = frameCopy[startY + int(smallerY / 2): endY - int(smallerY / 2), startX + int(smallerX / 2): endX - int(smallerX / 2)][mask]
+            frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+
+            # if (alreadyBGR == False):
+            #     inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_GRAY2BGR)
+            #     alreadyBGR = True
+
+            inputFrame[startY + int(smallerY/2):endY - int(smallerY/2), startX+int(smallerX/2):endX - int(smallerX/2)][mask] = frm
+
+            needGRAY2BGR = False
+
+    # text = "{}[{:.2f}]".format(LABELS[classID], confidence)
+    # cv2.putText(frameCanny, text, (startX, startY - 50),
+    # cv2.FONT_HERSHEY_SIMPLEX, fontSize, (255,255,255), 2)
+
+    # if needGRAY2BGR:
+    #     inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_GRAY2RGB)
+
+    frameOut = inputFrame
+    return frameOut
+
 def ProcessFrame():
-    global cap, lock, writer, frameProcessed, totalFrames, outputFrame
+    global cap, sourceImage, lock, writer, frameProcessed, frameBackground, totalFrames, outputFrame
 
     frameProcessed = 0
     fileIterator = 0
@@ -807,6 +945,7 @@ def ProcessFrame():
     applyColorCanny = False
     applyColorCannyOnBackground = False
     colorObjectsOnGrayBlur = False
+    colorObjectsBlur = False
     colorObjectsOnGray = False
     videoColorization = False
     imageUpscaler = False
@@ -818,6 +957,7 @@ def ProcessFrame():
     workingOn = True
     fileToRender = args["source"]
     options = args["optionsList"]
+    sourceMode = args["mode"]
     concated = None
 
     for char in options:
@@ -869,10 +1009,21 @@ def ProcessFrame():
             colorObjectsOnGrayBlur = True
             print("colorObjectsOnGrayBlur")
         if (char == "m"):
+            usingMaskRcnnNetwork = True
+            colorObjectsBlur = True
+            print("colorObjectsOnGrayBlur")
+        if (char == "n"):
             imageUpscaler = True
             print("imageUpscaler")
 
-    cap = cv2.VideoCapture(fileToRender)
+    if (sourceMode == "video"):
+        cap = cv2.VideoCapture(fileToRender)
+        cap = cv2.VideoCapture(fileToRender)
+        cap2 = cv2.VideoCapture("space.webm")
+
+    if (sourceMode == "image"):
+        sourceImage = args["source"]
+        cap2 = cv2.VideoCapture("space.webm")
 
     # while True:
     # 	# grab the current frame
@@ -886,8 +1037,7 @@ def ProcessFrame():
 
     totalFrames = 99999
 
-    cap = cv2.VideoCapture(fileToRender)
-    cap2 = cv2.VideoCapture("space.webm")
+
 
     lineType = cv2.LINE_AA
 
@@ -897,8 +1047,12 @@ def ProcessFrame():
         startMoment = time.time()
 
         for streamIndex in range(len(streamList)):
-            ret, frameList[streamIndex] = cap.read()
-            ret2, frameBackground = cap2.read()
+            if (sourceMode == "video"):
+                ret, frameList[streamIndex] = cap.read()
+                ret2, frameBackground = cap2.read()
+            if (sourceMode == "image"):
+                frameList[streamIndex] = cv2.imread(sourceImage)
+                ret2, frameBackground = cap2.read()
 
             if frameList[streamIndex] is not None:
                 bufferFrames[streamIndex] = frameList[streamIndex].copy()
@@ -938,6 +1092,10 @@ def ProcessFrame():
                             bufferFrames[streamIndex] = colorizerPeopleRcnnWithBlur(bufferFrames[streamIndex],
                                                                                boxes, masks
                                                                                )
+                        if (colorObjectsBlur):
+                            bufferFrames[streamIndex] = PeopleRcnnWithBlur(bufferFrames[streamIndex],
+                                                                               boxes, masks
+                                                                               )
 
                         if (extractAndCutBackground):
                             bufferFrames[streamIndex] = extractAndCutBackgroundRcnn(bufferFrames[streamIndex],
@@ -964,7 +1122,8 @@ def ProcessFrame():
                     bufferFrames[streamIndex] = cv2.Canny(
                         bufferFrames[streamIndex], 100, 200)
                     bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
-
+                    bufferFrames[streamIndex] *= np.array((1, 1, 0), np.uint8)
+                    #bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex], (3, 3), 3)
                 with lock:
                     personDetected = False
 
@@ -1017,32 +1176,38 @@ def ProcessFrame():
                                         passFlag = True
                                         print("handbag detected! -> PASS")
 
-                        if writer is None:
+                        if (writer is None):
                             writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
                                 bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
 
                         else:
                             progress = frameProcessed / totalFrames * 100
 
-                            cv2.rectangle(bufferFrames[streamIndex], (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80),
-                                          (int(
-                                              cap.get(cv2.CAP_PROP_FRAME_WIDTH)) - 20,
-                                           int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 0, 0), -1)
-
-                            if (progress != "DONE"):
-                                cv2.rectangle(bufferFrames[streamIndex],
-                                              (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80), (int(cap.get(
-                                        cv2.CAP_PROP_FRAME_WIDTH) * progress / 100) - 20, int(
-                                        cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 255, 0), -1)
-                                cv2.putText(bufferFrames[streamIndex], str(int(progress)) + "%" + " | FPS: " + str(
-                                    round(fps, 2)) + " | " + "CPU: " + str(
-                                    psutil.cpu_percent()) + "%", (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40),
-                                            font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
+                            # cv2.rectangle(bufferFrames[streamIndex], (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80),
+                            #               (int(
+                            #                   cap.get(cv2.CAP_PROP_FRAME_WIDTH)) - 20,
+                            #                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 0, 0), -1)
+                            #
+                            # if (progress != "DONE"):
+                            #     cv2.rectangle(bufferFrames[streamIndex],
+                            #                   (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80), (int(cap.get(
+                            #             cv2.CAP_PROP_FRAME_WIDTH) * progress / 100) - 20, int(
+                            #             cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 255, 0), -1)
+                            #     cv2.putText(bufferFrames[streamIndex], str(int(progress)) + "%" + " | FPS: " + str(
+                            #         round(fps, 2)) + " | " + "CPU: " + str(
+                            #         psutil.cpu_percent()) + "%", (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40),
+                            #                 font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
 
                             # resized1 = cv2.resize(frameList[streamIndex], (640, 320))
                             # resized2 = cv2.resize(bufferFrames[streamIndex], (640, 320))
+                            if (sourceMode == "video") :
+                                writer.write(bufferFrames[streamIndex])
 
-                            writer.write(bufferFrames[streamIndex])
+                            if (sourceMode == "image"):
+                                cv2.imwrite(f"static/{sourceImage}", bufferFrames[streamIndex])
+                                workingOn = False
+                            # if ((sourceMode == "image" and extractAndReplaceBackground == True)):
+                            #     writer.write(bufferFrames[streamIndex])
 
                             # cv2.imwrite("static/t.jpg",
                             # bufferFrames[streamIndex])
@@ -1066,9 +1231,10 @@ def ProcessFrame():
                 outputFrame = bufferFrames[streamIndex]
                 workingOn = False
                 print("finished")
-                cap.release()
-                writer.release()
-                cv2.destroyAllWindows()
+                if (sourceMode == "video"):
+                    cap.release()
+                    writer.release()
+                    cv2.destroyAllWindows()
 
 def autoCanny(image: object, sigma: object = 0.33) -> object:
     v = np.median(image)
