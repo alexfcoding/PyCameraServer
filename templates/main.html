@@ -1,5 +1,5 @@
 <head>
-    <title>Upload new File</title>
+    <title>Neural Video Editor</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
     <style>
@@ -27,7 +27,7 @@
             display: inline-block;
             background: red;
             color: rgb(255, 255, 255);
-            width: 144px;
+            width: 200px;
             font-size: 24px;
             box-shadow: 6px 4px 8px #000000;
         }
@@ -151,6 +151,18 @@
             border-radius: 10px;
         }
 
+        .video {
+          //background-image: url('https://img.youtube.com/vi/nZcejtAwxz4/maxresdefault.jpg');
+         // height: 800px;
+          width: 640px;
+          margin-bottom: 10px;
+        }
+
+        /* Hide Play button + controls on iOS */
+        video::-webkit-media-controls {
+            display:none !important;
+        }
+
     </style>
 </head>
 
@@ -167,268 +179,190 @@
                 <div id="progress-bar-file1" class="progress"></div>
             </div>
 
+            <input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>
+            <input style="display: none;" id="selectedModeId" type="radio" name="check" value="a"/>
+
             <div id="content">
                 <div>
+                    <div class="opt">
+                            <div style="margin-bottom: 15px">
+                                <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">COUNT ALL YOLO OBJECTS</label>
+                            </div>
 
-                        <div class="opt">
+                            <div class="video">
+                                <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/showAllYolo.png" preload="none">
+                                  <source src="static/previews/showAllYolo.webm" type="video/webm">
+                                Your browser does not support the video tag.
+                                </video>
+                            </div>
+
+                             <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+
+                            <div style="text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeA">UPLOAD FILE</label>
+                                <input style="display: none;" type="button" id="setModeA" onclick="callInput('a')"/>
+                                <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                            </div>
+                    </div>
+
+                    <div class="opt">
                             <div>
                                 <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">MASK R-CNN WITH CANNY AND GAUSSIAN BLUR</label>
                                 </div>
 
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" id="getFile" />
+                                <div class="video">
+                                    <!--<video playsinline autoplay loop muted style="border-radius: 16px" class="thevideo">-->
+                                    <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/colorCanny.png" preload="none">
+                                        <source src="static/previews/colorCanny.webm" type="video/webm">
+                                    Your browser does not support the video tag.
+                                    </video>
+                                  </div>
 
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileA">START</label>
-                                <input style="display: none;" name = "check" value="a" type="submit" id="sendFileA" onclick="postFile()" />
-                            </div>
+                                <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                        </div>
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeJ">UPLOAD FILE</label>
+                                   <input style="display: none;" type="button" id="setModeJ" onclick="callInput('j')"/>
+                                </div>
+                             </div>
+                    </div>
 
-                        <div class="opt">
+                     <div class="opt">
                             <div>
                                 <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">CAFFE NEURAL NETWORK COLORIZER</label>
                                 </div>
 
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                                <div class="video">
+                                    <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/colorized.png" preload="none">
+                                      <source src="static/previews/colorized.webm" type="video/webm">
+                                    Your browser does not support the video tag.
+                                    </video>
+                                  </div>
+
+                                <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
+
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeF">UPLOAD FILE</label>
+                                   <input style="display: none;" type="button" id="setModeF" onclick="callInput('f')"/>
+                                </div>
                             </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
+                    </div>
 
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileB">START</label>
-                                <input style="display: none;" name = "check" value="b" type="submit" id="sendFileB" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
+                    <div class="opt">
                             <div>
                                 <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">BLUR OBJECTS WITH ASCII</label>
                                 </div>
 
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                                <div class="video">
+                                    <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/textYolo.png" preload="none">
+                                      <source src="static/previews/textYolo.webm" type="video/webm">
+                                    Your browser does not support the video tag.
+                                    </video>
+                                  </div>
+
+                                <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
+
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeB">UPLOAD FILE</label>
+                                   <input style="display: none;" type="button" id="setModeB" onclick="callInput('b')"/>
+                                </div>
                             </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
+                    </div>
 
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileC">START</label>
-                                <input style="display: none;" name = "check" value="c" type="submit" id="sendFileC" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
+                    <div class="opt">
                             <div>
                                 <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">MASK R-CNN + CANNY + ANIMATE BACKGROUND</label>
                                 </div>
 
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                                <div class="video">
+                                    <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/cannyReplaceBack.png" preload="none">
+                                      <source src="static/previews/cannyReplaceBack.webm" type="video/webm">
+                                    Your browser does not support the video tag.
+                                    </video>
+                                  </div>
+
+                                <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
+
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeI">UPLOAD FILE</label>
+                                   <input style="display: none;" type="button" id="setModeI" onclick="callInput('i')"/>
+                                </div>
                             </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
+                    </div>
 
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileD">START</label>
-                                <input style="display: none;" name = "check" value="d" type="submit" id="sendFileD" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
+                    <div class="opt">
                             <div>
                                 <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">MASK R-CNN GAUSSIAN BLUR BACKGROUND</label>
                                 </div>
 
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                                <div class="video">
+                                    <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/cannyBlur.png" preload="none">
+                                      <source src="static/previews/cannyBlur.webm" type="video/webm">
+                                    Your browser does not support the video tag.
+                                    </video>
+                                </div>
+
+                                <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
+
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeM">UPLOAD FILE</label>
+                                   <input style="display: none;" type="button" id="setModeM" onclick="callInput('m')"/>
+                                </div>
                             </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
+                    </div>
 
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileE">START</label>
-                                <input style="display: none;" name = "check" value="e" type="submit" id="sendFileE" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
+                    <div class="opt">
                             <div>
                                 <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">CANNY EDGE DETECTOR FULL SCREEN</label>
                                 </div>
 
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
+                                <div class="video">
+                                    <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/cannyFull.png" preload="none">
+                                      <source src="static/previews/cannyFull.webm" type="video/webm">
+                                    Your browser does not support the video tag.
+                                    </video>
+                                  </div>
+
+                                <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
+
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeE">UPLOAD FILE</label>
+                                   <input style="display: none;" type="button" id="setModeE" onclick="callInput('e')"/>
+                                </div>
                             </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
+                    </div>
 
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileF">START</label>
-                                <input style="display: none;" name = "check" value="f" type="submit" id="sendFileF" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                         <div class="opt">
+                     <div class="opt">
                             <div>
                                 <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">MASK R-CNN FAKE COLORIZER</label>
                                 </div>
 
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
+                                <div class="video">
+                                    <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/grayBackground.png" preload="none">
+                                      <source src="static/previews/grayBackground.webm" type="video/webm">
+                                    Your browser does not support the video tag.
+                                    </video>
+                                  </div>
 
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileG">START</label>
-                                <input style="display: none;" name = "check" value="g" type="submit" id="sendFileG" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
+                                <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                        </div>
-
-                        <div class="opt">
-                            <div>
-                                <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeK">UPLOAD FILE</label>
+                                   <input style="display: none;" type="button" id="setModeK" onclick="callInput('k')"/>
                                 </div>
-
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
                             </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
-
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileH">START</label>
-                                <input style="display: none;" name = "check" value="h" type="submit" id="sendFileH" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
-                            <div>
-                                <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
-                                </div>
-
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
-
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileI">START</label>
-                                <input style="display: none;" name = "check" value="i" type="submit" id="sendFileI" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
-                            <div>
-                                <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
-                                </div>
-
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
-
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileJ">START</label>
-                                <input style="display: none;" name = "check" value="j" type="submit" id="sendFileJ" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
-                            <div>
-                                <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
-                                </div>
-
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
-
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileK">START</label>
-                                <input style="display: none;" name = "check" value="k" type="submit" id="sendFileK" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
-                            <div>
-                                <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
-                                </div>
-
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
-
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileL">START</label>
-                                <input style="display: none;" name = "check" value="l" type="submit" id="sendFileL" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                        <div class="opt">
-                            <div>
-                                <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
-                                </div>
-
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
-
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileM">START</label>
-                                <input style="display: none;" name = "check" value="m" type="submit" id="sendFileM" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
-                         <div class="opt">
-                            <div>
-                                <div style="margin-bottom: 15px">
-                                    <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">SHOW ALL YOLO OBJECTS</label>
-                                </div>
-
-                                <img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="getFile">OPEN FILE</label>
-                                <input style="display: none;" type="file" name="file" for="getFile" />
-
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);" for="sendFileN">START</label>
-                                <input style="display: none;" name = "check" value="n" type="submit" id="sendFileN" onclick="postFile('progress-bar-file1', 'progress')" />
-                            </div>
-
-                        </div>
-
+                    </div>
 
                     <div>
-                        <div class="opt">
-                            <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(0, 255, 13);">START</label>
-                            <input style="display: none;" name = "check" value="a" type="submit"/>
-
-                            <p><input type="radio" name="check" value="a">Show all YOLO objects (YOLO)</p>
+                        <div class="opt" style="display: none;">
+                            <p><input id="allYolo" type="radio" name="check" value="a">Show all YOLO objects (YOLO)</p>
                             <p><input type="radio" name="check" value="b">Render with text (YOLO)</p>
                             <p><input type="checkbox" name="check" value="c">Edge detection on black (YOLO)</p>
                             <p><input type="checkbox" name="check" value="d">Edge detection on background (YOLO)</p>
@@ -441,21 +375,24 @@
                             <p><input type="checkbox" name="check" value="k">Convert background to grayscale (MASK R-CNN)</p>
                             <p><input type="checkbox" name="check" value="l">Convert background to grayscale + blur (MASK R-CNN)</p>
                             <p><input type="checkbox" name="check" value="m">Super resolution x4 image upscaler (EDSR)</p>
-
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <script>
+                function callInput(value) {
+                  document.getElementById("getFile").click();
+                  document.getElementById("selectedModeId").value = value;
+                  document.getElementById("selectedModeId").checked = true;
+                }
+
                 function postFile() {
                     $("#content ").hide();
                     $("#progress-bar-file1 ").show();
+
                     var formdata = new FormData();
-
                     formdata.append('getFile', $('#getFile')[0].files[0]);
-
                     var request = new XMLHttpRequest();
 
                     request.upload.addEventListener('progress', function(e) {
@@ -467,11 +404,10 @@
                         }
 
                         if (e.loaded == e.total) {
-                            $('#progress-bar-file1').width(100 + '%').html(100 + '%');
+                            $('#progress-bar-file1').width(100 + '%').html(100 + '%Show all YOLO objects ');
                             $("#loaddiv").show();
                             $("#content").hide();
                              $("#progress-bar-file1").hide();
-
                         }
                     });
 
@@ -480,6 +416,18 @@
                     request.send(formdata);
                 }
             </script>
+
+            <script>
+                var figure = $(".video").hover( hoverVideo, hideVideo );
+
+                function hoverVideo(e) {
+                    $('video', this).get(0).play();
+                }
+
+                function hideVideo(e) {
+                    $('video', this).get(0).pause();
+                }
+             </script>
             </form>
     </div>
 </body>

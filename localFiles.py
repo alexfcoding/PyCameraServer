@@ -13,6 +13,40 @@ from flask import request, Response
 import psutil
 from random import randint
 from colorizer import colorize, initNetwork
+from sklearn.cluster import MiniBatchKMeans, KMeans
+
+alpha_slider_max = 1000
+blur_slider_max = 80
+
+title_window = "win"
+thres1 = 100
+thres2 = 150
+blurAmount = 5
+
+cv2.namedWindow(title_window)
+
+def on_trackbar(val):
+    global thres1
+    thres1 = val
+
+def on_trackbar2(val):
+    global thres2
+    thres2 = val
+
+def on_trackbar3(val):
+    global blurAmount
+    blurAmount = val
+
+trackbar_name = 'Alpha x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name, title_window , 0, alpha_slider_max, on_trackbar)
+
+trackbar_name2 = 'Alpha2 x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name2, title_window , 0, alpha_slider_max, on_trackbar2)
+
+trackbar_name3 = 'Alpha3 x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name3, title_window , 0, blur_slider_max, on_trackbar3)
+
+
 
 thr = None
 workingOn = True
@@ -46,6 +80,7 @@ motionDetectors = []
 grayFrames = []
 total = []
 classes = []
+yoloColors = []
 
 for i in range(len(streamList)):
     vsList.append(VideoStream(streamList[i]))
@@ -69,11 +104,13 @@ objectIndex = 0
 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
 writer = None
 
+
 def adjustGamma(image, gamma=5.0):
     invGamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** invGamma) * 255
                       for i in np.arange(0, 256)]).astype("uint8")
     return cv2.LUT(image, table)
+
 
 def initializeYoloNetwork(useCuda):
     yoloNetwork = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
@@ -88,6 +125,7 @@ def initializeYoloNetwork(useCuda):
 
     return yoloNetwork, layers_names, outputLayers, colors
 
+
 def initializeRcnnNetwork(useCuda):
     weightsPath = "mask-rcnn-coco/frozen_inference_graph.pb"
     configPath = "mask-rcnn-coco/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
@@ -99,8 +137,10 @@ def initializeRcnnNetwork(useCuda):
 
     return rcnnNetwork
 
+
 yoloNetwork, layers_names, outputLayers, colors = initializeYoloNetwork(True)
 rcnnNetwork = initializeRcnnNetwork(True)
+
 
 def findYoloClasses(inputFrame, yoloNetwork):
     classesOut = []
@@ -140,6 +180,7 @@ def findYoloClasses(inputFrame, yoloNetwork):
 
     return boxes, indexes, classIds, confidences, classesOut
 
+
 def findRcnnClasses(inputFrame, rcnnNetwork):
     labelsPath = "mask-rcnn-coco/object_detection_classes_coco.txt"
     labels = open(labelsPath).read().strip().split("\n")
@@ -161,6 +202,7 @@ def findRcnnClasses(inputFrame, rcnnNetwork):
 
     return boxes, masks, labels, colors
 
+
 def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
     global objectIndex
     for i in range(len(boxes)):
@@ -175,29 +217,29 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
                 y = 0
 
             cropImg = inputFrame[y:y + h, x:x + w]
-            cropImg = cv2.GaussianBlur(cropImg, (11, 11), 9)
+            cropImg = cv2.GaussianBlur(cropImg, (27, 27), 27)
 
-            myStr = "abcdefghijklmnopqrstuvwxyz0123456789"
+            renderStr = "abcdefghijklmnopqrstuvwxyz0123456789"
 
-            if (x > 0) & (y > 0):
-                for xx in range(0, cropImg.shape[1], 20):
-                    for yy in range(0, cropImg.shape[0], 22):
+            if (x >= 0) & (y >= 0):
+                for xx in range(0, cropImg.shape[1], 32):
+                    for yy in range(0, cropImg.shape[0], 34):
                         char = randint(0, 1)
                         pixel_b, pixel_g, pixel_r = cropImg[yy, xx]
-                        char = myStr[randint(
-                            0, len(myStr)) - 1]
+                        char = renderStr[randint(
+                            0, len(renderStr)) - 1]
                         cv2.putText(cropImg, str(char),
                                     (xx, yy),
                                     cv2.FONT_HERSHEY_SIMPLEX,
-                                    1,
+                                    1.5,
                                     (int(pixel_b), int(
                                         pixel_g), int(pixel_r)),
-                                    2)
+                                    3)
             blk = np.zeros(
                 inputFrame.shape, np.uint8)
 
-            #if label == "person":
-                # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
+            # if label == "person":
+            # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
             cv2.rectangle(
                 blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
             inputFrame[y:y +
@@ -210,6 +252,7 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
             objectIndex += 1
 
     return inputFrame
+
 
 def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
     global objectIndex
@@ -243,7 +286,7 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
                 cv2.putText(inputFrame, label + "[" + str(np.round(
                     confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (213, 160, 47), 2, lineType=cv2.LINE_AA)
                 cv2.rectangle(
-                    blk, (x, y), (x + w, y + h), (213, 160, 47), cv2.FILLED)
+                    blk, (x, y), (x + w, y + h), (255, 0, 255), cv2.FILLED)
                 inputFrame = cv2.addWeighted(
                     inputFrame, 1, blk, 0.2, 0)
             if ((label != "car") & (label != "person")):
@@ -258,12 +301,13 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
 
             # cv2.imwrite(f"images/{label}/{label}{str(objectIndex)}.jpg", cropImg)
             # if (blurPeople == False):
-            #     cv2.rectangle(
-            #         bufferFrames[streamIndex], (x, y), (x + w, y + h), (255, 255, 255), 2)
+            cv2.rectangle(
+                inputFrame, (x, y), (x + w, y + h), (255, 255, 255), 2)
 
             objectIndex += 1
 
     return inputFrame
+
 
 def cannyPeopleOnBlackYolo(inputFrame, boxes, indexes, classIds):
     global objectIndex
@@ -413,6 +457,7 @@ def cannyPeopleOnBlackYolo(inputFrame, boxes, indexes, classIds):
 
     return inputFrame
 
+
 def cannyPeopleOnBackgroundYolo(inputFrame, boxes, indexes, classIds):
     global objectIndex
 
@@ -493,6 +538,7 @@ def cannyPeopleOnBackgroundYolo(inputFrame, boxes, indexes, classIds):
 
     return inputFrame
 
+
 def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
     classesOut = []
     frameCanny = autoCanny(inputFrame)
@@ -516,7 +562,8 @@ def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
 
             mask = masks[i, classID]
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
-            mask = (mask > 0.5)
+
+            mask = (mask > 0.1)
 
             if (labels[classID] == "person"):
                 frm = frameCanny[startY:endY, startX:endX][mask]
@@ -531,24 +578,26 @@ def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
 
     return frameOut
 
+
 def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, labels, colors):
     classesOut = []
     frameCopy = inputFrame
 
     inputFrame = cv2.resize(inputFrame, (1280, 720))
     frameCopy = cv2.resize(frameCopy, (1280, 720))
-
+    inputFrame = cv2.GaussianBlur(inputFrame, (5, 5), 5)
     frameCanny = autoCanny(inputFrame)
+
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
     frameOut = np.zeros(inputFrame.shape, np.uint8)
     inputFrame = np.zeros(inputFrame.shape, np.uint8)
-    frameCanny *= np.array((1, 1, 0), np.uint8)
+    frameCanny *= np.array((1, 0, 1), np.uint8)
 
     for i in range(0, boxes.shape[2]):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.1:
+        if confidence > 0.5:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -560,35 +609,40 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
 
             mask = masks[i, classID]
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
-            mask = (mask > 0.5)
+            mask = (mask > 0.1)
 
             color = colors[classID]
 
             if (labels[classID] == "person"):
                 frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+                frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 255, 0)
                 inputFrame[startY:endY, startX:endX][mask] = frm
-            else:
+            if (labels[classID] == "car"):
                 frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+                frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 0, 255)
                 inputFrame[startY:endY, startX:endX][mask] = frm
+            # else:
+            #     frm = frameCanny[startY:endY, startX:endX][mask]
+            #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+            #     inputFrame[startY:endY, startX:endX][mask] = frm
 
     # text = "{}[{:.2f}]".format(LABELS[classID], confidence)
-    #fontSize = (np.sqrt(boxW * boxH) / 200)
+    # fontSize = (np.sqrt(boxW * boxH) / 200)
     # cv2.putText(frameCanny, text, (startX, startY - 50),
     # cv2.FONT_HERSHEY_SIMPLEX, fontSize, (255,255,255), 2)
 
     frameOut = cv2.addWeighted(inputFrame, 1, frameBackground, 1, 0)
     return frameOut
 
+
 def colorCannyRcnn(inputFrame, boxes, masks, labels):
     classesOut = []
-    #frameCanny = autoCanny(inputFrame)
+    # frameCanny = autoCanny(inputFrame)
     inputFrame = cv2.GaussianBlur(inputFrame, (5, 5), 5)
 
-    #frameCanny = cv2.Canny(inputFrame, 50,100)
+    # frameCanny = cv2.Canny(inputFrame, 50,100)
     frameCanny = autoCanny(inputFrame, 0)
-    frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
+    frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2BGR)
     frameOut = np.zeros(inputFrame.shape, np.uint8)
 
     inputFrame = np.zeros(inputFrame.shape, np.uint8)
@@ -610,26 +664,26 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels):
 
             mask = masks[i, classID]
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
-            mask = (mask > 0.5)
+            mask = (mask > 0.1)
 
             if (labels[classID] == "person"):
                 frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
                 inputFrame[startY:endY, startX:endX][mask] = frm
             if (labels[classID] == "car"):
                 frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
                 inputFrame[startY:endY, startX:endX][mask] = frm
-            if (labels[classID] == "truck"):
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
-                inputFrame[startY:endY, startX:endX][mask] = frm
-            if (labels[classID] == "bus"):
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
-                inputFrame[startY:endY, startX:endX][mask] = frm
+            # if (labels[classID] == "truck"):
+            #     frm = frameCanny[startY:endY, startX:endX][mask]
+            #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+            #     inputFrame[startY:endY, startX:endX][mask] = frm
+            # if (labels[classID] == "bus"):
+            #     frm = frameCanny[startY:endY, startX:endX][mask]
+            #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+            #     inputFrame[startY:endY, startX:endX][mask] = frm
 
-    #frameOut = cv2.addWeighted(inputFrame, 1, frameCanny, 1, 0)
+    # frameOut = cv2.addWeighted(inputFrame, 1, frameCanny, 1, 0)
     frameCanny = cv2.GaussianBlur(frameCanny, (13, 13), 13)
 
     for i in range(0, boxes.shape[2]):
@@ -670,6 +724,7 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels):
     frameOut = np.bitwise_or(inputFrame, frameCanny)
     return frameOut
 
+
 def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
     classesOut = []
     frameCanny = autoCanny(inputFrame)
@@ -705,18 +760,25 @@ def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
                 frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
                 inputFrame[startY:endY, startX:endX][mask] = frm
 
-    #frameOut = cv2.addWeighted(inputFrame, 1, frameCanny, 1, 0)
-    #frameOut = np.bitwise_xor(inputFrame, frameCanny)
+    # frameOut = cv2.addWeighted(inputFrame, 1, frameCanny, 1, 0)
+    # frameOut = np.bitwise_xor(inputFrame, frameCanny)
     frameOut = inputFrame
     return frameOut
+
 
 def colorizerPeopleRcnn(inputFrame, boxes, masks):
     classesOut = []
     needGRAY2BGR = True
     alreadyBGR = False
     frameCopy = inputFrame
+
+    hsvImg = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
+    hsvImg[..., 1] = hsvImg[..., 1] * 1.1
+    # hsvImg[...,2] = hsvImg[...,2]*0.6
+    frameCopy = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
+
     inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2GRAY)
-    #inputFrame = cv2.GaussianBlur(inputFrame, (19, 19), 19)
+    # inputFrame = cv2.GaussianBlur(inputFrame, (19, 19), 19)
     frameCanny = autoCanny(inputFrame)
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
     frameCanny *= np.array((1, 1, 0), np.uint8)
@@ -735,7 +797,7 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
             boxW = endX - startX
             boxH = endY - startY
 
-            smallerX = int(boxW / 50)
+            smallerX = int(boxW / 30)
             smallerY = int(boxH / 50)
 
             if (smallerX % 2 != 0):
@@ -780,6 +842,7 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
     frameOut = inputFrame
     return frameOut
 
+
 def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
     classesOut = []
     needGRAY2BGR = True
@@ -807,8 +870,8 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
             boxW = endX - startX
             boxH = endY - startY
 
-            smallerX = int(boxW / 20)
-            smallerY = int(boxH / 20)
+            smallerX = int(boxW / 10)
+            smallerY = int(boxH / 10)
             # smallerX = 0
             # smallerY = 0
 
@@ -829,16 +892,18 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
 
             mask = masks[i, classID]
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
-            mask = (mask > 0.2)
+            mask = (mask > 0.1)
 
-            frm = frameCopy[startY + int(smallerY / 2): endY - int(smallerY / 2), startX + int(smallerX / 2): endX - int(smallerX / 2)][mask]
+            frm = frameCopy[startY + int(smallerY / 2): endY - int(smallerY / 2),
+                  startX + int(smallerX / 2): endX - int(smallerX / 2)][mask]
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
 
             if (alreadyBGR == False):
                 inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_GRAY2BGR)
                 alreadyBGR = True
 
-            inputFrame[startY + int(smallerY/2):endY - int(smallerY/2), startX+int(smallerX/2):endX - int(smallerX/2)][mask] = frm
+            inputFrame[startY + int(smallerY / 2):endY - int(smallerY / 2),
+            startX + int(smallerX / 2):endX - int(smallerX / 2)][mask] = frm
 
             needGRAY2BGR = False
 
@@ -852,13 +917,14 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
     frameOut = inputFrame
     return frameOut
 
-def PeopleRcnnWithBlur(inputFrame, boxes, masks):
+
+def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels):
     classesOut = []
     needGRAY2BGR = True
     alreadyBGR = False
     frameCopy = inputFrame
-    #inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2GRAY)
-    inputFrame = cv2.GaussianBlur(inputFrame, (23, 23), 23)
+    # inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2GRAY)
+    inputFrame = cv2.GaussianBlur(inputFrame, (17, 17), 17)
     frameCanny = autoCanny(inputFrame)
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
 
@@ -878,8 +944,8 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks):
             boxW = endX - startX
             boxH = endY - startY
 
-            smallerX = int(boxW / 20)
-            smallerY = int(boxH / 50)
+            smallerX = int(boxW / 10)
+            smallerY = int(boxH / 10)
             # smallerX = 0
             # smallerY = 0
 
@@ -900,16 +966,17 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks):
 
             mask = masks[i, classID]
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
-            mask = (mask > 0.2)
+            mask = (mask > 0.1)
 
-            frm = frameCopy[startY + int(smallerY / 2): endY - int(smallerY / 2), startX + int(smallerX / 2): endX - int(smallerX / 2)][mask]
+            # if (labels[classID] == "person"):
+            frm = frameCopy[startY + int(smallerY / 2): endY - int(smallerY / 2),
+                  startX + int(smallerX / 2): endX - int(smallerX / 2)][mask]
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
-
+            inputFrame[startY + int(smallerY / 2):endY - int(smallerY / 2),
+            startX + int(smallerX / 2):endX - int(smallerX / 2)][mask] = frm
             # if (alreadyBGR == False):
             #     inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_GRAY2BGR)
             #     alreadyBGR = True
-
-            inputFrame[startY + int(smallerY/2):endY - int(smallerY/2), startX+int(smallerX/2):endX - int(smallerX/2)][mask] = frm
 
             needGRAY2BGR = False
 
@@ -923,8 +990,13 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks):
     frameOut = inputFrame
     return frameOut
 
+
 def ProcessFrame():
-    global cap, sourceImage, lock, writer, frameProcessed, frameBackground, totalFrames, outputFrame
+    global cap, sourceImage, lock, writer, frameProcessed, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount
+
+    r = cv2.getTrackbarPos("R", "Controls")
+    g = cv2.getTrackbarPos("G", "Controls")
+    b = cv2.getTrackbarPos("B", "Controls")
 
     frameProcessed = 0
     fileIterator = 0
@@ -1019,7 +1091,7 @@ def ProcessFrame():
     if (sourceMode == "video"):
         cap = cv2.VideoCapture(fileToRender)
         cap = cv2.VideoCapture(fileToRender)
-        cap2 = cv2.VideoCapture("space.webm")
+        cap2 = cv2.VideoCapture("snow.webm")
 
     if (sourceMode == "image"):
         sourceImage = args["source"]
@@ -1037,204 +1109,378 @@ def ProcessFrame():
 
     totalFrames = 99999
 
-
-
     lineType = cv2.LINE_AA
 
     while workingOn:
-        print("working...")
-        classesIndex = []
-        startMoment = time.time()
+            print("working...")
+            classesIndex = []
+            startMoment = time.time()
 
-        for streamIndex in range(len(streamList)):
-            if (sourceMode == "video"):
-                ret, frameList[streamIndex] = cap.read()
-                ret2, frameBackground = cap2.read()
-            if (sourceMode == "image"):
-                frameList[streamIndex] = cv2.imread(sourceImage)
-                ret2, frameBackground = cap2.read()
+            for streamIndex in range(len(streamList)):
+                if (sourceMode == "video"):
+                    ret, frameList[streamIndex] = cap.read()
+                    ret2, frameBackground = cap2.read()
+                if (sourceMode == "image"):
+                    frameList[streamIndex] = cv2.imread(sourceImage)
+                    ret2, frameBackground = cap2.read()
 
-            if frameList[streamIndex] is not None:
-                bufferFrames[streamIndex] = frameList[streamIndex].copy()
+                if frameList[streamIndex] is not None:
+                    bufferFrames[streamIndex] = frameList[streamIndex].copy()
 
-                # frameList[streamIndex] = cv2.resize(frameList[streamIndex], (800,600))
-                # bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (800,600))
+                    # frameList[streamIndex] = cv2.resize(frameList[streamIndex], (800,600))
+                    # bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (800,600))
 
-                if usingYoloNeuralNetwork:
-                    boxes, indexes, classIds, confidences, classesOut = findYoloClasses(bufferFrames[streamIndex],
-                                                                                        yoloNetwork)
-                    classesIndex.append(classesOut)
+                    if usingYoloNeuralNetwork:
+                        boxes, indexes, classIds, confidences, classesOut = findYoloClasses(bufferFrames[streamIndex],
+                                                                                            yoloNetwork)
+                        classesIndex.append(classesOut)
 
-                    if showAllObjects:
-                        bufferFrames[streamIndex] = markAllObjectsYolo(bufferFrames[streamIndex], boxes, indexes,
-                                                                       classIds, confidences)
+                        if showAllObjects:
+                            bufferFrames[streamIndex] = markAllObjectsYolo(bufferFrames[streamIndex], boxes, indexes,
+                                                                           classIds, confidences)
 
-                    if textRender:
-                        bufferFrames[streamIndex] = objectsToTextYolo(bufferFrames[streamIndex], boxes, indexes,
-                                                                      classIds)
+                        if textRender:
+                            bufferFrames[streamIndex] = objectsToTextYolo(bufferFrames[streamIndex], boxes, indexes,
+                                                                          classIds)
 
-                    if cannyPeopleOnBlack:
-                        bufferFrames[streamIndex] = cannyPeopleOnBlackYolo(bufferFrames[streamIndex], boxes, indexes,
-                                                                           classIds)
+                        if cannyPeopleOnBlack:
+                            bufferFrames[streamIndex] = cannyPeopleOnBlackYolo(bufferFrames[streamIndex], boxes, indexes,
+                                                                               classIds)
 
-                    if cannyPeopleOnBackground:
-                        bufferFrames[streamIndex] = cannyPeopleOnBackgroundYolo(bufferFrames[streamIndex], boxes,
-                                                                                indexes, classIds)
+                        if cannyPeopleOnBackground:
+                            bufferFrames[streamIndex] = cannyPeopleOnBackgroundYolo(bufferFrames[streamIndex], boxes,
+                                                                                    indexes, classIds)
 
-                if usingMaskRcnnNetwork:
+                    if usingMaskRcnnNetwork:
                         boxes, masks, labels, colors = findRcnnClasses(bufferFrames[streamIndex], rcnnNetwork)
 
                         if (colorObjectsOnGray):
                             bufferFrames[streamIndex] = colorizerPeopleRcnn(bufferFrames[streamIndex],
-                                                                                    boxes, masks)
+                                                                            boxes, masks)
 
                         if (colorObjectsOnGrayBlur):
                             bufferFrames[streamIndex] = colorizerPeopleRcnnWithBlur(bufferFrames[streamIndex],
-                                                                               boxes, masks
-                                                                               )
+                                                                                    boxes, masks
+                                                                                    )
                         if (colorObjectsBlur):
                             bufferFrames[streamIndex] = PeopleRcnnWithBlur(bufferFrames[streamIndex],
-                                                                               boxes, masks
-                                                                               )
+                                                                           boxes, masks, labels
+                                                                           )
 
                         if (extractAndCutBackground):
                             bufferFrames[streamIndex] = extractAndCutBackgroundRcnn(bufferFrames[streamIndex],
-                                                                               boxes, masks, labels
-                                                                              )
+                                                                                    boxes, masks, labels
+                                                                                    )
 
                         if (extractAndReplaceBackground):
-                            bufferFrames[streamIndex] = extractAndReplaceBackgroundRcnn(bufferFrames[streamIndex], frameBackground,
-                                                                               boxes, masks, labels, colors)
+                            bufferFrames[streamIndex] = extractAndReplaceBackgroundRcnn(bufferFrames[streamIndex],
+                                                                                        frameBackground,
+                                                                                        boxes, masks, labels, colors)
 
                         if (applyColorCanny):
                             bufferFrames[streamIndex] = colorCannyRcnn(bufferFrames[streamIndex],
-                                                                               boxes, masks, labels)
+                                                                       boxes, masks, labels)
 
                         if (applyColorCannyOnBackground):
-                            bufferFrames[streamIndex] = colorCannyOnColorBackgroundRcnn(bufferFrames[streamIndex], boxes, masks, labels)
+                            bufferFrames[streamIndex] = colorCannyOnColorBackgroundRcnn(bufferFrames[streamIndex], boxes,
+                                                                                        masks, labels)
 
-                if usingCaffeNeuralNetwork:
-                    if videoColorization:
-                        bufferFrames[streamIndex] = colorize(yoloNetworkColorizer, bufferFrames[streamIndex])
+                    if usingCaffeNeuralNetwork:
+                        if videoColorization:
+                            bufferFrames[streamIndex] = colorize(yoloNetworkColorizer, bufferFrames[streamIndex])
 
-                if cannyFull:
-                    # bufferFrames[streamIndex] = autoCanny(bufferFrames[streamIndex])
-                    bufferFrames[streamIndex] = cv2.Canny(
-                        bufferFrames[streamIndex], 100, 200)
-                    bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
-                    bufferFrames[streamIndex] *= np.array((1, 1, 0), np.uint8)
-                    #bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex], (3, 3), 3)
-                with lock:
-                    personDetected = False
+                    if cannyFull:
+                        # bufferFrames[streamIndex] = autoCanny(bufferFrames[streamIndex])
+                        #bufferFrames[streamIndex] = colorize(yoloNetworkColorizer, bufferFrames[streamIndex])
 
-                    frameProcessed = frameProcessed + 1
-                    elapsedTime = time.time()
-                    fps = 1 / (elapsedTime - startMoment)
-                    print(fps)
+                        frameCopy = bufferFrames[streamIndex].copy()
 
-                    for streamIndex in range(len(streamList)):
-                        if (usingYoloNeuralNetwork):
-                            classIndexCount = [
-                                [0 for x in range(80)] for x in range(len(streamList))]
+                        # (h, w) = frameCopy.shape[:2]
+                        # frameCopy = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2LAB)
+                        # frameCopy = frameCopy.reshape((frameCopy.shape[0] * frameCopy.shape[1], 3))
+                        #
+                        # clt = MiniBatchKMeans(n_clusters=32)
+                        # labels = clt.fit_predict(frameCopy)
+                        # quant = clt.cluster_centers_.astype("uint8")[labels]
+                        #
+                        # quant = quant.reshape((h, w, 3))
+                        # frameCopy = frameCopy.reshape((h, w, 3))
+                        #
+                        # quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
+                        # frameCopy = cv2.cvtColor(frameCopy, cv2.COLOR_LAB2BGR)
+                        #
+                        # frameCopy = quant
 
-                            rowIndex = 0
-                            for m in range(80):
-                                for k in range(len(classesIndex[streamIndex])):
-                                    if (m == classesIndex[streamIndex][k]):
-                                        classIndexCount[streamIndex][m] += 1
+                        # bufferFrames[streamIndex] = autoCanny(frameCopy)
+                        #frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 3)
 
-                                if (classIndexCount[streamIndex][m] != 0):
-                                    rowIndex += 1
+                        # bufferFrames[streamIndex] = cv2.GaussianBlur( bufferFrames[streamIndex], (3, 3), 3)
+                        # bufferFrames[streamIndex] = cv2.Canny(
+                        #      bufferFrames[streamIndex], 70, 100)
+                        #
+                        #
+                        # bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
 
-                                    # cv2.rectangle(bufferFrames[streamIndex], (0, rowIndex*40 - 20), (200,rowIndex*40 + 8), (0,0,0), -1)
-                                    # cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (20,rowIndex*40), font, 0.7, colors[m], 2, cv2.LINE_AA)
-
-                                    if (classes[m] == "person"):
-                                        cv2.rectangle(
-                                            bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
-                                            (400, rowIndex * 70 + 16), (0, 0, 0), -1)
-                                        cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
-                                            classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
-                                                    (0, 255, 0), 2, lineType=cv2.LINE_AA)
-                                        personDetected = True
-                                    if (classes[m] == "car"):
-                                        cv2.rectangle(
-                                            bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
-                                            (400, rowIndex * 70 + 16), (0, 0, 0), -1)
-                                        cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
-                                            classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
-                                                    (213, 160, 47), 2, lineType=cv2.LINE_AA)
-                                    if ((classes[m] != "car") & (classes[m] != "person")):
-                                        cv2.rectangle(
-                                            bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
-                                            (400, rowIndex * 70 + 16), (0, 0, 0), -1)
-                                        cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
-                                            classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
-                                                    (0, 255, 0), 2, lineType=cv2.LINE_AA)
-
-                                    if (classes[m] == "handbag") | (classes[m] == "backpack"):
-                                        passFlag = True
-                                        print("handbag detected! -> PASS")
-
-                        if (writer is None):
-                            writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
-                                bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
-
+                        #frameCopy = cv2.GaussianBlur(frameCopy, (7, 7), 7)
+                        if (blurAmount % 2 == 0):
+                            blurAmount += 1
                         else:
-                            progress = frameProcessed / totalFrames * 100
+                            bufferFrames[streamIndex] = cv2.GaussianBlur( bufferFrames[streamIndex], (blurAmount, blurAmount), blurAmount)
 
-                            # cv2.rectangle(bufferFrames[streamIndex], (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80),
-                            #               (int(
-                            #                   cap.get(cv2.CAP_PROP_FRAME_WIDTH)) - 20,
-                            #                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 0, 0), -1)
-                            #
-                            # if (progress != "DONE"):
-                            #     cv2.rectangle(bufferFrames[streamIndex],
-                            #                   (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80), (int(cap.get(
-                            #             cv2.CAP_PROP_FRAME_WIDTH) * progress / 100) - 20, int(
-                            #             cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 255, 0), -1)
-                            #     cv2.putText(bufferFrames[streamIndex], str(int(progress)) + "%" + " | FPS: " + str(
-                            #         round(fps, 2)) + " | " + "CPU: " + str(
-                            #         psutil.cpu_percent()) + "%", (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40),
-                            #                 font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
+                        bufferFrames[streamIndex] = cv2.Canny(
+                            bufferFrames[streamIndex], thres1, thres2)
 
-                            # resized1 = cv2.resize(frameList[streamIndex], (640, 320))
-                            # resized2 = cv2.resize(bufferFrames[streamIndex], (640, 320))
-                            if (sourceMode == "video") :
-                                writer.write(bufferFrames[streamIndex])
 
-                            if (sourceMode == "image"):
-                                cv2.imwrite(f"static/{sourceImage}", bufferFrames[streamIndex])
-                                workingOn = False
-                            # if ((sourceMode == "image" and extractAndReplaceBackground == True)):
-                            #     writer.write(bufferFrames[streamIndex])
+                        bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
 
-                            # cv2.imwrite("static/t.jpg",
-                            # bufferFrames[streamIndex])
-                            resized1 = cv2.resize(frameList[streamIndex], (640, 320))
-                            resized2 = cv2.resize(bufferFrames[streamIndex], (640, 320))
+                        # hsvImg = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
+                        # hsvImg[..., 1] = hsvImg[..., 1] * 1.1
+                        # hsvImg[...,2] = hsvImg[...,2]*1
+                        # frameCopy = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
+                        #
+                        # hsv = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
+                        # value = 80  # whatever value you want to add
+                        # cv2.add(hsv[:, :, 2], hsv[:, :, 2], value)
+                        # frameCopy = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
-                            # im_v = cv2.vconcat([im_h, im_h2])
-                            # resized = bufferFrames[streamIndex].copy()
-                            # resized = cv2.resize(resized, (1280, 720))
-                            concated = cv2.vconcat([resized1, resized2])
-                            # resized = cv2.resize(concated, (960, 1080))
-                            cv2.imshow("video", concated)
-                            key = cv2.waitKey(1) & 0xFF
+                        # for i in range(0, bufferFrames[streamIndex].shape[0] - 3):
+                        #     for j in range(0, bufferFrames[streamIndex].shape[1] - 3):
+                        #         #if (all(bufferFrames[streamIndex][i, j] > [100,0,0])):
+                        #             diffBG = 0
+                        #             diffBR = 0
+                        #
+                        #             diffGB = 0
+                        #             diffGR = 0
+                        #
+                        #             diffRB = 0
+                        #             diffRG = 0
+                        #
+                        #             if (frameCopy[i, j, 0] > frameCopy[i, j, 1]):
+                        #                 diffBG = frameCopy[i, j, 0] - frameCopy[i, j, 1]
+                        #             if (frameCopy[i, j, 0] > frameCopy[i, j, 2]):
+                        #                 diffBR = frameCopy[i, j, 0] - frameCopy[i, j, 2]
+                        #
+                        #             if (frameCopy[i, j, 1] > frameCopy[i, j, 0]):
+                        #                 diffGB = frameCopy[i, j, 1] - frameCopy[i, j, 0]
+                        #             if (frameCopy[i, j, 1] > frameCopy[i, j, 2]):
+                        #                 diffGR = frameCopy[i, j, 1] - frameCopy[i, j, 2]
+                        #
+                        #             if (frameCopy[i, j, 2] > frameCopy[i, j, 0]):
+                        #                 diffRB = frameCopy[i, j, 2] - frameCopy[i, j, 0]
+                        #             if (frameCopy[i, j, 2] > frameCopy[i, j, 1]):
+                        #                 diffRG = frameCopy[i, j, 2] - frameCopy[i, j, 1]
+                        #
+                        #             if frameCopy[i, j, 0] > frameCopy[i, j, 1] and frameCopy[i, j, 0] > frameCopy[i, j, 2] and diffBG > 20 and diffBR > 20:
+                        #                 if (frameCopy[i, j, 0] <= 225):
+                        #                     frameCopy[i, j, 0] += 30
+                        #             if frameCopy[i, j, 1] > frameCopy[i, j, 0] and frameCopy[i, j, 1] > frameCopy[i, j, 2] and diffGB > 20 and diffGR > 20:
+                        #                 if (frameCopy[i, j, 1] <= 225):
+                        #                     frameCopy[i, j, 1] += 30
+                        #             if frameCopy[i, j, 2] > frameCopy[i, j, 0] and frameCopy[i, j, 2] > frameCopy[i, j, 1] and diffRB > 20 and diffRG > 20:
+                        #                 if (frameCopy[i, j, 2] <= 225):
+                        #                     frameCopy[i, j, 2] += 30
+                        #////////////////////
+                                # if frameCopy[i, j, 0] > frameCopy[i, j, 1] and frameCopy[i, j, 0] > frameCopy[i, j, 2]:
+                                #     if (frameCopy[i, j, 0] <= 245):
+                                #         frameCopy[i, j, 0] += 10
+                                # if frameCopy[i, j, 1] > frameCopy[i, j, 0] and frameCopy[i, j, 1] > frameCopy[
+                                #     i, j, 2]:
+                                #     if (frameCopy[i, j, 1] <= 245):
+                                #         frameCopy[i, j, 1] += 10
+                                # if frameCopy[i, j, 2] > frameCopy[i, j, 0] and frameCopy[i, j, 2] > frameCopy[
+                                #     i, j, 1]:
+                                #     if (frameCopy[i, j, 2] <= 245):
+                                #         frameCopy[i, j, 2] += 10
 
-                            if key == ord("q"):
-                                break
+                                #         frameCopy[i+1, j, 0] = 0
+                                #         frameCopy[i+1, j, 1] = 0
+                                #         frameCopy[i+1, j, 2] = 0
+                                #
+                                #         frameCopy[i, j+1, 0] = 0
+                                #         frameCopy[i, j+1, 1] = 0
+                                #         frameCopy[i, j+1, 2] = 0
+                                #
+                                #         frameCopy[i+1, j+1, 0] = 0
+                                #         frameCopy[i+1, j+1, 1] = 0
+                                #         frameCopy[i+1, j+1, 2] = 0
+                                # if (bufferFrames[streamIndex][i, j, 0] > bufferFrames[streamIndex][i, j, 1]):
+                                #     frameCopy[i, j] = [255, 255, 255]
+                        #frameCopy[np.where((bufferFrames[streamIndex] == [255, 255, 255]).all(axis=2))] = [0,0,0]
 
-                        #outputFrame = concated
-                        outputFrame = bufferFrames[streamIndex]
-            else:
-                outputFrame = bufferFrames[streamIndex]
-                workingOn = False
-                print("finished")
-                if (sourceMode == "video"):
-                    cap.release()
-                    writer.release()
-                    cv2.destroyAllWindows()
+                        #bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex], (1, 1), 1)
+                        #frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+                        #
+
+                        clearFrame = bufferFrames[streamIndex].copy()
+                        crop_img = bufferFrames[streamIndex][0:bufferFrames[streamIndex].shape[0], 1:bufferFrames[streamIndex].shape[1]].copy()
+                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0], 0:crop_img.shape[1]].copy()
+                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+                        #
+                        #
+                        clearFrame = bufferFrames[streamIndex].copy()
+                        crop_img = bufferFrames[streamIndex][1:bufferFrames[streamIndex].shape[0], 0:bufferFrames[streamIndex].shape[1]].copy()
+                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0], 0:crop_img.shape[1]].copy()
+                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+
+                        clearFrame = bufferFrames[streamIndex].copy()
+                        crop_img = bufferFrames[streamIndex][1:bufferFrames[streamIndex].shape[0], 1:bufferFrames[streamIndex].shape[1]].copy()
+                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
+                                                                               0:crop_img.shape[1]].copy()
+                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+
+                        clearFrame = bufferFrames[streamIndex].copy()
+                        crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
+                                   0:bufferFrames[streamIndex].shape[1]].copy()
+                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
+                                                                               0:crop_img.shape[1]].copy()
+                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+
+                        clearFrame = bufferFrames[streamIndex].copy()
+                        crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
+                                   1:bufferFrames[streamIndex].shape[1]].copy()
+                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
+                                                                               0:crop_img.shape[1]].copy()
+                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+                        #
+                        # clearFrame = bufferFrames[streamIndex].copy()
+                        # crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
+                        #            2:bufferFrames[streamIndex].shape[1]].copy()
+                        # clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
+                        #                                                        0:crop_img.shape[1]].copy()
+                        # frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+
+
+                        #bufferFrames[streamIndex] *= np.array((1, 1, 0), np.uint8)
+                        #frameCopy = cv2.GaussianBlur(frameCopy, (13, 13), 13)
+                        bufferFrames[streamIndex] = frameCopy
+                        #bufferFrames[streamIndex] = np.bitwise_or(bufferFrames[streamIndex], frameCopy)
+                        #bufferFrames[streamIndex] += frameCopy
+
+                        # bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex], (3, 3), 3)
+                    with lock:
+                        personDetected = False
+
+                        frameProcessed = frameProcessed + 1
+                        elapsedTime = time.time()
+                        fps = 1 / (elapsedTime - startMoment)
+                        print(fps)
+
+                        for streamIndex in range(len(streamList)):
+                            if (showAllObjects):
+
+                                classIndexCount = [
+                                    [0 for x in range(80)] for x in range(len(streamList))]
+
+                                rowIndex = 0
+                                for m in range(80):
+                                    for k in range(len(classesIndex[streamIndex])):
+                                        if (m == classesIndex[streamIndex][k]):
+                                            classIndexCount[streamIndex][m] += 1
+
+                                    if (classIndexCount[streamIndex][m] != 0):
+                                        rowIndex += 1
+
+                                        # cv2.rectangle(bufferFrames[streamIndex], (0, rowIndex*40 - 20), (200,rowIndex*40 + 8), (0,0,0), -1)
+                                        # cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(classIndexCount[streamIndex][m]), (20,rowIndex*40), font, 0.7, colors[m], 2, cv2.LINE_AA)
+
+                                        if (classes[m] == "person"):
+                                            cv2.rectangle(
+                                                bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
+                                                (400, rowIndex * 70 + 16), (0, 0, 0), -1)
+                                            cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
+                                                classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
+                                                        (0, 255, 0), 2, lineType=cv2.LINE_AA)
+                                            personDetected = True
+                                        if (classes[m] == "car"):
+                                            cv2.rectangle(
+                                                bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
+                                                (400, rowIndex * 70 + 16), (0, 0, 0), -1)
+                                            cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
+                                                classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
+                                                        (255, 0, 255), 2, lineType=cv2.LINE_AA)
+                                        if ((classes[m] != "car") & (classes[m] != "person")):
+                                            cv2.rectangle(
+                                                bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
+                                                (400, rowIndex * 70 + 16), (0, 0, 0), -1)
+                                            cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
+                                                classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
+                                                        colors[m], 2, lineType=cv2.LINE_AA)
+
+                                        if (classes[m] == "handbag") | (classes[m] == "backpack"):
+                                            passFlag = True
+                                            print("handbag detected! -> PASS")
+
+                            if (writer is None):
+                                writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
+                                    bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
+                                # writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
+                                #     640, 720), True)
+                            else:
+                                progress = frameProcessed / totalFrames * 100
+
+                                # cv2.rectangle(bufferFrames[streamIndex], (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80),
+                                #               (int(
+                                #                   cap.get(cv2.CAP_PROP_FRAME_WIDTH)) - 20,
+                                #                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 0, 0), -1)
+                                #
+                                # if (progress != "DONE"):
+                                #     cv2.rectangle(bufferFrames[streamIndex],
+                                #                   (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80), (int(cap.get(
+                                #             cv2.CAP_PROP_FRAME_WIDTH) * progress / 100) - 20, int(
+                                #             cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 24), (0, 255, 0), -1)
+                                #     cv2.putText(bufferFrames[streamIndex], str(int(progress)) + "%" + " | FPS: " + str(
+                                #         round(fps, 2)) + " | " + "CPU: " + str(
+                                #         psutil.cpu_percent()) + "%", (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40),
+                                #                 font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
+                                # cv2.putText(bufferFrames[streamIndex], "FPS: " + str(
+                                #     round(fps, 2)) + " | " + "CPU: " + str(
+                                #     psutil.cpu_percent()) + "%", (40, 40),
+                                #             font, 1.4, (0, 0, 255), 2)
+                                # resized1 = cv2.resize(frameList[streamIndex], (640, 320))
+                                # resized2 = cv2.resize(bufferFrames[streamIndex], (640, 320))
+
+                                if (sourceMode == "video") :
+                                    writer.write(bufferFrames[streamIndex])
+
+                                if (sourceMode == "image"):
+                                    cv2.imwrite(f"static/{sourceImage}", bufferFrames[streamIndex])
+                                    workingOn = False
+                                # if ((sourceMode == "image" and extractAndReplaceBackground == True)):
+                                #     writer.write(bufferFrames[streamIndex])
+
+                                # cv2.imwrite("static/t.jpg",
+                                # bufferFrames[streamIndex])
+                                resized1 = cv2.resize(frameList[streamIndex], (640, 360))
+                                resized2 = cv2.resize(bufferFrames[streamIndex], (640, 360))
+
+                                # im_v = cv2.vconcat([im_h, im_h2])
+                                # resized = bufferFrames[streamIndex].copy()
+                                # resized = cv2.resize(resized, (1280, 720))
+                                concated = cv2.vconcat([resized2, resized1, ])
+
+                                #resized = cv2.resize(concated, (640, 720))
+                                resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+
+                                # if (sourceMode == "video"):
+                                #     writer.write(resized)
+
+                                cv2.imshow("video", resized)
+                                key = cv2.waitKey(1) & 0xFF
+
+                                if key == ord("q"):
+                                    break
+
+                            # outputFrame = concated
+                            outputFrame = bufferFrames[streamIndex]
+                else:
+                    outputFrame = bufferFrames[streamIndex]
+                    workingOn = False
+                    print("finished")
+
+                    if (sourceMode == "video"):
+                        cap.release()
+                        writer.release()
+                        cv2.destroyAllWindows()
 
 def autoCanny(image: object, sigma: object = 0.33) -> object:
     v = np.median(image)
@@ -1243,6 +1489,7 @@ def autoCanny(image: object, sigma: object = 0.33) -> object:
     edged = cv2.Canny(image, lower, upper)
 
     return edged
+
 
 def generate():
     global outputFrame, frameProcessed, lock, workingOn
@@ -1266,17 +1513,20 @@ def generate():
     # return redirect('/results')
     print("yield finished")
 
+
 @app.route('/')
 @app.route('/<device>/<action>')
 def index(device=None, action=None):
     return render_template("index.html", frameProcessed=frameProcessed,
                            pathToRenderedFile=f"static/output{args['port']}.avi")
 
+
 @app.route("/video")
 def video_feed():
     # redirect(f"http://192.168.0.12:8000/results")
     return Response(generate(),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
+
 
 # return Response(stream_with_context(generate()))
 
@@ -1296,16 +1546,19 @@ def update():
         # 'time': datetime.datetime.now().strftime("%H:%M:%S"),
     })
 
+
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
 
+
 @app.route('/shutdown', methods=['GET'])
 def shutdown():
     shutdown_server()
     return 'Server shutting down...'
+
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()

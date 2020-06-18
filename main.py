@@ -34,6 +34,7 @@ def upload_file():
 			CRED = '\033[91m'
 			CEND = '\033[0m'
 			options = request.form.getlist('check')
+
 			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
 
 			# return redirect(url_for('start_analysis', prt=8001, filee=filename))
@@ -66,7 +67,7 @@ def start_analysis(portToRender, fileToRender, options):
 	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
 					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', "video"])
 
-	time.sleep(6)
+	time.sleep(10)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
 	return redirect(f"http://192.168.0.12:{portToRender}")
 	#return redirect(f"http://178.140.230.247:{portToRender}")

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>Title</title>
+
+    <style>
+        #videosList {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0px 80px; }
+  @media (max-width: 1250px) {
+    #videosList {
+      padding: 0px 50px; } }
+  @media (max-width: 900px) {
+    #videosList {
+      padding: 60px 20px; } }
+  #videosList .video {
+    width: 50%;
+    display: inline-block;
+    float: left;
+    position: relative;
+    overflow: hidden; }
+    @media (max-width: 500px) {
+      #videosList .video {
+        width: 100%; } }
+    #videosList .video .videoSlate {
+      width: 100%;
+      height: 0;
+      padding: 60% 0 0 0;
+      -webkit-transition: 5000ms 50ms;
+      -moz-transition: 5000ms 50ms;
+      transition: 5000ms 50ms; }
+      #videosList .video .videoSlate:after {
+        content: ' ';
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        -webkit-transition: 500ms 50ms;
+        -moz-transition: 500ms 50ms;
+        transition: 500ms 50ms; }
+      #videosList .video .videoSlate video {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        position: absolute; }
+    #videosList .video .videoListCopy {
+      display: inline-block;
+      text-align: center;
+      width: 100%;
+      z-index: 20; }
+
+    </style>
+</head>
+<body>
+    <div id="videosList">
+         <div class="video">
+                <div class="videoListCopy">
+                    <a href="videodetail.html" class="buttonMore">
+                            <div class="breaker"><div class="line"></div></div>
+                            <div class="buttonContent">
+                                <div class="linkArrowContainer">
+                                    <div class="iconArrowRight"></div>
+                                    <div class="iconArrowRightTwo"></div>
+                                </div>
+                                <span>Others</span>
+                            </div>
+                        </a>
+                </div>
+                <div class="videoSlate">
+                    <video class="thevideo" muted="muted" loop>
+                      <source src="http://www.w3schools.com/html/movie.ogg" type="video/ogg">
+                    Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+    </div>
+
+    <script>
+        var figure = $(".video");
+        var vid = figure.find("video");
+
+        [].forEach.call(figure, function (item,index) {
+            item.addEventListener('mouseover', hoverVideo.bind(item,index), false);
+            item.addEventListener('mouseout', hideVideo.bind(item,index), false);
+        });
+
+        function hoverVideo(index, e) {
+            vid[index].play();
+        }
+
+        function hideVideo(index, e) {
+            vid[index].pause();
+        }
+    </script>
+
+</body>
+</html>
