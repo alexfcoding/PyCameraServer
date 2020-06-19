@@ -15,13 +15,15 @@ from random import randint
 from colorizer import colorize, initNetwork
 from sklearn.cluster import MiniBatchKMeans, KMeans
 
-alpha_slider_max = 1000
-blur_slider_max = 80
+alpha_slider_max = 200
+blur_slider_max = 30
+
 
 title_window = "win"
-thres1 = 100
-thres2 = 150
-blurAmount = 5
+thres1 = 50
+thres2 = 50
+blurAmount = 13
+blurCannyAmount = 3
 
 cv2.namedWindow(title_window)
 
@@ -37,6 +39,10 @@ def on_trackbar3(val):
     global blurAmount
     blurAmount = val
 
+def on_trackbar4(val):
+    global blurCannyAmount
+    blurCannyAmount = val
+
 trackbar_name = 'Alpha x %d' % alpha_slider_max
 cv2.createTrackbar(trackbar_name, title_window , 0, alpha_slider_max, on_trackbar)
 
@@ -45,6 +51,9 @@ cv2.createTrackbar(trackbar_name2, title_window , 0, alpha_slider_max, on_trackb
 
 trackbar_name3 = 'Alpha3 x %d' % alpha_slider_max
 cv2.createTrackbar(trackbar_name3, title_window , 0, blur_slider_max, on_trackbar3)
+
+trackbar_name4 = 'Alpha4 x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name4, title_window , 0, blur_slider_max, on_trackbar4)
 
 
 
@@ -992,7 +1001,7 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels):
 
 
 def ProcessFrame():
-    global cap, sourceImage, lock, writer, frameProcessed, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount
+    global cap, sourceImage, lock, writer, frameProcessed, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount
 
     r = cv2.getTrackbarPos("R", "Controls")
     g = cv2.getTrackbarPos("G", "Controls")
@@ -1192,9 +1201,9 @@ def ProcessFrame():
                     if cannyFull:
                         # bufferFrames[streamIndex] = autoCanny(bufferFrames[streamIndex])
                         #bufferFrames[streamIndex] = colorize(yoloNetworkColorizer, bufferFrames[streamIndex])
-
+                        #
                         frameCopy = bufferFrames[streamIndex].copy()
-
+                        #
                         # (h, w) = frameCopy.shape[:2]
                         # frameCopy = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2LAB)
                         # frameCopy = frameCopy.reshape((frameCopy.shape[0] * frameCopy.shape[1], 3))
@@ -1221,11 +1230,20 @@ def ProcessFrame():
                         #
                         # bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
 
-                        #frameCopy = cv2.GaussianBlur(frameCopy, (7, 7), 7)
+
                         if (blurAmount % 2 == 0):
                             blurAmount += 1
                         else:
-                            bufferFrames[streamIndex] = cv2.GaussianBlur( bufferFrames[streamIndex], (blurAmount, blurAmount), blurAmount)
+                            frameCopy = cv2.GaussianBlur(frameCopy, (blurAmount, blurAmount), blurAmount)
+
+                        if (blurCannyAmount % 2 == 0):
+                            blurCannyAmount += 1
+                        else:
+                            bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex],
+                                                                         (blurCannyAmount, blurCannyAmount),
+                                                                         blurCannyAmount)
+
+                        #bufferFrames[streamIndex] = cv2.bilateralFilter(bufferFrames[streamIndex], 19, 175, 175)
 
                         bufferFrames[streamIndex] = cv2.Canny(
                             bufferFrames[streamIndex], thres1, thres2)
@@ -1234,14 +1252,27 @@ def ProcessFrame():
                         bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
 
                         # hsvImg = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
-                        # hsvImg[..., 1] = hsvImg[..., 1] * 1.1
-                        # hsvImg[...,2] = hsvImg[...,2]*1
+                        # hsvImg[..., 1] = hsvImg[..., 1] * 1.2
+                        # #hsvImg[...,2] = hsvImg[...,2]*0.6
                         # frameCopy = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
-                        #
+
+
+
+
                         # hsv = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
                         # value = 80  # whatever value you want to add
                         # cv2.add(hsv[:, :, 2], hsv[:, :, 2], value)
                         # frameCopy = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
+                        # (B, G, R) = cv2.split(frameCopy)
+                        #
+                        # M = np.maximum(np.maximum(R, G), B) - 60
+                        # R[R < M] = 50
+                        # G[G < M] = 50
+                        # B[B < M] = 50
+                        # # merge the channels back together and return the image
+                        # frameCopy =  cv2.merge([B, G, R])
+
 
                         # for i in range(0, bufferFrames[streamIndex].shape[0] - 3):
                         #     for j in range(0, bufferFrames[streamIndex].shape[1] - 3):
@@ -1271,15 +1302,15 @@ def ProcessFrame():
                         #                 diffRG = frameCopy[i, j, 2] - frameCopy[i, j, 1]
                         #
                         #             if frameCopy[i, j, 0] > frameCopy[i, j, 1] and frameCopy[i, j, 0] > frameCopy[i, j, 2] and diffBG > 20 and diffBR > 20:
-                        #                 if (frameCopy[i, j, 0] <= 225):
-                        #                     frameCopy[i, j, 0] += 30
+                        #                 if (frameCopy[i, j, 0] <= 205):
+                        #                     frameCopy[i, j, 0] += 50
                         #             if frameCopy[i, j, 1] > frameCopy[i, j, 0] and frameCopy[i, j, 1] > frameCopy[i, j, 2] and diffGB > 20 and diffGR > 20:
-                        #                 if (frameCopy[i, j, 1] <= 225):
-                        #                     frameCopy[i, j, 1] += 30
+                        #                 if (frameCopy[i, j, 1] <= 205):
+                        #                     frameCopy[i, j, 1] += 50
                         #             if frameCopy[i, j, 2] > frameCopy[i, j, 0] and frameCopy[i, j, 2] > frameCopy[i, j, 1] and diffRB > 20 and diffRG > 20:
-                        #                 if (frameCopy[i, j, 2] <= 225):
-                        #                     frameCopy[i, j, 2] += 30
-                        #////////////////////
+                        #                 if (frameCopy[i, j, 2] <= 205):
+                        #                     frameCopy[i, j, 2] += 50
+                        # #////////////////////
                                 # if frameCopy[i, j, 0] > frameCopy[i, j, 1] and frameCopy[i, j, 0] > frameCopy[i, j, 2]:
                                 #     if (frameCopy[i, j, 0] <= 245):
                                 #         frameCopy[i, j, 0] += 10
@@ -1307,41 +1338,49 @@ def ProcessFrame():
                                 #     frameCopy[i, j] = [255, 255, 255]
                         #frameCopy[np.where((bufferFrames[streamIndex] == [255, 255, 255]).all(axis=2))] = [0,0,0]
 
-                        #bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex], (1, 1), 1)
+                        #bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex], (3, 3), 1)
+                        # kernel = np.ones((2, 2), np.float32) / 25
+                        # bufferFrames[streamIndex] = cv2.filter2D( bufferFrames[streamIndex], -1, kernel)
+                        bufferFrames[streamIndex] = cv2.blur( bufferFrames[streamIndex], (3, 3))
+                        #bufferFrames[streamIndex] = cv2.bilateralFilter(bufferFrames[streamIndex], 9, 175, 175)
                         #frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+                        # frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+                        frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
                         #
 
-                        clearFrame = bufferFrames[streamIndex].copy()
-                        crop_img = bufferFrames[streamIndex][0:bufferFrames[streamIndex].shape[0], 1:bufferFrames[streamIndex].shape[1]].copy()
-                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0], 0:crop_img.shape[1]].copy()
-                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
-                        #
-                        #
-                        clearFrame = bufferFrames[streamIndex].copy()
-                        crop_img = bufferFrames[streamIndex][1:bufferFrames[streamIndex].shape[0], 0:bufferFrames[streamIndex].shape[1]].copy()
-                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0], 0:crop_img.shape[1]].copy()
-                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+                        # clearFrame = bufferFrames[streamIndex].copy()
+                        # crop_img = bufferFrames[streamIndex][1:bufferFrames[streamIndex].shape[0], 1:bufferFrames[streamIndex].shape[1]].copy()
+                        # clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0], 0:crop_img.shape[1]].copy()
+                        # frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+                        # # #
+                        # # #
+                        # clearFrame = bufferFrames[streamIndex].copy()
+                        # crop_img = bufferFrames[streamIndex][1:bufferFrames[streamIndex].shape[0], 0:bufferFrames[streamIndex].shape[1]].copy()
+                        # clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0], 0:crop_img.shape[1]].copy()
+                        # frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+                        # #
+                        # clearFrame = bufferFrames[streamIndex].copy()
+                        # crop_img = bufferFrames[streamIndex][0:bufferFrames[streamIndex].shape[0], 1:bufferFrames[streamIndex].shape[1]].copy()
+                        # clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
+                        #                                                        0:crop_img.shape[1]].copy()
+                        # frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
 
-                        clearFrame = bufferFrames[streamIndex].copy()
-                        crop_img = bufferFrames[streamIndex][1:bufferFrames[streamIndex].shape[0], 1:bufferFrames[streamIndex].shape[1]].copy()
-                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
-                                                                               0:crop_img.shape[1]].copy()
-                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
 
-                        clearFrame = bufferFrames[streamIndex].copy()
-                        crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
-                                   0:bufferFrames[streamIndex].shape[1]].copy()
-                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
-                                                                               0:crop_img.shape[1]].copy()
-                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
 
-                        clearFrame = bufferFrames[streamIndex].copy()
-                        crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
-                                   1:bufferFrames[streamIndex].shape[1]].copy()
-                        clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
-                                                                               0:crop_img.shape[1]].copy()
-                        frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+                        # clearFrame = bufferFrames[streamIndex].copy()
+                        # crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
+                        #            0:bufferFrames[streamIndex].shape[1]].copy()
+                        # clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
+                        #                                                        0:crop_img.shape[1]].copy()
+                        # frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
                         #
+                        # clearFrame = bufferFrames[streamIndex].copy()
+                        # crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
+                        #            1:bufferFrames[streamIndex].shape[1]].copy()
+                        # clearFrame[0:crop_img.shape[0], 0:crop_img.shape[1]] = crop_img[0:crop_img.shape[0],
+                        #                                                        0:crop_img.shape[1]].copy()
+                        # frameCopy[np.where((clearFrame == [255, 255, 255]).all(axis=2))] = [0, 0, 0]
+
                         # clearFrame = bufferFrames[streamIndex].copy()
                         # crop_img = bufferFrames[streamIndex][2:bufferFrames[streamIndex].shape[0],
                         #            2:bufferFrames[streamIndex].shape[1]].copy()
@@ -1352,7 +1391,14 @@ def ProcessFrame():
 
                         #bufferFrames[streamIndex] *= np.array((1, 1, 0), np.uint8)
                         #frameCopy = cv2.GaussianBlur(frameCopy, (13, 13), 13)
+
+                        hsv = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
+                        hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], 1.5)
+                        frameCopy = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
+                        frameCopy = cv2.GaussianBlur(frameCopy, (7, 7), 7)
                         bufferFrames[streamIndex] = frameCopy
+
                         #bufferFrames[streamIndex] = np.bitwise_or(bufferFrames[streamIndex], frameCopy)
                         #bufferFrames[streamIndex] += frameCopy
 
@@ -1411,10 +1457,11 @@ def ProcessFrame():
                                             print("handbag detected! -> PASS")
 
                             if (writer is None):
+                                # writer = cv2.VideoWriter(f"static/output{args['port']}.avi"
+                                #                          f"", fourcc, 25, (
+                                #     bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
                                 writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
-                                    bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
-                                # writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
-                                #     640, 720), True)
+                                    640, 720), True)
                             else:
                                 progress = frameProcessed / totalFrames * 100
 
@@ -1432,21 +1479,20 @@ def ProcessFrame():
                                 #         round(fps, 2)) + " | " + "CPU: " + str(
                                 #         psutil.cpu_percent()) + "%", (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40),
                                 #                 font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
-                                # cv2.putText(bufferFrames[streamIndex], "FPS: " + str(
-                                #     round(fps, 2)) + " | " + "CPU: " + str(
-                                #     psutil.cpu_percent()) + "%", (40, 40),
-                                #             font, 1.4, (0, 0, 255), 2)
+                                cv2.putText(bufferFrames[streamIndex], "FPS: " + str(
+                                    round(fps, 2)), (40, 40),
+                                            font, 1.4, (0, 0, 255), 2)
                                 # resized1 = cv2.resize(frameList[streamIndex], (640, 320))
                                 # resized2 = cv2.resize(bufferFrames[streamIndex], (640, 320))
 
-                                if (sourceMode == "video") :
-                                    writer.write(bufferFrames[streamIndex])
+                                # if (sourceMode == "video") :
+                                #     writer.write(bufferFrames[streamIndex])
 
                                 if (sourceMode == "image"):
                                     cv2.imwrite(f"static/{sourceImage}", bufferFrames[streamIndex])
                                     workingOn = False
-                                # if ((sourceMode == "image" and extractAndReplaceBackground == True)):
-                                #     writer.write(bufferFrames[streamIndex])
+                                if ((sourceMode == "image" and extractAndReplaceBackground == True)):
+                                    writer.write(bufferFrames[streamIndex])
 
                                 # cv2.imwrite("static/t.jpg",
                                 # bufferFrames[streamIndex])
@@ -1455,16 +1501,16 @@ def ProcessFrame():
 
                                 # im_v = cv2.vconcat([im_h, im_h2])
                                 # resized = bufferFrames[streamIndex].copy()
-                                # resized = cv2.resize(resized, (1280, 720))
+                                #resized = cv2.resize(resized, (1280, 720))
                                 concated = cv2.vconcat([resized2, resized1, ])
 
-                                #resized = cv2.resize(concated, (640, 720))
-                                resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+                                resized = cv2.resize(concated, (640, 720))
+                                #resized = cv2.resize(bufferFrames[streamIndex], (1600, 900))
 
-                                # if (sourceMode == "video"):
-                                #     writer.write(resized)
+                                if (sourceMode == "video"):
+                                    writer.write(resized)
 
-                                cv2.imshow("video", resized)
+                                cv2.imshow("video",  resized)
                                 key = cv2.waitKey(1) & 0xFF
 
                                 if key == ord("q"):
