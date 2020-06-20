@@ -5,6 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: localFiles",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/al/GitHub/PyCameraServer/localFiles.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-i",
+                "192.168.0.12",
+                "-o",
+                "8002",
+                "-s",
+                "drone2kcut.mp4",
+                "-c",
+                "e",
+                "-m",
+                "video"
+            ]
+
+        },
+        {
             "name": "Python: imageScanner",
             "type": "python",
             "request": "launch",
@@ -19,8 +39,6 @@
                 "16",
                 "-t",
                 "70"
-
-
             ]
         },
         {

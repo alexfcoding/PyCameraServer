@@ -11,7 +11,44 @@
 
 <body style="background-color:#1d1d1d;">
     <div style="text-align: center;">
-        <img style="width:1280px;height:720px; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}">
+        <img style="width:960px;height:540px; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}">
+       <div>
+            <div style="display: inline-block; font-size: 24px; color: white;">Position:</div>
+            <div style=" display: inline-block;font-size: 28px; color: white;" id="positionValue"></div>
+            <div><input style="-webkit-appearance: none; appearance: none; width: 1200px;" type="range" min="1" max="1000" step="1" value="50" class="slider" id="positionId">            </div>
+       </div>
+        <div style="display: inline-block; max-width: 1300px; text-align: center;">
+            <div style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Edge Blur:</div>
+                <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="3" value="50" class="slider" id="cannyBlurId">            </div>
+            </div>
+           
+            <div style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Background Blur:</div>
+                <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+            </div>
+
+            <div style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Threshold Details:</div>
+                <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+            </div>
+
+            <div style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Threshold Lines:</div>
+                <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+            </div>
+
+            <div style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Line Thickness:</div>
+                <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+            </div>  
+        </div>
+
         <div id="grid">
             <div>
                 <h2>RENDERED</h2>
@@ -87,6 +124,38 @@
                     }
                 })
             }, 1000);
+
+            var myTimer2 = setInterval(function() {
+                var positionSlider = document.getElementById("positionId");
+                var outputPosition = document.getElementById("positionValue");
+                var positionSliderValue = positionSlider.value;
+
+                var cannyBlurSlider = document.getElementById("cannyBlurId");                
+                var cannyBlurOutput = document.getElementById("cannyBlurValue");
+                var sliderValue = cannyBlurSlider.value;
+                
+                outputPosition.innerHTML = positionSlider.value;
+                cannyBlurOutput.innerHTML = cannyBlurSlider.value; 
+                
+                positionSlider.oninput = function() {
+                    outputPosition.innerHTML = this.value;                                    
+                }
+               
+                cannyBlurSlider.oninput = function() {
+                    cannyBlurOutput.innerHTML = this.value;                                    
+                }                
+
+                $.ajax({
+                      type: "POST",
+                      contentType: "application/json;charset=utf-8",
+                      url: "/update2",
+                      traditional: "true",
+                      data: JSON.stringify({sliderValue, positionSliderValue}),
+                      dataType: "json"
+                      });
+
+            }, 300);
+
         </script>
     </div>
 </body>
