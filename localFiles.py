@@ -1010,6 +1010,43 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels):
     frameOut = inputFrame
     return frameOut
 
+def sharpening(inputFrame):
+    kernel_sharpening = np.array([[-1,-1,-1], [-1, 9,-1], [-1,-1,-1]])
+    inputFrame = cv2.filter2D(inputFrame, -1, kernel_sharpening)  
+    return inputFrame
+
+def denoise(inputFrame):    
+    b,g,r = cv2.split(inputFrame)           # get b,g,r
+    inputFrame = cv2.merge([r,g,b])     # switch it to rgb
+    dst = cv2.fastNlMeansDenoisingColored(inputFrame,None,10,20,7,21)
+    b,g,r = cv2.split(dst) 
+    inputFrame = cv2.merge([r,g,b])
+    return inputFrame
+
+def morphEdgeDetection(inputFrame):
+    morph = inputFrame.copy()
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
+    morph = cv2.morphologyEx(morph, cv2.MORPH_CLOSE, kernel)
+    morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, kernel)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    # take morphological gradient
+    gradient_image = cv2.morphologyEx(morph, cv2.MORPH_GRADIENT, kernel)
+    # split the gradient image into channels
+    image_channels = np.split(np.asarray(gradient_image), 3, axis=2)
+    channel_height, channel_width, _ = image_channels[0].shape
+    # apply Otsu threshold to each channel
+    for i in range(0, 3):
+        _, image_channels[i] = cv2.threshold(~image_channels[i], 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY)
+        image_channels[i] = np.reshape(image_channels[i], newshape=(channel_height, channel_width, 1))
+    # merge the channels
+    image_channels = np.concatenate((image_channels[0], image_channels[1], image_channels[2]), axis=2)
+    # save the denoised image
+    #cv2.imwrite('output.jpg', image_channels)
+
+    image_channels = cv2.cvtColor(image_channels, cv2.COLOR_BGR2GRAY)
+    image_channels = cv2.cvtColor(image_channels, cv2.COLOR_GRAY2BGR)
+    image_channels = cv2.bitwise_not(image_channels)
+    return image_channels
 
 def ProcessFrame():
     global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, videoResetCommand,  startedRenderingVideo
@@ -1024,9 +1061,7 @@ def ProcessFrame():
 
     usingYoloNeuralNetwork = False
     usingCaffeNeuralNetwork = False
-    usingMaskRcnnNetwork = False
-
-   
+    usingMaskRcnnNetwork = False   
 
     saveOnlyWithPeople = False
     blurPeople = False
@@ -1226,24 +1261,32 @@ def ProcessFrame():
                         if videoColorization:
                             bufferFrames[streamIndex] = colorize(yoloNetworkColorizer, bufferFrames[streamIndex])
 
+                    # if (imageUpscaler):
+                        # kernel_sharpening = np.array([[-1,-1,-1], [-1, 9,-1], [-1,-1,-1]])
+
+                        
+                        # b,g,r = cv2.split(bufferFrames[streamIndex])           # get b,g,r
+                        # bufferFrames[streamIndex] = cv2.merge([r,g,b])     # switch it to rgb
+
+                        # # Denoising
+                        # dst = cv2.fastNlMeansDenoisingColored(bufferFrames[streamIndex],None,15,20,10,21)
+
+                        # b,g,r = cv2.split(dst)           # get b,g,r
+                        # bufferFrames[streamIndex] = cv2.merge([r,g,b])     # switch it to rgb
+
+                        # bufferFrames[streamIndex] = cv2.filter2D(bufferFrames[streamIndex], -1, kernel_sharpening)          
+
+
                     if cannyFull:
                         # bufferFrames[streamIndex] = autoCanny(bufferFrames[streamIndex])
                         #bufferFrames[streamIndex] = colorize(yoloNetworkColorizer, bufferFrames[streamIndex])
                         #
+                        #bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex])
                         frameCopy = bufferFrames[streamIndex].copy()
-                        #
+                        
+                        #frameCopy = sharpening(frameCopy)
+                        
 
-                        # bufferFrames[streamIndex] = autoCanny(frameCopy)
-                        #frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 3)
-
-                        # bufferFrames[streamIndex] = cv2.GaussianBlur( bufferFrames[streamIndex], (3, 3), 3)
-                        # bufferFrames[streamIndex] = cv2.Canny(
-                        #      bufferFrames[streamIndex], 70, 100)
-                        #
-                        #
-                        # bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
-
-                        #localBlurCannyAmount = blurCannyAmount
                         
                         if (blurAmount % 2 == 0):
                             blurAmount += 1
@@ -1261,12 +1304,20 @@ def ProcessFrame():
                                                                          blurCannyAmount)
                          
                         #bufferFrames[streamIndex] = cv2.bilateralFilter(bufferFrames[streamIndex], 19, 175, 175)
+                          
 
-                        bufferFrames[streamIndex] = cv2.Canny(
-                            bufferFrames[streamIndex], thres1, thres2)
+                        #bufferFrames[streamIndex] = morphEdgeDetection(bufferFrames[streamIndex])
 
-
+                        bufferFrames[streamIndex] = cv2.Canny(bufferFrames[streamIndex], thres1, thres2)
                         bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
+                        
+
+                        cv2.imshow("videof",  bufferFrames[streamIndex])
+                        key = cv2.waitKey(1) & 0xFF
+
+                        if key == ord("q"):
+                            break
+
 
 # Limit COLORS ====================================================
                         # (B, G, R) = cv2.split(frameCopy)
@@ -1378,10 +1429,10 @@ def ProcessFrame():
                         
                         kernel = np.ones((3,3),np.uint8)
                         bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
-                        #bufferFrames[streamIndex] = cv2.bitwise_not(bufferFrames[streamIndex])
+                        
                         #                         
                         
-                        frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
+                        frameCopy[np.where((bufferFrames[streamIndex] > [50, 50, 50]).all(axis=2))] = [0,0,0]
                         #frameCopy[np.where(bufferFrames[streamIndex] <= 255)] = bufferFrames[streamIndex][np.where(bufferFrames[streamIndex] <= 255)]
                         #frameCopy = cv2.addWeighted(frameCopy, 1, bufferFrames[streamIndex], 1, 0)
                         #frameCopy = np.bitwise_or(frameCopy, bufferFrames[streamIndex])
@@ -1423,11 +1474,13 @@ def ProcessFrame():
 # LIMIT COLORS WITH KMEANS ============================================================
                         #frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
                         bufferFrames[streamIndex] = frameCopy
+                        
+                        # bufferFrames[streamIndex][np.where((bufferFrames[streamIndex] == [255, 255, 255]).all(axis=2))] = [0, 0, 255]
+                        # bufferFrames[streamIndex] = bufferFrames[streamIndex] + 10
+                        # bufferFrames[streamIndex] = np.bitwise_or(bufferFrames[streamIndex], frameCopy)
+                        # bufferFrames[streamIndex] += frameCopy
 
-                        #bufferFrames[streamIndex][np.where((bufferFrames[streamIndex] == [255, 255, 255]).all(axis=2))] = [0, 0, 255]
-                        #bufferFrames[streamIndex] = bufferFrames[streamIndex] + 10
-                        #bufferFrames[streamIndex] = np.bitwise_or(bufferFrames[streamIndex], frameCopy)
-                        #bufferFrames[streamIndex] += frameCopy
+
                         bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
 
                     with lock:
@@ -1561,7 +1614,8 @@ def ProcessFrame():
                             # outputFrame = concated
                             outputFrame = bufferFrames[streamIndex]
                 else:
-                    outputFrame = bufferFrames[streamIndex]
+                    resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+                    outputFrame = resized
                     workingOn = False
                     print("finished")
 
