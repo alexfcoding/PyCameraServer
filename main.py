@@ -34,13 +34,14 @@ def upload_file():
 			CRED = '\033[91m'
 			CEND = '\033[0m'
 			options = request.form.getlist('check')
+			mode = request.form.getlist('checkMode')
 
 			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
 
 			# return redirect(url_for('start_analysis', prt=8001, filee=filename))
 			global connectionPort
 			connectionPort = connectionPort + 1
-			return start_analysis(connectionPort, filename, options)
+			return start_analysis(connectionPort, filename, options, mode)
 
 			# return f"Файл {filename} загружен. Запускаю сервер обработки..."
 			# return redirect(url_for('video_feed',prt=8000))
@@ -54,7 +55,7 @@ def uploaded_file(filename):
 							   filename)
 
 @app.route("/")
-def start_analysis(portToRender, fileToRender, options):
+def start_analysis(portToRender, fileToRender, options, mode):
 	# return Response(generate(),
 	# 	mimetype = "multipart/x-mixed-replace; boundary=frame")
 	# os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")
@@ -64,8 +65,13 @@ def start_analysis(portToRender, fileToRender, options):
 	for item in options:
 		strFromList += item
 
+	str2FromList = ""
+
+	for item in mode:
+		str2FromList += item
+
 	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
-					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', "video"])
+					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', str2FromList])
 
 	time.sleep(10)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"

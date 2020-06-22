@@ -11,89 +11,96 @@
 
 <body style="background-color:#1d1d1d;">
     <div style="text-align: center;">
-        <img style="width:960px;height:540px; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}">
-       <div>
+        <div><img style="max-width: 50%; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}"></div>
+        <div id="grid">
+            <div>
+                <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+
+            <div>
+                <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h1 id="freeRam" style="color: rgb(255, 255, 255);"></h1>
+            </div>
+            <div>
+                <h1 style="color: rgb(255, 255, 255);">enabled</h1>
+            </div>
+            <div>
+                <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+        </div>
+
+        <br>
+            <br>
+            <div>
+                <a class="glow" style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;" onclick="sendStartCommand()"">RESTART</a>
+                <a class="glow" style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;" href="{{pathToRenderedFile}}" ">DOWNLOAD</a>
+                <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;" href="http://192.168.0.12:8000">MAKE NEW</a>
+            </div>
+            <br>
+        
+        <div>
             <div style="display: inline-block; font-size: 24px; color: white;">Position:</div>
             <div style=" display: inline-block;font-size: 28px; color: white;" id="positionValue"></div>
-            <div><input style="-webkit-appearance: none; appearance: none; width: 1200px;" type="range" min="1" max="1000" step="1" value="50" class="slider" id="positionId">            </div>
+            <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(233, 212, 30); width: 810px;" type="range" min="1" max="1000" step="1" value="50" class="slider" id="positionId">            </div>
        </div>
-        <div style="display: inline-block; max-width: 1300px; text-align: center;">
+        <div style="display: inline-block; max-width: 1000px; text-align: center;">
+            <div style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Saturation:</div>
+                <div style=" display: inline-block;font-size: 28px; color: white;" id="saturationValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 30px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId">            </div>
+            </div>
+
             <div style="display: inline-block; " >
                 <div style="display: inline-block; font-size: 24px; color: white;">Edge Blur:</div>
                 <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="3" value="50" class="slider" id="cannyBlurId">            </div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 30px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="3" value="50" class="slider" id="cannyBlurId">            </div>
             </div>
            
             <div style="display: inline-block; " >
                 <div style="display: inline-block; font-size: 24px; color: white;">Background Blur:</div>
                 <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 30px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
             </div>
 
             <div style="display: inline-block; " >
                 <div style="display: inline-block; font-size: 24px; color: white;">Threshold Details:</div>
                 <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 30px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
             </div>
 
             <div style="display: inline-block; " >
                 <div style="display: inline-block; font-size: 24px; color: white;">Threshold Lines:</div>
                 <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 30px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
             </div>
 
             <div style="display: inline-block; " >
                 <div style="display: inline-block; font-size: 24px; color: white;">Line Thickness:</div>
                 <div style=" display: inline-block;font-size: 28px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; width: 600px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
-            </div>  
-        </div>
-
-        <div id="grid">
-            <div>
-                <h2>RENDERED</h2>
-                <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h2>TOTAL:</h2>
-                <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h2>PROGRESS:</h2>
-                <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h2>FPS:</h2>
-                <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-
-            <div>
-                <h2>CPU LOAD</h2>
-                <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h2>FREE RAM</h2>
-                <h1 id="freeRam" style="color: rgb(255, 255, 255);"></h1>
-            </div>
-            <div>
-                <h2>CUDA:</h2>
-                <h1 style="color: rgb(255, 255, 255);">enabled</h1>
-            </div>
-            <div>
-                <h2>FRAME SIZE:</h2>
-                <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-        </div>
-
-        <div>
-            <a class="glow" style="border-radius: 5px; background-color:#383838;  margin: 7px; padding: 10px; box-shadow: 6px 4px 8px #000000;" href="{{pathToRenderedFile}}">Download video</a>
-            <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;" href="http://192.168.0.12:8000">Make new video</a>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 30px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+            </div> 
         </div>
 
         <script>
             var working = 0;
             var frameWidth = 0;
             var frameHeight = 0;
+            var videoResetCommand = false;
+
+            function sendStartCommand() {
+                videoResetCommand = true;
+            }
 
             var myTimer = setInterval(function() {
                 $.ajax({
@@ -130,15 +137,24 @@
                 var outputPosition = document.getElementById("positionValue");
                 var positionSliderValue = positionSlider.value;
 
+                var saturationSlider = document.getElementById("saturationId");                
+                var saturationOutput = document.getElementById("saturationValue");
+                var saturationSliderValue = saturationSlider.value;
+
                 var cannyBlurSlider = document.getElementById("cannyBlurId");                
                 var cannyBlurOutput = document.getElementById("cannyBlurValue");
                 var sliderValue = cannyBlurSlider.value;
-                
+
                 outputPosition.innerHTML = positionSlider.value;
+                saturationOutput.innerHTML = saturationSlider.value;
                 cannyBlurOutput.innerHTML = cannyBlurSlider.value; 
                 
                 positionSlider.oninput = function() {
                     outputPosition.innerHTML = this.value;                                    
+                }
+
+                saturationSlider.oninput = function() {
+                    saturationOutput.innerHTML = this.value;                                    
                 }
                
                 cannyBlurSlider.oninput = function() {
@@ -150,9 +166,11 @@
                       contentType: "application/json;charset=utf-8",
                       url: "/update2",
                       traditional: "true",
-                      data: JSON.stringify({sliderValue, positionSliderValue}),
+                      data: JSON.stringify({sliderValue, saturationSliderValue, positionSliderValue, videoResetCommand}),
                       dataType: "json"
                       });
+                      
+                      videoResetCommand = false;
 
             }, 300);
 

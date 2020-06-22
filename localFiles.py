@@ -13,8 +13,11 @@ from flask import request, Response
 import psutil
 from random import randint
 from colorizer import colorize, initNetwork
-
+import time
 from sklearn.cluster import MiniBatchKMeans, KMeans
+import os
+timerStart = 0
+timerEnd = 0
 
 alpha_slider_max = 200
 blur_slider_max = 100
@@ -26,37 +29,37 @@ thres2 = 50
 blurAmount = 5
 blurCannyAmount = 5
 positionValue = 1
-
+saturationValue = 100
 
 cv2.namedWindow(title_window)
 
-# def on_trackbar(val):
-#     global thres1
-#     thres1 = val
+def on_trackbar(val):
+    global thres1
+    thres1 = val
 
-# def on_trackbar2(val):
-#     global thres2
-#     thres2 = val
+def on_trackbar2(val):
+    global thres2
+    thres2 = val
 
-# def on_trackbar3(val):
-#     global blurAmount
-#     blurAmount = val
+def on_trackbar3(val):
+    global blurAmount
+    blurAmount = val
 
-# def on_trackbar4(val):
-#     global blurCannyAmount
-#     blurCannyAmount = val
+def on_trackbar4(val):
+    global blurCannyAmount
+    blurCannyAmount = val
 
-# trackbar_name = 'Alpha x %d' % alpha_slider_max
-# cv2.createTrackbar(trackbar_name, title_window , 0, alpha_slider_max, on_trackbar)
+trackbar_name = 'Alpha x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name, title_window , 0, alpha_slider_max, on_trackbar)
 
-# trackbar_name2 = 'Alpha2 x %d' % alpha_slider_max
-# cv2.createTrackbar(trackbar_name2, title_window , 0, alpha_slider_max, on_trackbar2)
+trackbar_name2 = 'Alpha2 x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name2, title_window , 0, alpha_slider_max, on_trackbar2)
 
-# trackbar_name3 = 'Alpha3 x %d' % alpha_slider_max
-# cv2.createTrackbar(trackbar_name3, title_window , 0, blur_slider_max, on_trackbar3)
+trackbar_name3 = 'Alpha3 x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name3, title_window , 0, blur_slider_max, on_trackbar3)
 
-# trackbar_name4 = 'Alpha4 x %d' % alpha_slider_max
-# cv2.createTrackbar(trackbar_name4, title_window , 0, blur_slider_max, on_trackbar4)
+trackbar_name4 = 'Alpha4 x %d' % alpha_slider_max
+cv2.createTrackbar(trackbar_name4, title_window , 0, blur_slider_max, on_trackbar4)
 
 
 
@@ -70,6 +73,8 @@ progress = 0
 fps = 0
 cap = None
 cap2 = None
+videoResetCommand = False
+startedRenderingVideo = False
 
 
 lock = threading.Lock()
@@ -1007,7 +1012,7 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels):
 
 
 def ProcessFrame():
-    global cap, sourceImage, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue
+    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, videoResetCommand,  startedRenderingVideo
 
     r = cv2.getTrackbarPos("R", "Controls")
     g = cv2.getTrackbarPos("G", "Controls")
@@ -1020,6 +1025,8 @@ def ProcessFrame():
     usingYoloNeuralNetwork = False
     usingCaffeNeuralNetwork = False
     usingMaskRcnnNetwork = False
+
+   
 
     saveOnlyWithPeople = False
     blurPeople = False
@@ -1036,7 +1043,7 @@ def ProcessFrame():
     colorObjectsOnGray = False
     videoColorization = False
     imageUpscaler = False
-    cannyFull = False
+    cannyFull = True
     showAllObjects = False
     textRender = False
 
@@ -1133,9 +1140,23 @@ def ProcessFrame():
 
             for streamIndex in range(len(streamList)):
                 if (sourceMode == "video"):
-                    cap.set(1,positionValue)
+
+                    if (startedRenderingVideo == False):
+                        cap.set(1,positionValue)
+                    else:
+                        if (videoResetCommand == True):
+                            cap.set(1,1)
+                            frameProcessed = 0
+                            cap.release()
+                            writer.release()
+                            cap = cv2.VideoCapture(fileToRender)
+                            writer = cv2.VideoWriter(f"static/output{args['port']}.avi"
+                                                         f"", fourcc, 25, (
+                                    bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
+                            
                     ret, frameList[streamIndex] = cap.read()
                     ret2, frameBackground = cap2.read()
+                    
                 if (sourceMode == "image"):
                     frameList[streamIndex] = cv2.imread(sourceImage)
                     ret2, frameBackground = cap2.read()
@@ -1352,9 +1373,20 @@ def ProcessFrame():
 
                         #bufferFrames[streamIndex] *= np.array((1, 1, 0), np.uint8)
                         #frameCopy = cv2.GaussianBlur(frameCopy, (13, 13), 13)
-
-                        bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
-                        frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+                        #bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
+                       
+                        
+                        kernel = np.ones((3,3),np.uint8)
+                        bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
+                        #bufferFrames[streamIndex] = cv2.bitwise_not(bufferFrames[streamIndex])
+                        #                         
+                        
+                        frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
+                        #frameCopy[np.where(bufferFrames[streamIndex] <= 255)] = bufferFrames[streamIndex][np.where(bufferFrames[streamIndex] <= 255)]
+                        #frameCopy = cv2.addWeighted(frameCopy, 1, bufferFrames[streamIndex], 1, 0)
+                        #frameCopy = np.bitwise_or(frameCopy, bufferFrames[streamIndex])
+                        #frameCopy[bufferFrames[streamIndex] > [0, 0, 0]] = cv2.bitwise_not(bufferFrames[streamIndex][bufferFrames[streamIndex]>0]   ) 
+                        
 
 # BRIGHTNESS AND CONTRAST =============================================================
                         # alpha = 0.7  # Contrast control (1.0-3.0)
@@ -1365,9 +1397,9 @@ def ProcessFrame():
 # BRIGHTNESS AND CONTRAST =============================================================
 
 # AMP COLORS ==========================================================================
-
+                        saturation = saturationValue / 100
                         hsv = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
-                        hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], 1.1)
+                        hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], saturation)
                         hsv[:, :, 2] = cv2.multiply(hsv[:, :, -1], 1)
                         frameCopy = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 # AMP COLORS ==========================================================================
@@ -1389,22 +1421,35 @@ def ProcessFrame():
                         #
                         # frameCopy = quant
 # LIMIT COLORS WITH KMEANS ============================================================
-                        frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
+                        #frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
                         bufferFrames[streamIndex] = frameCopy
 
                         #bufferFrames[streamIndex][np.where((bufferFrames[streamIndex] == [255, 255, 255]).all(axis=2))] = [0, 0, 255]
                         #bufferFrames[streamIndex] = bufferFrames[streamIndex] + 10
                         #bufferFrames[streamIndex] = np.bitwise_or(bufferFrames[streamIndex], frameCopy)
                         #bufferFrames[streamIndex] += frameCopy
-                        # bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex], (3, 3), 3)
+                        bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
 
                     with lock:
                         personDetected = False
+                        timerEnd = time.perf_counter()
+
+                        print(str(timerStart) + "///////" + str(timerEnd))
+                        
+                        if (timerEnd - timerStart < 5 and timerStart != 0):
+                            print("User is connected")
+                        else:
+                            if (timerStart != 0):
+                                print("User disconnected, need shutdown !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                                currentPid = os.getpid()
+                                p = psutil.Process(currentPid)
+                                p.terminate()  #or p.kill()
+                                #shutdown_server()
 
                         frameProcessed = frameProcessed + 1
                         elapsedTime = time.time()
                         fps = 1 / (elapsedTime - startMoment)
-                        print(fps)
+                        #print(fps)
 
                         for streamIndex in range(len(streamList)):
                             if (showAllObjects):
@@ -1458,7 +1503,8 @@ def ProcessFrame():
                                 # writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
                                 #     640, 720), True)
                             else:
-                                progress = frameProcessed / totalFrames * 100
+                                if (sourceMode == "video"):
+                                    progress = frameProcessed / totalFrames * 100
 
                                 # cv2.rectangle(bufferFrames[streamIndex], (20, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 80),
                                 #               (int(
@@ -1474,7 +1520,8 @@ def ProcessFrame():
                                 #         round(fps, 2)) + " | " + "CPU: " + str(
                                 #         psutil.cpu_percent()) + "%", (40, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 40),
                                 #                 font, 1.4, (0, 0, 255), 2, lineType=cv2.LINE_AA)
-                                cv2.putText(bufferFrames[streamIndex], f"FPS: {str(round(fps, 2))} {str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])}", (40, 40),
+                                if (sourceMode == "video"):
+                                    cv2.putText(bufferFrames[streamIndex], f"FPS: {str(round(fps, 2))} {str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])}", (40, 40),
                                             font, 1.4, (0, 0, 255), 2)
                                 # resized1 = cv2.resize(frameList[streamIndex], (640, 320))
                                 # resized2 = cv2.resize(bufferFrames[streamIndex], (640, 320))
@@ -1484,7 +1531,7 @@ def ProcessFrame():
 
                                 if (sourceMode == "image"):
                                     cv2.imwrite(f"static/{sourceImage}", bufferFrames[streamIndex])
-                                    workingOn = False
+                                    #workingOn = False
                                 if ((sourceMode == "image" and extractAndReplaceBackground == True)):
                                     writer.write(bufferFrames[streamIndex])
 
@@ -1505,6 +1552,7 @@ def ProcessFrame():
                                     writer.write(bufferFrames[streamIndex])
 
                                 cv2.imshow("video",  resized)
+                                #cv2.imshow("video",  bufferFrames[streamIndex])
                                 key = cv2.waitKey(1) & 0xFF
 
                                 if key == ord("q"):
@@ -1572,6 +1620,19 @@ def video_feed():
 
 @app.route('/update', methods=['POST'])
 def update():
+    global sourceMode
+
+    timerStart = time.perf_counter()
+    frameWidthToPage = 0
+    frameHeightToPage = 0
+
+    if (sourceMode == "video"):
+        frameWidthToPage = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        frameHeightToPage = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) 
+    if (sourceMode == "image"):
+        frameWidthToPage = 0
+        frameHeightToPage = 0  
+
     return jsonify({
         'value': frameProcessed,
         'totalFrames': totalFrames,
@@ -1581,20 +1642,30 @@ def update():
         'cpuUsage': psutil.cpu_percent(),
         'freeRam': round((psutil.virtual_memory()[1] / 2. ** 30), 2),
         'ramPercent': psutil.virtual_memory()[2],
-        'frameWidth': cap.get(cv2.CAP_PROP_FRAME_WIDTH),
-        'frameHeight': cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        'frameWidth': frameWidthToPage,
+        'frameHeight': frameHeightToPage
         # 'time': datetime.datetime.now().strftime("%H:%M:%S"),
     })
+    
+    print(timerStart + "////" + timerEnd)
 
 @app.route('/update2', methods=['POST'])
 def sendCommand():
-    global blurCannyAmount, positionValue
+    global blurCannyAmount, positionValue, saturationValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd
     
     if request.method == 'POST':
+        timerStart = time.perf_counter()
         inputData = request.get_json()
         blurCannyAmount = int(inputData["sliderValue"])
         positionValue = int(inputData["positionSliderValue"])
-                
+        saturationValue = int(inputData["saturationSliderValue"])
+        videoResetCommand = int(inputData["videoResetCommand"])
+
+        if (videoResetCommand):
+            startedRenderingVideo = True
+
+        print(videoResetCommand)
+
     return '', 200
 
 def shutdown_server():

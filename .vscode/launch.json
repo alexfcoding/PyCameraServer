@@ -45,7 +45,7 @@
             "name": "Python: Server",
             "type": "python",
             "request": "launch",
-            "program": "main.py",
+            "program": "/home/al/GitHub/PyCameraServer/main.py",
             "console": "integratedTerminal",
             "args": [
                 "-i",

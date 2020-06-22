@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
     <title>Neural Video Editor</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -152,8 +155,7 @@
         }
 
         .video {
-          //background-image: url('https://img.youtube.com/vi/nZcejtAwxz4/maxresdefault.jpg');
-         // height: 800px;
+          
           width: 640px;
           margin-bottom: 10px;
         }
@@ -181,6 +183,7 @@
 
             <input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>
             <input style="display: none;" id="selectedModeId" type="radio" name="check" value="a"/>
+            <input style="display: none;" id="selectedVideoOrImageId" type="checkbox" name="checkMode" value="video"/>
 
             <div id="content">
                 <div>
@@ -198,9 +201,15 @@
 
                              <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
 
-                            <div style="text-align: center; margin-top: 15px;">
-                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeA">UPLOAD FILE</label>
-                                <input style="display: none;" type="button" id="setModeA" onclick="callInput('a')"/>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeAVideo">UPLOAD VIDEO</label>
+                                <input style="display: none;" type="button" id="setModeAVideo" onclick="callVideoOrImage('video'), callInput('a')"/>
+                                <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                            </div>
+
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeAImage">UPLOAD IMAGE</label>
+                                <input style="display: none;" type="button" id="setModeAImage" onclick="callVideoOrImage('image'), callInput('a')"/>
                                 <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                             </div>
                     </div>
@@ -221,9 +230,16 @@
 
                                 <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                                <div style="text-align: center; margin-top: 15px;">
-                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeJ">UPLOAD FILE</label>
-                                   <input style="display: none;" type="button" id="setModeJ" onclick="callInput('j')"/>
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeJVideo">UPLOAD VIDEO</label>
+                                    <input style="display: none;" type="button" id="setModeJVideo" onclick="callVideoOrImage('video'), callInput('j')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                                </div>
+    
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeJImage">UPLOAD IMAGE</label>
+                                    <input style="display: none;" type="button" id="setModeJImage" onclick="callVideoOrImage('image'), callInput('j')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                                 </div>
                              </div>
                     </div>
@@ -243,9 +259,16 @@
 
                                 <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                                <div style="text-align: center; margin-top: 15px;">
-                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeF">UPLOAD FILE</label>
-                                   <input style="display: none;" type="button" id="setModeF" onclick="callInput('f')"/>
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeFVideo">UPLOAD VIDEO</label>
+                                    <input style="display: none;" type="button" id="setModeFVideo" onclick="callVideoOrImage('video'), callInput('f')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                                </div>
+    
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeFImage">UPLOAD IMAGE</label>
+                                    <input style="display: none;" type="button" id="setModeFImage" onclick="callVideoOrImage('image'), callInput('f')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                                 </div>
                             </div>
                     </div>
@@ -265,9 +288,16 @@
 
                                 <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                                <div style="text-align: center; margin-top: 15px;">
-                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeE">UPLOAD FILE</label>
-                                   <input style="display: none;" type="button" id="setModeE" onclick="callInput('e')"/>
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeEVideo">UPLOAD VIDEO</label>
+                                    <input style="display: none;" type="button" id="setModeEVideo" onclick="callVideoOrImage('video'), callInput('e')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                                </div>
+    
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeEImage">UPLOAD IMAGE</label>
+                                    <input style="display: none;" type="button" id="setModeEImage" onclick="callVideoOrImage('image'), callInput('e')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                                 </div>
                             </div>
                     </div>
@@ -287,9 +317,16 @@
 
                                 <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                                <div style="text-align: center; margin-top: 15px;">
-                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeB">UPLOAD FILE</label>
-                                   <input style="display: none;" type="button" id="setModeB" onclick="callInput('b')"/>
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeBVideo">UPLOAD VIDEO</label>
+                                    <input style="display: none;" type="button" id="setModeBVideo" onclick="callVideoOrImage('video'), callInput('b')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                                </div>
+    
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeBImage">UPLOAD IMAGE</label>
+                                    <input style="display: none;" type="button" id="setModeBImage" onclick="callVideoOrImage('image'), callInput('b')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                                 </div>
                             </div>
                     </div>
@@ -309,9 +346,16 @@
 
                                 <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                                <div style="text-align: center; margin-top: 15px;">
-                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeI">UPLOAD FILE</label>
-                                   <input style="display: none;" type="button" id="setModeI" onclick="callInput('i')"/>
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeIVideo">UPLOAD VIDEO</label>
+                                    <input style="display: none;" type="button" id="setModeIVideo" onclick="callVideoOrImage('video'), callInput('i')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                                </div>
+    
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeIImage">UPLOAD IMAGE</label>
+                                    <input style="display: none;" type="button" id="setModeIImage" onclick="callVideoOrImage('image'), callInput('i')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                                 </div>
                             </div>
                     </div>
@@ -331,9 +375,16 @@
 
                                 <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                                <div style="text-align: center; margin-top: 15px;">
-                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeM">UPLOAD FILE</label>
-                                   <input style="display: none;" type="button" id="setModeM" onclick="callInput('m')"/>
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeMVideo">UPLOAD VIDEO</label>
+                                    <input style="display: none;" type="button" id="setModeMVideo" onclick="callVideoOrImage('video'), callInput('m')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                                </div>
+    
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeMImage">UPLOAD IMAGE</label>
+                                    <input style="display: none;" type="button" id="setModeMImage" onclick="callVideoOrImage('image'), callInput('m')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                                 </div>
                             </div>
                     </div>
@@ -353,12 +404,48 @@
 
                                 <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
 
-                                <div style="text-align: center; margin-top: 15px;">
-                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeK">UPLOAD FILE</label>
-                                   <input style="display: none;" type="button" id="setModeK" onclick="callInput('k')"/>
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeKVideo">UPLOAD VIDEO</label>
+                                    <input style="display: none;" type="button" id="setModeKVideo" onclick="callVideoOrImage('video'), callInput('k')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                                </div>
+    
+                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                    <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeKImage">UPLOAD IMAGE</label>
+                                    <input style="display: none;" type="button" id="setModeKImage" onclick="callVideoOrImage('image'), callInput('k')"/>
+                                    <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                                 </div>
                             </div>
                     </div>
+
+                    <div class="opt">
+                        <div>
+                            <div style="margin-bottom: 15px">
+                                <label style="border-radius: 5px; background-color:#383838;  margin-bottom: 15px; color: #ffa600; font-size: 24px;">IMAGE UPSCALER</label>
+                            </div>
+
+                            <div class="video">
+                                <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/grayBackground.png" preload="none">
+                                  <source src="static/previews/grayBackground.webm" type="video/webm">
+                                Your browser does not support the video tag.
+                                </video>
+                              </div>
+
+                            <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png"> -->
+
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeNVideo">UPLOAD VIDEO</label>
+                                <input style="display: none;" type="button" id="setModeNVideo" onclick="callVideoOrImage('video'), callInput('n')"/>
+                                <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                            </div>
+
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeNImage">UPLOAD IMAGE</label>
+                                <input style="display: none;" type="button" id="setModeNImage" onclick="callVideoOrImage('image'), callInput('n')"/>
+                                <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
+                            </div>
+                        </div>
+                </div>
 
                     <div>
                         <div class="opt" style="display: none;">
@@ -385,6 +472,11 @@
                   document.getElementById("getFile").click();
                   document.getElementById("selectedModeId").value = value;
                   document.getElementById("selectedModeId").checked = true;
+                }
+
+                function callVideoOrImage(value) {
+                  document.getElementById("selectedVideoOrImageId").value = value;
+                  document.getElementById("selectedVideoOrImageId").checked = true;
                 }
 
                 function postFile() {

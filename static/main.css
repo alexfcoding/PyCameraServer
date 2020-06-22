@@ -19,17 +19,17 @@ a:hover {
     grid-template-rows: 1fr;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-gap: 10px;
-    width: 1280px;
+    max-width: 70%;
     color: #272822;
     margin-top: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
 }
 
 #grid > div {
     box-shadow: 6px 4px 8px #000000;
-    border-radius: 20px;
+    border-radius: 10px;
     color: #ffab00;
-    font-size: 14px;
+    font-size: 8px;
     padding: 1px;
     background: #383838;
     text-align: center;
