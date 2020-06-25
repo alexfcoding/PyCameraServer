@@ -22,7 +22,6 @@ timerEnd = 0
 alpha_slider_max = 200
 blur_slider_max = 100
 
-
 title_window = "win"
 thres1 = 50
 thres2 = 50
@@ -60,8 +59,6 @@ cv2.createTrackbar(trackbar_name3, title_window , 0, blur_slider_max, on_trackba
 
 trackbar_name4 = 'Alpha4 x %d' % alpha_slider_max
 cv2.createTrackbar(trackbar_name4, title_window , 0, blur_slider_max, on_trackbar4)
-
-
 
 thr = None
 workingOn = True
@@ -214,12 +211,14 @@ def findRcnnClasses(inputFrame, rcnnNetwork):
     # if not grabbed:
     # 	break
 
+    #inputFrame = cv2.resize(inputFrame, (128,128))
     blob = cv2.dnn.blobFromImage(inputFrame, swapRB=True, crop=False)
+    #blob = cv2.dnn.blobFromImage(inputFrame, 0.1, (608, 608), (0, 0, 0), True, crop=False)
     # blob = cv2.dnn.blobFromImage(inputFrame, 0.5, (608, 608), (0, 0, 0), True, crop=False)
     rcnnNetwork.setInput(blob)
     (boxes, masks) = rcnnNetwork.forward(["detection_out_final",
                                           "detection_masks"])
-
+              
     return boxes, masks, labels, colors
 
 
@@ -272,7 +271,6 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
             objectIndex += 1
 
     return inputFrame
-
 
 def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
     global objectIndex
@@ -327,7 +325,6 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
             objectIndex += 1
 
     return inputFrame
-
 
 def cannyPeopleOnBlackYolo(inputFrame, boxes, indexes, classIds):
     global objectIndex
@@ -477,7 +474,6 @@ def cannyPeopleOnBlackYolo(inputFrame, boxes, indexes, classIds):
 
     return inputFrame
 
-
 def cannyPeopleOnBackgroundYolo(inputFrame, boxes, indexes, classIds):
     global objectIndex
 
@@ -558,7 +554,6 @@ def cannyPeopleOnBackgroundYolo(inputFrame, boxes, indexes, classIds):
 
     return inputFrame
 
-
 def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
     classesOut = []
     frameCanny = autoCanny(inputFrame)
@@ -597,7 +592,6 @@ def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
     frameOut = inputFrame
 
     return frameOut
-
 
 def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, labels, colors):
     classesOut = []
@@ -653,7 +647,6 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
 
     frameOut = cv2.addWeighted(inputFrame, 1, frameBackground, 1, 0)
     return frameOut
-
 
 def colorCannyRcnn(inputFrame, boxes, masks, labels):
     classesOut = []
@@ -744,7 +737,6 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels):
     frameOut = np.bitwise_or(inputFrame, frameCanny)
     return frameOut
 
-
 def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
     classesOut = []
     frameCanny = autoCanny(inputFrame)
@@ -785,17 +777,16 @@ def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
     frameOut = inputFrame
     return frameOut
 
-
 def colorizerPeopleRcnn(inputFrame, boxes, masks):
     classesOut = []
     needGRAY2BGR = True
     alreadyBGR = False
     frameCopy = inputFrame
 
-    hsvImg = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
-    hsvImg[..., 1] = hsvImg[..., 1] * 1.1
-    # hsvImg[...,2] = hsvImg[...,2]*0.6
-    frameCopy = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
+    # hsvImg = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
+    # hsvImg[..., 1] = hsvImg[..., 1] * 1.1
+    # # hsvImg[...,2] = hsvImg[...,2]*0.6
+    # frameCopy = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
 
     inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2GRAY)
     # inputFrame = cv2.GaussianBlur(inputFrame, (19, 19), 19)
@@ -861,7 +852,6 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
 
     frameOut = inputFrame
     return frameOut
-
 
 def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
     classesOut = []
@@ -936,7 +926,6 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
 
     frameOut = inputFrame
     return frameOut
-
 
 def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels):
     classesOut = []
@@ -1018,7 +1007,7 @@ def sharpening(inputFrame):
 def denoise(inputFrame):    
     b,g,r = cv2.split(inputFrame)           # get b,g,r
     inputFrame = cv2.merge([r,g,b])     # switch it to rgb
-    dst = cv2.fastNlMeansDenoisingColored(inputFrame,None,10,20,7,21)
+    dst = cv2.fastNlMeansDenoisingColored(inputFrame,None,10,10,7,21)
     b,g,r = cv2.split(dst) 
     inputFrame = cv2.merge([r,g,b])
     return inputFrame
@@ -1028,28 +1017,38 @@ def morphEdgeDetection(inputFrame):
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
     morph = cv2.morphologyEx(morph, cv2.MORPH_CLOSE, kernel)
     morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, kernel)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    # take morphological gradient
-    gradient_image = cv2.morphologyEx(morph, cv2.MORPH_GRADIENT, kernel)
-    # split the gradient image into channels
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))    
+    gradient_image = cv2.morphologyEx(morph, cv2.MORPH_GRADIENT, kernel)   
     image_channels = np.split(np.asarray(gradient_image), 3, axis=2)
     channel_height, channel_width, _ = image_channels[0].shape
-    # apply Otsu threshold to each channel
+    
     for i in range(0, 3):
         _, image_channels[i] = cv2.threshold(~image_channels[i], 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY)
         image_channels[i] = np.reshape(image_channels[i], newshape=(channel_height, channel_width, 1))
-    # merge the channels
-    image_channels = np.concatenate((image_channels[0], image_channels[1], image_channels[2]), axis=2)
-    # save the denoised image
-    #cv2.imwrite('output.jpg', image_channels)
-
+  
+    image_channels = np.concatenate((image_channels[0], image_channels[1], image_channels[2]), axis=2)   
     image_channels = cv2.cvtColor(image_channels, cv2.COLOR_BGR2GRAY)
     image_channels = cv2.cvtColor(image_channels, cv2.COLOR_GRAY2BGR)
     image_channels = cv2.bitwise_not(image_channels)
     return image_channels
 
+def limitColorsKmeans(inputFrame):    
+    (h, w) = inputFrame.shape[:2]
+    inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2LAB)
+    inputFrame = inputFrame.reshape((inputFrame.shape[0] * inputFrame.shape[1], 3))    
+    clt = MiniBatchKMeans(n_clusters=32)
+    labels = clt.fit_predict(inputFrame)
+    quant = clt.cluster_centers_.astype("uint8")[labels]    
+    quant = quant.reshape((h, w, 3))
+    inputFrame = inputFrame.reshape((h, w, 3))    
+    quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
+    inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_LAB2BGR)  
+    inputFrame = quant
+    return inputFrame
+
+
 def ProcessFrame():
-    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, videoResetCommand,  startedRenderingVideo
+    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, videoResetCommand,  startedRenderingVideo, needModeReset, options
 
     r = cv2.getTrackbarPos("R", "Controls")
     g = cv2.getTrackbarPos("G", "Controls")
@@ -1058,14 +1057,13 @@ def ProcessFrame():
     frameProcessed = 0
     fileIterator = 0
     totalFrames = 0
+    needModeReset = True
 
     usingYoloNeuralNetwork = False
     usingCaffeNeuralNetwork = False
-    usingMaskRcnnNetwork = False   
+    usingMaskRcnnNetwork = False     
 
-    saveOnlyWithPeople = False
     blurPeople = False
-
     cannyPeopleOnBackground = False
     cannyPeopleOnBlack = False
     cannyPeopleRCNN = False
@@ -1078,7 +1076,7 @@ def ProcessFrame():
     colorObjectsOnGray = False
     videoColorization = False
     imageUpscaler = False
-    cannyFull = True
+    cannyFull = False
     showAllObjects = False
     textRender = False
 
@@ -1089,66 +1087,10 @@ def ProcessFrame():
     sourceMode = args["mode"]
     concated = None
 
-    for char in options:
-        if (char == "a"):
-            showAllObjects = True
-            usingYoloNeuralNetwork = True
-            print("showAllObjects")
-        if (char == "b"):
-            textRender = True
-            usingYoloNeuralNetwork = True
-            print("textRender")
-        if (char == "c"):
-            cannyPeopleOnBlack = True
-            usingYoloNeuralNetwork = True
-            print("cannyPeopleOnBlack")
-        if (char == "d"):
-            cannyPeopleOnBackground = True
-            usingYoloNeuralNetwork = True
-            print("cannyPeopleOnBackground")
-        if (char == "e"):
-            cannyFull = True
-            print("cannyFull")
-        if (char == "f"):
-            videoColorization = True
-            usingCaffeNeuralNetwork = True
-            print("videoColorization")
-        if (char == "g"):
-            usingMaskRcnnNetwork = True
-            extractAndCutBackground = True
-            print("cannyPeopleRCNN + cut background")
-        if (char == "h"):
-            usingMaskRcnnNetwork = True
-            applyColorCannyOnBackground = True
-            print("applyColorCannyOnBackground")
-        if (char == "i"):
-            usingMaskRcnnNetwork = True
-            extractAndReplaceBackground = True
-            print("cannyPeopleRCNN + replace background")
-        if (char == "j"):
-            usingMaskRcnnNetwork = True
-            applyColorCanny = True
-            print("applyColorCanny")
-        if (char == "k"):
-            usingMaskRcnnNetwork = True
-            colorObjectsOnGray = True
-            print("colorObjectsOnGray")
-        if (char == "l"):
-            usingMaskRcnnNetwork = True
-            colorObjectsOnGrayBlur = True
-            print("colorObjectsOnGrayBlur")
-        if (char == "m"):
-            usingMaskRcnnNetwork = True
-            colorObjectsBlur = True
-            print("colorObjectsOnGrayBlur")
-        if (char == "n"):
-            imageUpscaler = True
-            print("imageUpscaler")
-
     if (sourceMode == "video"):
         cap = cv2.VideoCapture(fileToRender)
         totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-        cap2 = cv2.VideoCapture("snow.webm")
+        cap2 = cv2.VideoCapture("inputVideos/snow.webm")
 
     if (sourceMode == "image"):
         sourceImage = args["source"]
@@ -1164,12 +1106,90 @@ def ProcessFrame():
     # 	totalFrames = totalFrames + 1
     # 	print(totalFrames)
 
-    
-
     lineType = cv2.LINE_AA
 
     while workingOn:
             #print("working...")
+            if (needModeReset):
+                usingYoloNeuralNetwork = False
+                usingCaffeNeuralNetwork = False
+                usingMaskRcnnNetwork = False
+
+                blurPeople = False
+                cannyPeopleOnBackground = False
+                cannyPeopleOnBlack = False
+                cannyPeopleRCNN = False
+                extractAndReplaceBackground = False
+                extractAndCutBackground = False
+                applyColorCanny = False
+                applyColorCannyOnBackground = False
+                colorObjectsOnGrayBlur = False
+                colorObjectsBlur = False
+                colorObjectsOnGray = False
+                videoColorization = False
+                imageUpscaler = False
+                cannyFull = False
+                showAllObjects = False
+                textRender = False
+
+                for char in options:
+                    if (char == "a"):
+                        showAllObjects = True
+                        usingYoloNeuralNetwork = True
+                        print("showAllObjects")
+                    if (char == "b"):
+                        textRender = True
+                        usingYoloNeuralNetwork = True
+                        print("textRender")
+                    if (char == "c"):
+                        cannyPeopleOnBlack = True
+                        usingYoloNeuralNetwork = True
+                        print("cannyPeopleOnBlack")
+                    if (char == "d"):
+                        cannyPeopleOnBackground = True
+                        usingYoloNeuralNetwork = True
+                        print("cannyPeopleOnBackground")
+                    if (char == "e"):
+                        cannyFull = True
+                        print("cannyFull")
+                    if (char == "f"):
+                        videoColorization = True
+                        usingCaffeNeuralNetwork = True
+                        print("videoColorization")
+                    if (char == "g"):
+                        usingMaskRcnnNetwork = True
+                        extractAndCutBackground = True
+                        print("cannyPeopleRCNN + cut background")
+                    if (char == "h"):
+                        usingMaskRcnnNetwork = True
+                        applyColorCannyOnBackground = True
+                        print("applyColorCannyOnBackground")
+                    if (char == "i"):
+                        usingMaskRcnnNetwork = True
+                        extractAndReplaceBackground = True
+                        print("cannyPeopleRCNN + replace background")
+                    if (char == "j"):
+                        usingMaskRcnnNetwork = True
+                        applyColorCanny = True
+                        print("applyColorCanny")
+                    if (char == "k"):
+                        usingMaskRcnnNetwork = True
+                        colorObjectsOnGray = True
+                        print("colorObjectsOnGray")
+                    if (char == "l"):
+                        usingMaskRcnnNetwork = True
+                        colorObjectsOnGrayBlur = True
+                        print("colorObjectsOnGrayBlur")
+                    if (char == "m"):
+                        usingMaskRcnnNetwork = True
+                        colorObjectsBlur = True
+                        print("colorObjectsOnGrayBlur")
+                    if (char == "n"):
+                        imageUpscaler = True
+                        print("imageUpscaler")
+
+                    needModeReset = False
+
             classesIndex = []
             startMoment = time.time()
 
@@ -1199,8 +1219,8 @@ def ProcessFrame():
                 if frameList[streamIndex] is not None:
                     bufferFrames[streamIndex] = frameList[streamIndex].copy()
 
-                    # frameList[streamIndex] = cv2.resize(frameList[streamIndex], (800,600))
-                    # bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (800,600))
+                    frameList[streamIndex] = cv2.resize(frameList[streamIndex], (1280,720))
+                    bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (1280,720))
 
                     if usingYoloNeuralNetwork:
                         boxes, indexes, classIds, confidences, classesOut = findYoloClasses(bufferFrames[streamIndex],
@@ -1278,15 +1298,9 @@ def ProcessFrame():
 
 
                     if cannyFull:
-                        # bufferFrames[streamIndex] = autoCanny(bufferFrames[streamIndex])
-                        #bufferFrames[streamIndex] = colorize(yoloNetworkColorizer, bufferFrames[streamIndex])
-                        #
                         #bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex])
-                        frameCopy = bufferFrames[streamIndex].copy()
-                        
-                        #frameCopy = sharpening(frameCopy)
-                        
-
+                        frameCopy = bufferFrames[streamIndex].copy()                        
+                        #frameCopy = sharpening(frameCopy)                        
                         
                         if (blurAmount % 2 == 0):
                             blurAmount += 1
@@ -1303,21 +1317,15 @@ def ProcessFrame():
                                                                          (blurCannyAmount, blurCannyAmount),
                                                                          blurCannyAmount)
                          
-                        #bufferFrames[streamIndex] = cv2.bilateralFilter(bufferFrames[streamIndex], 19, 175, 175)
-                          
-
                         #bufferFrames[streamIndex] = morphEdgeDetection(bufferFrames[streamIndex])
-
                         bufferFrames[streamIndex] = cv2.Canny(bufferFrames[streamIndex], thres1, thres2)
                         bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
                         
-
                         cv2.imshow("videof",  bufferFrames[streamIndex])
                         key = cv2.waitKey(1) & 0xFF
 
                         if key == ord("q"):
                             break
-
 
 # Limit COLORS ====================================================
                         # (B, G, R) = cv2.split(frameCopy)
@@ -1357,7 +1365,7 @@ def ProcessFrame():
                         #
                         #             if frameCopy[i, j, 0] > frameCopy[i, j, 1] and frameCopy[i, j, 0] > frameCopy[i, j, 2] and diffBG > 20 and diffBR > 20:
                         #                 if (frameCopy[i, j, 0] <= 205):
-                        #                     frameCopy[i, j, 0] += 50
+                        #                     fr2ameCopy[i, j, 0] += 50
                         #             if frameCopy[i, j, 1] > frameCopy[i, j, 0] and frameCopy[i, j, 1] > frameCopy[i, j, 2] and diffGB > 20 and diffGR > 20:
                         #                 if (frameCopy[i, j, 1] <= 205):
                         #                     frameCopy[i, j, 1] += 50
@@ -1427,26 +1435,25 @@ def ProcessFrame():
                         #bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
                        
                         
-                        kernel = np.ones((3,3),np.uint8)
-                        bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
+                        
                         
                         #                         
-                        
-                        frameCopy[np.where((bufferFrames[streamIndex] > [50, 50, 50]).all(axis=2))] = [0,0,0]
+                       
                         #frameCopy[np.where(bufferFrames[streamIndex] <= 255)] = bufferFrames[streamIndex][np.where(bufferFrames[streamIndex] <= 255)]
                         #frameCopy = cv2.addWeighted(frameCopy, 1, bufferFrames[streamIndex], 1, 0)
                         #frameCopy = np.bitwise_or(frameCopy, bufferFrames[streamIndex])
                         #frameCopy[bufferFrames[streamIndex] > [0, 0, 0]] = cv2.bitwise_not(bufferFrames[streamIndex][bufferFrames[streamIndex]>0]   ) 
                         
-
-# BRIGHTNESS AND CONTRAST =============================================================
+# BRIGHTNESS AND CONTRAST =======================o=====================================
                         # alpha = 0.7  # Contrast control (1.0-3.0)
                         # beta = 0  # Brightness control (0-100)
                         #
                         # frameCopy = cv2.convertScaleAbs(frameCopy, alpha=alpha,
                         #                                 beta=beta)
 # BRIGHTNESS AND CONTRAST =============================================================
-
+                        kernel = np.ones((4,4),np.uint8)
+                        bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
+                        frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
 # AMP COLORS ==========================================================================
                         saturation = saturationValue / 100
                         hsv = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
@@ -1454,34 +1461,15 @@ def ProcessFrame():
                         hsv[:, :, 2] = cv2.multiply(hsv[:, :, -1], 1)
                         frameCopy = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 # AMP COLORS ==========================================================================
-
-# LIMIT COLORS WITH KMEANS ============================================================
-                        # (h, w) = frameCopy.shape[:2]
-                        # frameCopy = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2LAB)
-                        # frameCopy = frameCopy.reshape((frameCopy.shape[0] * frameCopy.shape[1], 3))
-                        #
-                        # clt = MiniBatchKMeans(n_clusters=32)
-                        # labels = clt.fit_predict(frameCopy)
-                        # quant = clt.cluster_centers_.astype("uint8")[labels]
-                        #
-                        # quant = quant.reshape((h, w, 3))
-                        # frameCopy = frameCopy.reshape((h, w, 3))
-                        #
-                        # quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
-                        # frameCopy = cv2.cvtColor(frameCopy, cv2.COLOR_LAB2BGR)
-                        #
-                        # frameCopy = quant
-# LIMIT COLORS WITH KMEANS ============================================================
-                        #frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
+                        #frameCopy = limitColorsKmeans(frameCopy)
+                        frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
                         bufferFrames[streamIndex] = frameCopy
                         
                         # bufferFrames[streamIndex][np.where((bufferFrames[streamIndex] == [255, 255, 255]).all(axis=2))] = [0, 0, 255]
                         # bufferFrames[streamIndex] = bufferFrames[streamIndex] + 10
                         # bufferFrames[streamIndex] = np.bitwise_or(bufferFrames[streamIndex], frameCopy)
                         # bufferFrames[streamIndex] += frameCopy
-
-
-                        bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
+                        # bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
 
                     with lock:
                         personDetected = False
@@ -1632,7 +1620,6 @@ def autoCanny(image: object, sigma: object = 0.33) -> object:
 
     return edged
 
-
 def generate():
     global outputFrame, frameProcessed, lock, workingOn
 
@@ -1655,13 +1642,12 @@ def generate():
     # return redirect('/results')
     print("yield finished")
 
-
 @app.route('/')
+
 @app.route('/<device>/<action>')
 def index(device=None, action=None):
     return render_template("index.html", frameProcessed=frameProcessed,
                            pathToRenderedFile=f"static/output{args['port']}.avi")
-
 
 @app.route("/video")
 def video_feed():
@@ -1669,12 +1655,11 @@ def video_feed():
     return Response(generate(),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
-
 # return Response(stream_with_context(generate()))
 
 @app.route('/update', methods=['POST'])
 def update():
-    global sourceMode
+    global sourceMode, totalFrames
 
     timerStart = time.perf_counter()
     frameWidthToPage = 0
@@ -1697,15 +1682,16 @@ def update():
         'freeRam': round((psutil.virtual_memory()[1] / 2. ** 30), 2),
         'ramPercent': psutil.virtual_memory()[2],
         'frameWidth': frameWidthToPage,
-        'frameHeight': frameHeightToPage
+        'frameHeight': frameHeightToPage,
+        'maxFrames': totalFrames
         # 'time': datetime.datetime.now().strftime("%H:%M:%S"),
     })
     
     print(timerStart + "////" + timerEnd)
 
-@app.route('/update2', methods=['POST'])
+@app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-    global blurCannyAmount, positionValue, saturationValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd
+    global blurCannyAmount, positionValue, saturationValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer
     
     if request.method == 'POST':
         timerStart = time.perf_counter()
@@ -1714,6 +1700,11 @@ def sendCommand():
         positionValue = int(inputData["positionSliderValue"])
         saturationValue = int(inputData["saturationSliderValue"])
         videoResetCommand = int(inputData["videoResetCommand"])
+        modeResetCommand = str(inputData["modeResetCommand"])
+
+        if (modeResetCommand != "default"):           
+            options = modeResetCommand   
+            needModeReset = True                                   
 
         if (videoResetCommand):
             startedRenderingVideo = True

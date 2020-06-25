@@ -16,7 +16,7 @@
                 "-o",
                 "8002",
                 "-s",
-                "drone2kcut.mp4",
+                "inputVideos/drone2kcut.mp4",
                 "-c",
                 "e",
                 "-m",
