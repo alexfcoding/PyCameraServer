@@ -7,6 +7,17 @@
 
     <link rel="stylesheet" href="static/main.css">    
 
+<style>
+    .visible {
+            display: inline-block;
+        }
+
+    .invisible {
+        display: none;
+    }
+
+</style>  
+    
 </head>
 
 <body style="background-color:#1d1d1d;">
@@ -73,44 +84,45 @@
         <div>
             <div style="display: inline-block; font-size: 24px; color: white;">Position:</div>
             <div style=" display: inline-block;font-size: 24px; color: white;" id="positionValue"></div>
-            <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(233, 212, 30); width: 810px;" type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId">            </div>
+            <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(233, 212, 30); width: 810px;" type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId">            </div>
        </div>
         <div style="display: inline-block; max-width: 1000px; text-align: center;">
+            <div id="confidenceIdBlock"style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Confidence:</div>
+                <div style=" display: inline-block;font-size: 24px; color: white;" id="confidenceValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="100" step="1" value="50" class="slider" id="confidenceId">            </div>
+            </div>
+
             <div style="display: inline-block; " >
                 <div style="display: inline-block; font-size: 24px; color: white;">Saturation:</div>
                 <div style=" display: inline-block;font-size: 24px; color: white;" id="saturationValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId">            </div>
-            </div>
-
-            <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Edge Blur:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId">            </div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId">            </div>
             </div>
            
             <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Background Blur:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+                <div style="display: inline-block; font-size: 24px; color: white;">Contrast:</div>
+                <div style=" display: inline-block;font-size: 24px; color: white;" id="contrastValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId">            </div>
             </div>
 
             <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Threshold Details:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+                <div style="display: inline-block; font-size: 24px; color: white;">BRIGHTNESS:</div>
+                <div style=" display: inline-block;font-size: 24px; color: white;" id="brightnessValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId">            </div>
             </div>
 
-            <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Threshold Lines:</div>
+            <div id ="cannyBlurIdBlock" style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Canny edge filter:</div>
                 <div style=" display: inline-block;font-size: 24px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId">            </div>
             </div>
 
-            <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Line Thickness:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="50" class="slider" id="myRange">            </div>
+            <div id ="lineThicknessIdBlock" style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">Line thickness:</div>
+                <div style=" display: inline-block;font-size: 24px; color: white;" id="lineThicknessValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId">            </div>
             </div>
+            
         </div>
 
         <script>
@@ -120,15 +132,54 @@
             var maxFrames = 0;
             var videoResetCommand = false;
             var modeResetCommand = "default"
-            
-            
 
             function sendStartCommand() {
                 videoResetCommand = true;
             }
 
             function sendModeChangeCommand() {
+                                
                 modeResetCommand = $("#modesId").val()
+
+                if (modeResetCommand == "a") {                    
+                    $("#cannyBlurIdBlock").hide()
+                    $("#confidenceIdBlock").show()
+                } 
+                
+                if (modeResetCommand == "b") {                    
+                    $("#cannyBlurIdBlock").hide()
+                    $("#confidenceIdBlock").show()
+                }
+                
+                if (modeResetCommand == "j") {                    
+                    $("#cannyBlurIdBlock").hide()
+                    $("#confidenceIdBlock").show()
+                } 
+
+                if (modeResetCommand == "i") {                    
+                    $("#cannyBlurIdBlock").hide()
+                    $("#confidenceIdBlock").show()
+                } 
+
+                if (modeResetCommand == "m") {                    
+                    $("#cannyBlurIdBlock").hide()
+                    $("#confidenceIdBlock").show()
+                } 
+
+                if (modeResetCommand == "k") {                    
+                    $("#cannyBlurIdBlock").hide()
+                    $("#confidenceIdBlock").show()
+                }
+                
+                if (modeResetCommand == "f") {                    
+                    $("#cannyBlurIdBlock").hide()
+                    $("#confidenceIdBlock").hide()
+                } 
+
+                if (modeResetCommand == "e") {                    
+                    $("#cannyBlurIdBlock").show()
+                    $("#confidenceIdBlock").hide()
+                } 
             }
 
             var myTimer = setInterval(function() {
@@ -182,10 +233,30 @@
                 var cannyBlurOutput = document.getElementById("cannyBlurValue");
                 var sliderValue = cannyBlurSlider.value;
 
+                var contrastSlider = document.getElementById("contrastId");                
+                var contrastOutput = document.getElementById("contrastValue");
+                var contrastSliderValue = contrastSlider.value;
+
+                var confidenceSlider = document.getElementById("confidenceId");                
+                var confidenceOutput = document.getElementById("confidenceValue");
+                var confidenceSliderValue = confidenceSlider.value;
+
+                var brightnessSlider = document.getElementById("brightnessId");                
+                var brightnessOutput = document.getElementById("brightnessValue");
+                var brightnessSliderValue = brightnessSlider.value;
+
+                var lineThicknessSlider = document.getElementById("lineThicknessId");                
+                var lineThicknessOutput = document.getElementById("lineThicknessValue");
+                var lineThicknessSliderValue = lineThicknessSlider.value;
+
                 outputPosition.innerHTML = positionSlider.value;
                 saturationOutput.innerHTML = saturationSlider.value;
                 cannyBlurOutput.innerHTML = cannyBlurSlider.value; 
-                
+                contrastOutput.innerHTML = contrastSlider.value;
+                brightnessOutput.innerHTML = brightnessSlider.value;
+                confidenceOutput.innerHTML = confidenceSlider.value;
+                lineThicknessOutput.innerHTML = lineThicknessSlider.value;
+
                 positionSlider.oninput = function() {
                     outputPosition.innerHTML = this.value;                                    
                 }
@@ -196,14 +267,30 @@
                
                 cannyBlurSlider.oninput = function() {
                     cannyBlurOutput.innerHTML = this.value;                                    
-                }                
+                }
+                
+                contrastSlider.oninput = function() {
+                    contrastOutput.innerHTML = this.value;                                    
+                } 
+                
+                brightnessSlider.oninput = function() {
+                    brightnessOutput.innerHTML = this.value;                                    
+                } 
+                
+                confidenceSlider.oninput = function() {
+                    confidenceOutput.innerHTML = this.value;                                    
+                } 
+
+                lineThicknessSlider.oninput = function() {
+                    lineThicknessOutput.innerHTML = this.value;                                    
+                } 
 
                 $.ajax({
                       type: "POST",
                       contentType: "application/json;charset=utf-8",
                       url: "/update2",
                       traditional: "true",
-                      data: JSON.stringify({sliderValue, saturationSliderValue, positionSliderValue, videoResetCommand, modeResetCommand}),
+                      data: JSON.stringify({sliderValue, saturationSliderValue, contrastSliderValue, brightnessSliderValue, positionSliderValue, confidenceSliderValue, lineThicknessSliderValue, videoResetCommand, modeResetCommand}),
                       dataType: "json"
                       });
                       

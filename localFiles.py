@@ -29,6 +29,10 @@ blurAmount = 5
 blurCannyAmount = 5
 positionValue = 1
 saturationValue = 100
+contrastValue = 100
+brightnessValue = 0
+confidenceValue = 0
+lineThicknessValue = 1
 
 cv2.namedWindow(title_window)
 
@@ -160,6 +164,7 @@ rcnnNetwork = initializeRcnnNetwork(True)
 
 
 def findYoloClasses(inputFrame, yoloNetwork):
+    global confidenceValue
     classesOut = []
     height, width, channels = inputFrame.shape
     blob = cv2.dnn.blobFromImage(
@@ -171,12 +176,15 @@ def findYoloClasses(inputFrame, yoloNetwork):
     confidences = []
     boxes = []
 
+    confidenceValue /= 100
+
     for out in outs:
         for detection in out:
             scores = detection[5:]
             class_id = np.argmax(scores)
             confidence = scores[class_id]
-            if confidence > 0.5:
+
+            if confidence > confidenceValue:
                 w = int(detection[2] * width)
                 h = int(detection[3] * height)
                 center_x = int(detection[0] * width)
@@ -224,6 +232,7 @@ def findRcnnClasses(inputFrame, rcnnNetwork):
 
 def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
     global objectIndex
+    
     for i in range(len(boxes)):
         if i in indexes:
             x, y, w, h = boxes[i]
@@ -555,6 +564,10 @@ def cannyPeopleOnBackgroundYolo(inputFrame, boxes, indexes, classIds):
     return inputFrame
 
 def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
+    global confidenceValue
+
+    confidenceValue /= 100
+
     classesOut = []
     frameCanny = autoCanny(inputFrame)
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
@@ -565,7 +578,7 @@ def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.1:
+        if confidence > confidenceValue:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -594,6 +607,10 @@ def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels):
     return frameOut
 
 def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, labels, colors):
+    global confidenceValue
+
+    confidenceValue /= 100
+
     classesOut = []
     frameCopy = inputFrame
 
@@ -611,7 +628,7 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.5:
+        if confidence > confidenceValue:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -649,6 +666,10 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
     return frameOut
 
 def colorCannyRcnn(inputFrame, boxes, masks, labels):
+    global confidenceValue
+
+    confidenceValue /= 100
+
     classesOut = []
     # frameCanny = autoCanny(inputFrame)
     inputFrame = cv2.GaussianBlur(inputFrame, (5, 5), 5)
@@ -665,7 +686,7 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.5:
+        if confidence > confidenceValue:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -738,6 +759,10 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels):
     return frameOut
 
 def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
+    global confidenceValue
+
+    confidenceValue /= 100
+
     classesOut = []
     frameCanny = autoCanny(inputFrame)
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
@@ -749,7 +774,7 @@ def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.1:
+        if confidence > confidenceValue:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -778,6 +803,10 @@ def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels):
     return frameOut
 
 def colorizerPeopleRcnn(inputFrame, boxes, masks):
+    global confidenceValue
+
+    confidenceValue /= 100
+
     classesOut = []
     needGRAY2BGR = True
     alreadyBGR = False
@@ -798,7 +827,7 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.5:
+        if confidence > confidenceValue:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -854,6 +883,10 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks):
     return frameOut
 
 def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
+    global confidenceValue
+
+    confidenceValue /= 100
+
     classesOut = []
     needGRAY2BGR = True
     alreadyBGR = False
@@ -870,7 +903,7 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.4:
+        if confidence > confidenceValue:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -928,6 +961,10 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks):
     return frameOut
 
 def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels):
+    global confidenceValue
+
+    confidenceValue /= 100
+
     classesOut = []
     needGRAY2BGR = True
     alreadyBGR = False
@@ -943,7 +980,7 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels):
         classID = int(boxes[0, 0, i, 1])
         confidence = boxes[0, 0, i, 2]
 
-        if confidence > 0.4:
+        if confidence > confidenceValue:
             classesOut.append(classID)
 
             (H, W) = inputFrame.shape[:2]
@@ -1046,9 +1083,23 @@ def limitColorsKmeans(inputFrame):
     inputFrame = quant
     return inputFrame
 
+def checkIfUserIsConnected(timerStart):
+    timerEnd = time.perf_counter()
+
+    print(str(timerStart) + "///////" + str(timerEnd))
+    
+    if (timerEnd - timerStart < 5 and timerStart != 0):
+        print("User is connected")
+    else:
+        if (timerStart != 0):
+            print("User disconnected, need shutdown !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            currentPid = os.getpid()
+            p = psutil.Process(currentPid)
+            p.terminate()  #or p.kill()
+            #shutdown_server()
 
 def ProcessFrame():
-    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, videoResetCommand,  startedRenderingVideo, needModeReset, options
+    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, videoResetCommand,  startedRenderingVideo, needModeReset, options
 
     r = cv2.getTrackbarPos("R", "Controls")
     g = cv2.getTrackbarPos("G", "Controls")
@@ -1444,23 +1495,11 @@ def ProcessFrame():
                         #frameCopy = np.bitwise_or(frameCopy, bufferFrames[streamIndex])
                         #frameCopy[bufferFrames[streamIndex] > [0, 0, 0]] = cv2.bitwise_not(bufferFrames[streamIndex][bufferFrames[streamIndex]>0]   ) 
                         
-# BRIGHTNESS AND CONTRAST =======================o=====================================
-                        # alpha = 0.7  # Contrast control (1.0-3.0)
-                        # beta = 0  # Brightness control (0-100)
-                        #
-                        # frameCopy = cv2.convertScaleAbs(frameCopy, alpha=alpha,
-                        #                                 beta=beta)
-# BRIGHTNESS AND CONTRAST =============================================================
-                        kernel = np.ones((4,4),np.uint8)
+
+                        kernel = np.ones((lineThicknessValue,lineThicknessValue),np.uint8)
                         bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
                         frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
-# AMP COLORS ==========================================================================
-                        saturation = saturationValue / 100
-                        hsv = cv2.cvtColor(frameCopy, cv2.COLOR_BGR2HSV)
-                        hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], saturation)
-                        hsv[:, :, 2] = cv2.multiply(hsv[:, :, -1], 1)
-                        frameCopy = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-# AMP COLORS ==========================================================================
+
                         #frameCopy = limitColorsKmeans(frameCopy)
                         frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
                         bufferFrames[streamIndex] = frameCopy
@@ -1470,22 +1509,26 @@ def ProcessFrame():
                         # bufferFrames[streamIndex] = np.bitwise_or(bufferFrames[streamIndex], frameCopy)
                         # bufferFrames[streamIndex] += frameCopy
                         # bufferFrames[streamIndex] = cv2.blur(bufferFrames[streamIndex], (2, 2))
+# BRIGHTNESS AND CONTRAST =======================o=====================================
+                    contrast = contrastValue / 100
+                    brightness = brightnessValue
+                    alpha = 1  # Contrast control (1.0-3.0)
+                    beta = 0  # Brightness control (0-100)
+                    
+                    bufferFrames[streamIndex] = cv2.convertScaleAbs(bufferFrames[streamIndex], alpha=contrast,
+                                                    beta=brightness)
+# BRIGHTNESS AND CONTRAST =============================================================
+# AMP COLORS ==========================================================================
+                    saturation = saturationValue / 100
+                    hsv = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_BGR2HSV)
+                    hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], saturation)
+                    hsv[:, :, 2] = cv2.multiply(hsv[:, :, -1], 1)
+                    bufferFrames[streamIndex] = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
+# AMP COLORS ==========================================================================
                     with lock:
                         personDetected = False
-                        timerEnd = time.perf_counter()
-
-                        print(str(timerStart) + "///////" + str(timerEnd))
-                        
-                        if (timerEnd - timerStart < 5 and timerStart != 0):
-                            print("User is connected")
-                        else:
-                            if (timerStart != 0):
-                                print("User disconnected, need shutdown !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                                currentPid = os.getpid()
-                                p = psutil.Process(currentPid)
-                                p.terminate()  #or p.kill()
-                                #shutdown_server()
+                        checkIfUserIsConnected(timerStart)
 
                         frameProcessed = frameProcessed + 1
                         elapsedTime = time.time()
@@ -1611,6 +1654,8 @@ def ProcessFrame():
                         cap.release()
                         writer.release()
                         cv2.destroyAllWindows()
+                    while True:
+                        checkIfUserIsConnected(timerStart)
 
 def autoCanny(image: object, sigma: object = 0.33) -> object:
     v = np.median(image)
@@ -1691,7 +1736,7 @@ def update():
 
 @app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-    global blurCannyAmount, positionValue, saturationValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer
+    global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue
     
     if request.method == 'POST':
         timerStart = time.perf_counter()
@@ -1699,6 +1744,10 @@ def sendCommand():
         blurCannyAmount = int(inputData["sliderValue"])
         positionValue = int(inputData["positionSliderValue"])
         saturationValue = int(inputData["saturationSliderValue"])
+        contrastValue = int(inputData["contrastSliderValue"])
+        brightnessValue = int(inputData["brightnessSliderValue"])
+        confidenceValue = int(inputData["confidenceSliderValue"])
+        lineThicknessValue = int(inputData["lineThicknessSliderValue"])
         videoResetCommand = int(inputData["videoResetCommand"])
         modeResetCommand = str(inputData["modeResetCommand"])
 
