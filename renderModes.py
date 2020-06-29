@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from random import randint
+from sklearn.cluster import MiniBatchKMeans, KMeans
 
 thres1 = 50
 thres2 = 50
@@ -12,11 +13,11 @@ contrastValue = 100
 brightnessValue = 0
 confidenceValue = 0
 lineThicknessValue = 1
-
+denoiseValue = 10
+denoiseValue2 = 10
 objectIndex = 0
 
 classes = []
-yoloColors = []
 
 with open("coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
@@ -116,7 +117,7 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
         if i in indexes:
             x, y, w, h = boxes[i]
             label = classes[classIds[i]]
-            color = colors[classIds[i]]
+            color = colorsYolo[classIds[i]]
 
             if (x < 0):
                 x = 0
@@ -168,7 +169,7 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
         if i in indexes:
             x, y, w, h = boxes[i]
             label = classes[classIds[i]]
-            color = colors[classIds[i]]
+            color = colorsYolo[classIds[i]]
 
             if (x < 0):
                 x = 0
@@ -226,7 +227,7 @@ def cannyPeopleOnBlackYolo(inputFrame, boxes, indexes, classIds):
         if i in indexes:
             x, y, w, h = boxes[i]
             label = classes[classIds[i]]
-            color = colors[classIds[i]]
+            color = colorsYolo[classIds[i]]
 
             if (x < 0):
                 x = 0
@@ -373,7 +374,7 @@ def cannyPeopleOnBackgroundYolo(inputFrame, boxes, indexes, classIds):
         if i in indexes:
             x, y, w, h = boxes[i]
             label = classes[classIds[i]]
-            color = colors[classIds[i]]
+            color = colorsYolo[classIds[i]]
 
             if (x < 0):
                 x = 0
@@ -469,14 +470,14 @@ def extractAndCutBackgroundRcnn(inputFrame, boxes, masks, labels, confidenceValu
 
             mask = (mask > 0.1)
 
-            if (labels[classID] == "person"):
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
-                inputFrame[startY:endY, startX:endX][mask] = frm
-            else:
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
-                inputFrame[startY:endY, startX:endX][mask] = frm
+            #if (labels[classID] == "person"):
+            frm = frameCanny[startY:endY, startX:endX][mask]
+            frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+            inputFrame[startY:endY, startX:endX][mask] = frm
+            #else:
+                # frm = frameCanny[startY:endY, startX:endX][mask]
+                # frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
+                # inputFrame[startY:endY, startX:endX][mask] = frm
 
     frameOut = inputFrame
 
@@ -489,6 +490,7 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
 
     inputFrame = cv2.resize(inputFrame, (1280, 720))
     frameCopy = cv2.resize(frameCopy, (1280, 720))
+    
     inputFrame = cv2.GaussianBlur(inputFrame, (5, 5), 5)
     frameCanny = autoCanny(inputFrame)
 
@@ -517,14 +519,14 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
 
             color = colors[classID]
 
-            if (labels[classID] == "person"):
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 255, 0)
-                inputFrame[startY:endY, startX:endX][mask] = frm
-            if (labels[classID] == "car"):
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 0, 255)
-                inputFrame[startY:endY, startX:endX][mask] = frm
+            #if (labels[classID] == "person"):
+            frm = frameCanny[startY:endY, startX:endX][mask]
+            frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 255, 0)
+            inputFrame[startY:endY, startX:endX][mask] = frm
+            #if (labels[classID] == "car"):
+                # frm = frameCanny[startY:endY, startX:endX][mask]
+                # frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 0, 255)
+                # inputFrame[startY:endY, startX:endX][mask] = frm
             # else:
             #     frm = frameCanny[startY:endY, startX:endX][mask]
             #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
@@ -570,14 +572,14 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels, confidenceValue):
             mask = cv2.resize(mask, (boxW, boxH), interpolation=cv2.INTER_CUBIC)
             mask = (mask > 0.1)
 
-            if (labels[classID] == "person"):
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
-                inputFrame[startY:endY, startX:endX][mask] = frm
-            if (labels[classID] == "car"):
-                frm = frameCanny[startY:endY, startX:endX][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
-                inputFrame[startY:endY, startX:endX][mask] = frm
+            #if (labels[classID] == "person"):
+            frm = frameCanny[startY:endY, startX:endX][mask]
+            frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
+            inputFrame[startY:endY, startX:endX][mask] = frm
+            # if (labels[classID] == "car"):
+            #     frm = frameCanny[startY:endY, startX:endX][mask]
+            #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+            #     inputFrame[startY:endY, startX:endX][mask] = frm
             # if (labels[classID] == "truck"):
             #     frm = frameCanny[startY:endY, startX:endX][mask]
             #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
@@ -896,14 +898,14 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue):
     return frameOut
 
 def sharpening(inputFrame):
-    kernel_sharpening = np.array([[-1,-1,-1], [-1, 9,-1], [-1,-1,-1]])
+    kernel_sharpening = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1 , -1]])
     inputFrame = cv2.filter2D(inputFrame, -1, kernel_sharpening)  
     return inputFrame
 
-def denoise(inputFrame):    
+def denoise(inputFrame, denoiseValue, denoiseValue2):    
     b,g,r = cv2.split(inputFrame)           # get b,g,r
     inputFrame = cv2.merge([r,g,b])     # switch it to rgb
-    dst = cv2.fastNlMeansDenoisingColored(inputFrame,None,10,10,7,21)
+    dst = cv2.fastNlMeansDenoisingColored(inputFrame,None,denoiseValue2,denoiseValue,7,15)
     b,g,r = cv2.split(dst) 
     inputFrame = cv2.merge([r,g,b])
     return inputFrame
@@ -964,5 +966,5 @@ def adjustSaturation(inputFrame, saturation = 1):
     inputFrame = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
     return inputFrame
 
-yoloNetwork, layers_names, outputLayers, colors = initializeYoloNetwork(classes, True)
+yoloNetwork, layers_names, outputLayers, colorsYolo = initializeYoloNetwork(classes, False)
 rcnnNetwork = initializeRcnnNetwork(True)

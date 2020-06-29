@@ -26,7 +26,7 @@
         
             <p style="display:inline-block;"><select  id="modesId">
                 <optgroup label="YOLO MODEL">
-                    <option value = "a">Show all YOLO objects</option>
+                    <option value = "a">SHOW ALL YOLO OBJECTS</option>
                     <option value = "b">BLUR OBJECTS WITH ASCII</option>
                 </optgroup>
                 <optgroup label="MASK R-CNN MODEL">
@@ -37,7 +37,9 @@
                  <optgroup label="CAFFE MODEL">
                     <option value = "f">CAFFE NEURAL NETWORK COLORIZER</option>                
                  <optgroup label="WITHOUT NEURAL NETWORKS">
-                    <option value = "e">CARTOON STYLE</option>                 
+                    <option value = "e">CARTOON STYLE</option> 
+                    <option value = "o">DENOISER</option>      
+                    <option value = "p">SHARPENER</option>                                
                 </optgroup>
                </select></p>
 
@@ -90,7 +92,7 @@
             <div id="confidenceIdBlock"style="display: inline-block; " >
                 <div style="display: inline-block; font-size: 24px; color: white;">Confidence:</div>
                 <div style=" display: inline-block;font-size: 24px; color: white;" id="confidenceValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="100" step="1" value="50" class="slider" id="confidenceId">            </div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId">            </div>
             </div>
 
             <div style="display: inline-block; " >
@@ -122,6 +124,18 @@
                 <div style=" display: inline-block;font-size: 24px; color: white;" id="lineThicknessValue"></div>
                 <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId">            </div>
             </div>
+
+            <div id ="denoiseIdBlock" style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">COLOR NOISE FILTER:</div>
+                <div style=" display: inline-block;font-size: 24px; color: white;" id="denoiseValue"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="21" step="1" value="11" class="slider" id="denoiseId">            </div>
+            </div>
+
+            <div id ="denoise2IdBlock" style="display: inline-block; " >
+                <div style="display: inline-block; font-size: 24px; color: white;">DENOISE STRENGTH:</div>
+                <div style=" display: inline-block;font-size: 24px; color: white;" id="denoise2Value"></div>
+                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="100" step="1" value="20" class="slider" id="denoise2Id">            </div>
+            </div>
             
         </div>
 
@@ -141,45 +155,7 @@
                                 
                 modeResetCommand = $("#modesId").val()
 
-                if (modeResetCommand == "a") {                    
-                    $("#cannyBlurIdBlock").hide()
-                    $("#confidenceIdBlock").show()
-                } 
-                
-                if (modeResetCommand == "b") {                    
-                    $("#cannyBlurIdBlock").hide()
-                    $("#confidenceIdBlock").show()
-                }
-                
-                if (modeResetCommand == "j") {                    
-                    $("#cannyBlurIdBlock").hide()
-                    $("#confidenceIdBlock").show()
-                } 
-
-                if (modeResetCommand == "i") {                    
-                    $("#cannyBlurIdBlock").hide()
-                    $("#confidenceIdBlock").show()
-                } 
-
-                if (modeResetCommand == "m") {                    
-                    $("#cannyBlurIdBlock").hide()
-                    $("#confidenceIdBlock").show()
-                } 
-
-                if (modeResetCommand == "k") {                    
-                    $("#cannyBlurIdBlock").hide()
-                    $("#confidenceIdBlock").show()
-                }
-                
-                if (modeResetCommand == "f") {                    
-                    $("#cannyBlurIdBlock").hide()
-                    $("#confidenceIdBlock").hide()
-                } 
-
-                if (modeResetCommand == "e") {                    
-                    $("#cannyBlurIdBlock").show()
-                    $("#confidenceIdBlock").hide()
-                } 
+               
             }
 
             var myTimer = setInterval(function() {
@@ -194,20 +170,80 @@
                         $("#progress").html(response["progress"] + "%");
                         $("#fps").html(response["fps"]);
                         $("#cpu").html(response["cpuUsage"] + "%");
-                        $("#freeRam").html(response["freeRam"] + "GB");
+                        $("#freeRam").html(response["freeRam"] + "GB");                       
                         frameWidth = response["frameWidth"]
                         frameHeight = response["frameHeight"]
                         maxFrames = response["maxFrames"]
+                        currentMode = response["currentMode"]
+
                         $("#frameSize").html(frameWidth + "x" + frameHeight);
                         $("#positionId")
                             .prop({
                             min: 1,
                             max: maxFrames - 1                           
                         })
-                        
-
 
                         working = response["workingOn"];
+
+                        if (currentMode == "a") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        } 
+                        
+                        if (currentMode == "b") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        }
+                        
+                        if (currentMode == "j") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        } 
+
+                        if (currentMode == "i") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        } 
+
+                        if (currentMode == "m") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        } 
+
+                        if (currentMode == "k") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        }
+                        
+                        if (currentMode == "f") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                        } 
+
+                        if (currentMode == "e") {                    
+                            $("#cannyBlurIdBlock").show()
+                            $("#lineThicknessIdBlock").show()
+                            $("#confidenceIdBlock").hide()
+                        }
+                        
+                        if (currentMode == "o") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                        } 
+
+                        if (currentMode == "p") {                    
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                        } 
 
                         //if (working == false) {
                         //clearInterval(myTimer);
@@ -249,6 +285,14 @@
                 var lineThicknessOutput = document.getElementById("lineThicknessValue");
                 var lineThicknessSliderValue = lineThicknessSlider.value;
 
+                var denoiseSlider = document.getElementById("denoiseId");                
+                var denoiseOutput = document.getElementById("denoiseValue");
+                var denoiseSliderValue =denoiseSlider.value;
+
+                var denoise2Slider = document.getElementById("denoise2Id");                
+                var denoise2Output = document.getElementById("denoise2Value");
+                var denoise2SliderValue =denoise2Slider.value;
+
                 outputPosition.innerHTML = positionSlider.value;
                 saturationOutput.innerHTML = saturationSlider.value;
                 cannyBlurOutput.innerHTML = cannyBlurSlider.value; 
@@ -256,6 +300,8 @@
                 brightnessOutput.innerHTML = brightnessSlider.value;
                 confidenceOutput.innerHTML = confidenceSlider.value;
                 lineThicknessOutput.innerHTML = lineThicknessSlider.value;
+                denoiseOutput.innerHTML = denoiseSlider.value;
+                denoise2Output.innerHTML = denoise2Slider.value;
 
                 positionSlider.oninput = function() {
                     outputPosition.innerHTML = this.value;                                    
@@ -285,12 +331,20 @@
                     lineThicknessOutput.innerHTML = this.value;                                    
                 } 
 
+                denoiseSlider.oninput = function() {
+                    denoiseOutput.innerHTML = this.value;                                    
+                }
+                
+                denoise2Slider.oninput = function() {
+                    denoise2Output.innerHTML = this.value;                                    
+                } 
+
                 $.ajax({
                       type: "POST",
                       contentType: "application/json;charset=utf-8",
                       url: "/update2",
                       traditional: "true",
-                      data: JSON.stringify({sliderValue, saturationSliderValue, contrastSliderValue, brightnessSliderValue, positionSliderValue, confidenceSliderValue, lineThicknessSliderValue, videoResetCommand, modeResetCommand}),
+                      data: JSON.stringify({sliderValue, saturationSliderValue, contrastSliderValue, brightnessSliderValue, positionSliderValue, confidenceSliderValue, lineThicknessSliderValue, denoiseSliderValue, denoise2SliderValue, videoResetCommand, modeResetCommand}),
                       dataType: "json"
                       });
                       

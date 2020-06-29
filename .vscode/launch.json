@@ -16,11 +16,11 @@
                 "-o",
                 "8002",
                 "-s",
-                "inputVideos/drone2kcut.mp4",
+                "inputVideos/cat.jpg",
                 "-c",
-                "a",
+                "i",
                 "-m",
-                "video"
+                "image"
             ]
 
         },
