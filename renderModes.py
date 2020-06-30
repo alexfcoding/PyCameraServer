@@ -15,6 +15,8 @@ confidenceValue = 0
 lineThicknessValue = 1
 denoiseValue = 10
 denoiseValue2 = 10
+sharpeningValue = 9
+
 objectIndex = 0
 
 classes = []
@@ -897,8 +899,26 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue):
     frameOut = inputFrame
     return frameOut
 
-def sharpening(inputFrame):
-    kernel_sharpening = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1 , -1]])
+def sharpening(inputFrame, sharpeningValue):
+    kernelValue = sharpeningValue
+    kernelDiff = 9 - kernelValue        
+    kernel_sharpening = np.array([[-1, -1, -1], [-1, kernelValue, -1], [-1, -1, -1]])
+
+    while (kernelDiff != 0):
+        for i in range(3):
+            for j in range(3):
+                if (i == 1 and j == 1):
+                    kernel_sharpening[j][i] == kernelValue
+                else:
+                    if (kernelDiff > 0):
+                        kernel_sharpening[j][i] += 1
+                        kernelDiff -= 1
+                    if (kernelDiff < 0):
+                        kernel_sharpening[j][i] -= 1
+                        kernelDiff += 1
+                    if (kernelDiff == 0):
+                        break
+                
     inputFrame = cv2.filter2D(inputFrame, -1, kernel_sharpening)  
     return inputFrame
 

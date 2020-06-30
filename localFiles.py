@@ -123,7 +123,7 @@ def checkIfUserIsConnected(timerStart):
             #shutdown_server()
 
 def ProcessFrame():
-    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, videoResetCommand,  startedRenderingVideo, needModeReset, options
+    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, videoResetCommand,  startedRenderingVideo, needModeReset, options
 
     r = cv2.getTrackbarPos("R", "Controls")
     g = cv2.getTrackbarPos("G", "Controls")
@@ -150,8 +150,7 @@ def ProcessFrame():
     colorObjectsBlur = False
     colorObjectsOnGray = False
     videoColorization = False
-    denoiser = False
-    sharpener = False
+    denoiseAndSharpen= False    
 
     imageUpscaler = False
     cartoonEffect = False
@@ -209,7 +208,7 @@ def ProcessFrame():
             cartoonEffect = False
             showAllObjects = False
             textRender = False
-            denoiser = False
+            denoiseAndSharpen = False
             sharpener = False
 
             for char in options:
@@ -268,12 +267,8 @@ def ProcessFrame():
                     imageUpscaler = True
                     print("imageUpscaler")
                 if (char == "o"):
-                    denoiser = True
-                    print("denoiser")
-
-                if (char == "p"):
-                    sharpener = True
-                    print("sharpener")
+                    denoiseAndSharpen = True
+                    print("denoiseAndSharpen")                
 
                 needModeReset = False
 
@@ -433,12 +428,13 @@ def ProcessFrame():
                     bufferFrames[streamIndex] = frameCopy
 
                 #if denoiser:
-                bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
+                
                     #bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex])                     
 
-                if sharpener:
-                    bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex])                     
-
+                if denoiseAndSharpen:
+                    bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
+                    bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
+                   
 # BRIGHTNESS AND CONTRAST =======================o=====================================
                 contrast = contrastValue / 100
                 brightness = brightnessValue
@@ -623,7 +619,7 @@ def update():
 
 @app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-    global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2
+    global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue
     
     if request.method == 'POST':
         timerStart = time.perf_counter()
@@ -637,6 +633,7 @@ def sendCommand():
         lineThicknessValue = int(inputData["lineThicknessSliderValue"])
         denoiseValue = int(inputData["denoiseSliderValue"])
         denoiseValue2 = int(inputData["denoise2SliderValue"])
+        sharpeningValue = int(inputData["sharpenSliderValue"])
         videoResetCommand = int(inputData["videoResetCommand"])
         modeResetCommand = str(inputData["modeResetCommand"])
 
