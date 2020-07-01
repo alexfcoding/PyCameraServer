@@ -5,143 +5,190 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <title>Video Editor</title>
 
-    <link rel="stylesheet" href="static/main.css">    
+    <link rel="stylesheet" href="static/main.css">
 
-<style>
-    .visible {
+    <style>
+        .visible {
             display: inline-block;
         }
 
-    .invisible {
-        display: none;
-    }
+        .invisible {
+            display: none;
+        }
+    </style>
 
-</style>  
-    
 </head>
 
 <body style="background-color:#1d1d1d;">
     <div style="text-align: center;">
-        <div><img style="max-width: 50%; border-radius: 20px; box-shadow: 6px 4px 8px #000000;" src="{{ url_for('video_feed') }}"></div>
-        
-            <p style="display:inline-block;"><select  id="modesId">
-                <optgroup label="YOLO MODEL">
-                    <option value = "a">SHOW ALL YOLO OBJECTS</option>
-                    <option value = "b">BLUR OBJECTS WITH ASCII</option>
-                </optgroup>
-                <optgroup label="MASK R-CNN MODEL">
-                    <option value = "j">CANNY AND GAUSSIAN BLUR</option>
-                    <option value = "i">CANNY + ANIMATE BACKGROUND</option>
-                    <option value = "m">GAUSSIAN BLUR BACKGROUND</option>
-                    <option value = "k">FAKE COLORIZER</option>                 
-                 <optgroup label="CAFFE MODEL">
-                    <option value = "f">CAFFE NEURAL NETWORK COLORIZER</option>                
-                 <optgroup label="WITHOUT NEURAL NETWORKS">
-                    <option value = "e">CARTOON STYLE</option> 
-                    <option value = "o">DENOISE + SHARPEN</option>  
-                </optgroup>
-               </select></p>
+        <div>
+            <div style="margin: 5px;">
+                <div id="grid">
+                    <div>
+                        <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
+                    </div>
+                    <div>
+                        <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
+                    </div>
+                    <div>
+                        <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
+                    </div>
+                    <div>
+                        <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
+                    </div>
 
-               <p style="display:inline-block;"><input  type="submit" value="Set Mode" onclick="sendModeChangeCommand()"></p>  
-               <br>
-               
-        <div id="grid">
-            <div>
-                <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
+                    <div>
+                        <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
+                    </div>
+                    <div>
+                        <h1 id="freeRam" style="color: rgb(255, 255, 255);"></h1>
+                    </div>
+                    <div>
+                        <h1 style="color: rgb(255, 255, 255);">enabled</h1>
+                    </div>
+                    <div>
+                        <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-
-            <div>
-                <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h1 id="freeRam" style="color: rgb(255, 255, 255);"></h1>
-            </div>
-            <div>
-                <h1 style="color: rgb(255, 255, 255);">enabled</h1>
-            </div>
-            <div>
-                <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
+            <img style="max-width: 40%; border-radius: 20px; box-shadow: 6px 4px 8px #000000;"
+                src="{{ url_for('video_feed') }}">
         </div>
 
-        <br>
-            <br>
-            <div>
-                <a class="glow" style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;" onclick="sendStartCommand()"">RESTART</a>
-                <a class="glow" style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;" href="{{pathToRenderedFile}}" ">DOWNLOAD</a>
-                <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;" href="http://192.168.0.12:8000">MAKE NEW</a>
-            </div>
-            <br>
-        
+
+        <div style="display:inline-block; margin-bottom: 20px; margin-top: 5px;"><select id="modesId">
+                <optgroup label="YOLO MODEL">
+                    <option value="a">SHOW ALL YOLO OBJECTS</option>
+                    <option value="b">BLUR OBJECTS WITH ASCII</option>
+                </optgroup>
+                <optgroup label="MASK R-CNN MODEL">
+                    <option value="j">CANNY AND GAUSSIAN BLUR</option>
+                    <option value="i">CANNY + ANIMATE BACKGROUND</option>
+                    <option value="m">GAUSSIAN BLUR BACKGROUND</option>
+                    <option value="k">FAKE COLORIZER</option>
+                </optgroup>
+                <optgroup label="CAFFE MODEL">
+                    <option value="f">CAFFE NEURAL NETWORK COLORIZER</option>
+                </optgroup>
+                <optgroup label="WITHOUT NEURAL NETWORKS">
+                    <option value="e">CARTOON STYLE</option>
+                    <option value="o">DENOISE + SHARPEN</option>
+                </optgroup>
+            </select></div>
+
+        <div style="display:inline-block;"><input type="submit" value="Set Mode" onclick="sendModeChangeCommand()">
+        </div>
+
+
+
         <div>
-            <div style="display: inline-block; font-size: 24px; color: white;">Position:</div>
-            <div style=" display: inline-block;font-size: 24px; color: white;" id="positionValue"></div>
-            <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(233, 212, 30); width: 810px;" type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId">            </div>
-       </div>
+            <a class="glow"
+                style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;"
+                onclick="sendStartCommand()">RESTART</a>
+            <a class="glow"
+                style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;"
+                href="{{pathToRenderedFile}}">DOWNLOAD</a>
+            <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
+                href="http://192.168.0.12:8000">MAKE NEW</a>
+        </div>
+
+
+        <div style="margin-top: 20px;">
+            <div style="display: inline-block; font-size: 16px; color: white;">POSITION:</div>
+            <div style=" display: inline-block;font-size: 16px; color: white;" id="positionValue"></div>
+            <div><input
+                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(233, 30, 115); width: 810px; box-shadow: 6px 4px 8px #000000;"
+                    type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId"> </div>
+        </div>
         <div style="display: inline-block; max-width: 1000px; text-align: center;">
-            <div id="confidenceIdBlock"style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Confidence:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="confidenceValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId">            </div>
+            <div style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">SATURATION:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="saturationValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"> </div>
             </div>
 
-            <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Saturation:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="saturationValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId">            </div>
-            </div>
-           
-            <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Contrast:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="contrastValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId">            </div>
+            <div style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="contrastValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId"> </div>
             </div>
 
-            <div style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">BRIGHTNESS:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="brightnessValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId">            </div>
+            <div style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">BRIGHTNESS:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="brightnessValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId"> </div>
             </div>
 
-            <div id ="cannyBlurIdBlock" style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Canny edge filter:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="cannyBlurValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId">            </div>
+            <div id="confidenceIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">CONFIDENCE:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="confidenceValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId"> </div>
             </div>
 
-            <div id ="lineThicknessIdBlock" style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">Line thickness:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="lineThicknessValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId">            </div>
+            <div id="rcnnSizeIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">RCNN OBJECT BLUR SIZE:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnSizeValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="150" step="1" value="10" class="slider" id="rcnnSizeId"> </div>
             </div>
 
-            <div id ="denoiseIdBlock" style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">COLOR NOISE FILTER:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="denoiseValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="21" step="1" value="7" class="slider" id="denoiseId">            </div>
+            <div id="rcnnBlurIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">RCNN BLUR STRENGTH:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnBlurValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="2" value="17" class="slider" id="rcnnBlurId"> </div>
             </div>
 
-            <div id ="denoise2IdBlock" style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">DENOISE STRENGTH:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="denoise2Value"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="100" step="1" value="10" class="slider" id="denoise2Id">            </div>
+            <div id="cannyBlurIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">EDGE FILTER:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyBlurValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId"> </div>
             </div>
 
-            <div id ="sharpenIdBlock" style="display: inline-block; " >
-                <div style="display: inline-block; font-size: 24px; color: white;">SHARPEN LEVEL:</div>
-                <div style=" display: inline-block;font-size: 24px; color: white;" id="sharpenValue"></div>
-                <div><input style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(220, 220, 220); width: 400px;" type="range" min="0" max="100" step="1" value="2" class="slider" id="sharpenId">            </div>
+            <div id="lineThicknessIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">LINE THICKNESS:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="lineThicknessValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId"> </div>
             </div>
-            
+
+            <div id="denoiseIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">COLOR NOISE FILTER:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="denoiseValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="21" step="1" value="7" class="slider" id="denoiseId"> </div>
+            </div>
+
+            <div id="denoise2IdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">DENOISE STRENGTH:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="denoise2Value"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="100" step="1" value="10" class="slider" id="denoise2Id"> </div>
+            </div>
+
+            <div id="sharpenIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 18px; color: white;">SHARPEN LEVEL:</div>
+                <div style=" display: inline-block;font-size: 18px; color: white;" id="sharpenValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 10px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"> </div>
+            </div>
+
         </div>
 
         <script>
@@ -157,17 +204,14 @@
             }
 
             function sendModeChangeCommand() {
-                                
                 modeResetCommand = $("#modesId").val()
-
-               
             }
 
-            var myTimer = setInterval(function() {
+            var myTimer = setInterval(function () {
                 $.ajax({
                     url: '/update',
                     type: 'POST',
-                    success: function(response) {
+                    success: function (response) {
                         console.log(response);
                         //$("#num").html(response["value"]);
                         $("#num").html(response["value"]);
@@ -175,7 +219,7 @@
                         $("#progress").html(response["progress"] + "%");
                         $("#fps").html(response["fps"]);
                         $("#cpu").html(response["cpuUsage"] + "%");
-                        $("#freeRam").html(response["freeRam"] + "GB");                       
+                        $("#freeRam").html(response["freeRam"] + "GB");
                         frameWidth = response["frameWidth"]
                         frameHeight = response["frameHeight"]
                         maxFrames = response["maxFrames"]
@@ -184,121 +228,176 @@
                         $("#frameSize").html(frameWidth + "x" + frameHeight);
                         $("#positionId")
                             .prop({
-                            min: 1,
-                            max: maxFrames - 1                           
-                        })
+                                min: 1,
+                                max: maxFrames - 1
+                            })
 
                         working = response["workingOn"];
 
-                        if (currentMode == "a") {                    
+                        // SHOW ALL YOLO OBJECTS
+                        if (currentMode == "a") {
                             $("#cannyBlurIdBlock").hide()
                             $("#lineThicknessIdBlock").hide()
-                            $("#confidenceIdBlock").show()
-                        } 
-                        
-                        if (currentMode == "b") {                    
-                            $("#cannyBlurIdBlock").hide()
-                            $("#lineThicknessIdBlock").hide()
-                            $("#confidenceIdBlock").show()
-                        }
-                        
-                        if (currentMode == "j") {                    
-                            $("#cannyBlurIdBlock").hide()
-                            $("#lineThicknessIdBlock").hide()
-                            $("#confidenceIdBlock").show()
-                        } 
-
-                        if (currentMode == "i") {                    
-                            $("#cannyBlurIdBlock").hide()
-                            $("#lineThicknessIdBlock").hide()
-                            $("#confidenceIdBlock").show()
-                        } 
-
-                        if (currentMode == "m") {                    
-                            $("#cannyBlurIdBlock").hide()
-                            $("#lineThicknessIdBlock").hide()
-                            $("#confidenceIdBlock").show()
-                        } 
-
-                        if (currentMode == "k") {                    
-                            $("#cannyBlurIdBlock").hide()
-                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
                             $("#confidenceIdBlock").show()
                         }
-                        
-                        if (currentMode == "f") {                    
+                        // BLUR OBJECTS WITH ASCII
+                        if (currentMode == "b") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        }
+                        // CANNY AND GAUSSIAN BLUR COLOR
+                        if (currentMode == "j") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                            $("#rcnnBlurIdBlock").show()
+                        }
+                        // CANNY + ANIMATE BACKGROUND
+                        if (currentMode == "i") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                        }
+                        // GAUSSIAN BLUR BACKGROUND
+                        if (currentMode == "m") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                            $("#rcnnSizeIdBlock").show()
+                            $("#rcnnSizeIdBlock").show()
+                            $("#rcnnBlurIdBlock").show()
+                        }
+                        // FAKE COLORIZER
+                        if (currentMode == "k") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()                            
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#rcnnSizeIdBlock").show()
+                            $("#confidenceIdBlock").show()
+                        }
+                        // CAFFE NEURAL NETWORK COLORIZER
+                        if (currentMode == "f") {
                             $("#cannyBlurIdBlock").hide()
                             $("#confidenceIdBlock").hide()
                             $("#lineThicknessIdBlock").hide()
-                        } 
-
-                        if (currentMode == "e") {                    
+                            $("#sharpenIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                        }
+                        // CARTOON STYLE
+                        if (currentMode == "e") {
                             $("#cannyBlurIdBlock").show()
                             $("#lineThicknessIdBlock").show()
+                            $("#sharpenIdBlock").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()
                             $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
                         }
-                        
-                        if (currentMode == "o") {                    
+                        // DENOISE + SHARPEN
+                        if (currentMode == "o") {
                             $("#cannyBlurIdBlock").hide()
                             $("#lineThicknessIdBlock").hide()
                             $("#confidenceIdBlock").hide()
-                        } 
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()                            
+                        }
 
                         //if (working == false) {
                         //clearInterval(myTimer);
                         //}
 
                     },
-                    error: function(error) {
+                    error: function (error) {
                         console.log(error);
                     }
                 })
             }, 1000);
 
-            var myTimer2 = setInterval(function() {
+            var myTimer2 = setInterval(function () {
                 var positionSlider = document.getElementById("positionId");
                 var outputPosition = document.getElementById("positionValue");
                 var positionSliderValue = positionSlider.value;
 
-                var saturationSlider = document.getElementById("saturationId");                
+                var saturationSlider = document.getElementById("saturationId");
                 var saturationOutput = document.getElementById("saturationValue");
                 var saturationSliderValue = saturationSlider.value;
 
-                var cannyBlurSlider = document.getElementById("cannyBlurId");                
+                var cannyBlurSlider = document.getElementById("cannyBlurId");
                 var cannyBlurOutput = document.getElementById("cannyBlurValue");
                 var sliderValue = cannyBlurSlider.value;
 
-                var contrastSlider = document.getElementById("contrastId");                
+                var contrastSlider = document.getElementById("contrastId");
                 var contrastOutput = document.getElementById("contrastValue");
                 var contrastSliderValue = contrastSlider.value;
 
-                var confidenceSlider = document.getElementById("confidenceId");                
+                var confidenceSlider = document.getElementById("confidenceId");
                 var confidenceOutput = document.getElementById("confidenceValue");
                 var confidenceSliderValue = confidenceSlider.value;
 
-                var brightnessSlider = document.getElementById("brightnessId");                
+                var brightnessSlider = document.getElementById("brightnessId");
                 var brightnessOutput = document.getElementById("brightnessValue");
                 var brightnessSliderValue = brightnessSlider.value;
 
-                var lineThicknessSlider = document.getElementById("lineThicknessId");                
+                var lineThicknessSlider = document.getElementById("lineThicknessId");
                 var lineThicknessOutput = document.getElementById("lineThicknessValue");
                 var lineThicknessSliderValue = lineThicknessSlider.value;
 
-                var denoiseSlider = document.getElementById("denoiseId");                
+                var denoiseSlider = document.getElementById("denoiseId");
                 var denoiseOutput = document.getElementById("denoiseValue");
-                var denoiseSliderValue =denoiseSlider.value;
+                var denoiseSliderValue = denoiseSlider.value;
 
-                var denoise2Slider = document.getElementById("denoise2Id");                
+                var denoise2Slider = document.getElementById("denoise2Id");
                 var denoise2Output = document.getElementById("denoise2Value");
-                var denoise2SliderValue =denoise2Slider.value;
+                var denoise2SliderValue = denoise2Slider.value;
 
-                var sharpenSlider = document.getElementById("sharpenId");                
+                var sharpenSlider = document.getElementById("sharpenId");
                 var sharpenOutput = document.getElementById("sharpenValue");
                 var sharpenSliderValue = sharpenSlider.value;
 
+                var rcnnSizeSlider = document.getElementById("rcnnSizeId");
+                var rcnnSizeOutput = document.getElementById("rcnnSizeValue");
+                var rcnnSizeSliderValue = rcnnSizeSlider.value;
+
+                var rcnnBlurSlider = document.getElementById("rcnnBlurId");
+                var rcnnBlurOutput = document.getElementById("rcnnBlurValue");
+                var rcnnBlurSliderValue = rcnnBlurSlider.value;
+
                 outputPosition.innerHTML = positionSlider.value;
                 saturationOutput.innerHTML = saturationSlider.value;
-                cannyBlurOutput.innerHTML = cannyBlurSlider.value; 
+                cannyBlurOutput.innerHTML = cannyBlurSlider.value;
                 contrastOutput.innerHTML = contrastSlider.value;
                 brightnessOutput.innerHTML = brightnessSlider.value;
                 confidenceOutput.innerHTML = confidenceSlider.value;
@@ -306,57 +405,82 @@
                 denoiseOutput.innerHTML = denoiseSlider.value;
                 denoise2Output.innerHTML = denoise2Slider.value;
                 sharpenOutput.innerHTML = sharpenSlider.value;
+                rcnnSizeOutput.innerHTML = rcnnSizeSlider.value;
+                rcnnBlurOutput.innerHTML = rcnnBlurSlider.value;
 
-                positionSlider.oninput = function() {
-                    outputPosition.innerHTML = this.value;                                    
+                positionSlider.oninput = function () {
+                    outputPosition.innerHTML = this.value;
                 }
 
-                saturationSlider.oninput = function() {
-                    saturationOutput.innerHTML = this.value;                                    
+                saturationSlider.oninput = function () {
+                    saturationOutput.innerHTML = this.value;
                 }
-               
-                cannyBlurSlider.oninput = function() {
-                    cannyBlurOutput.innerHTML = this.value;                                    
-                }
-                
-                contrastSlider.oninput = function() {
-                    contrastOutput.innerHTML = this.value;                                    
-                } 
-                
-                brightnessSlider.oninput = function() {
-                    brightnessOutput.innerHTML = this.value;                                    
-                } 
-                
-                confidenceSlider.oninput = function() {
-                    confidenceOutput.innerHTML = this.value;                                    
-                } 
 
-                lineThicknessSlider.oninput = function() {
-                    lineThicknessOutput.innerHTML = this.value;                                    
-                } 
+                cannyBlurSlider.oninput = function () {
+                    cannyBlurOutput.innerHTML = this.value;
+                }
 
-                denoiseSlider.oninput = function() {
-                    denoiseOutput.innerHTML = this.value;                                    
+                contrastSlider.oninput = function () {
+                    contrastOutput.innerHTML = this.value;
                 }
-                
-                denoise2Slider.oninput = function() {
-                    denoise2Output.innerHTML = this.value;                                    
+
+                brightnessSlider.oninput = function () {
+                    brightnessOutput.innerHTML = this.value;
                 }
-                
-                sharpenSlider.oninput = function() {
-                    sharpenOutput.innerHTML = this.value;                                    
-                } 
+
+                confidenceSlider.oninput = function () {
+                    confidenceOutput.innerHTML = this.value;
+                }
+
+                lineThicknessSlider.oninput = function () {
+                    lineThicknessOutput.innerHTML = this.value;
+                }
+
+                denoiseSlider.oninput = function () {
+                    denoiseOutput.innerHTML = this.value;
+                }
+
+                denoise2Slider.oninput = function () {
+                    denoise2Output.innerHTML = this.value;
+                }
+
+                sharpenSlider.oninput = function () {
+                    sharpenOutput.innerHTML = this.value;
+                }
+
+                rcnnSizeSlider.oninput = function () {
+                    rcnnSizeOutput.innerHTML = this.value;
+                }
+
+                rcnnBlurSlider.oninput = function () {
+                    rcnnBlurOutput.innerHTML = this.value;
+                }
 
                 $.ajax({
-                      type: "POST",
-                      contentType: "application/json;charset=utf-8",
-                      url: "/update2",
-                      traditional: "true",
-                      data: JSON.stringify({sliderValue, saturationSliderValue, contrastSliderValue, brightnessSliderValue, positionSliderValue, confidenceSliderValue, lineThicknessSliderValue, denoiseSliderValue, denoise2SliderValue, sharpenSliderValue, videoResetCommand, modeResetCommand}),
-                      dataType: "json"
-                      });
-                      
-                      videoResetCommand = false;
+                    type: "POST",
+                    contentType: "application/json;charset=utf-8",
+                    url: "/update2",
+                    traditional: "true",
+                    data: JSON.stringify({
+                        sliderValue,
+                        saturationSliderValue,
+                        contrastSliderValue,
+                        brightnessSliderValue,
+                        positionSliderValue,
+                        confidenceSliderValue,
+                        lineThicknessSliderValue,
+                        denoiseSliderValue,
+                        denoise2SliderValue,
+                        sharpenSliderValue,
+                        rcnnSizeSliderValue,
+                        rcnnBlurSliderValue,
+                        videoResetCommand,
+                        modeResetCommand
+                    }),
+                    dataType: "json"
+                });
+
+                videoResetCommand = false;
 
             }, 300);
 

@@ -123,7 +123,7 @@ def checkIfUserIsConnected(timerStart):
             #shutdown_server()
 
 def ProcessFrame():
-    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, videoResetCommand,  startedRenderingVideo, needModeReset, options
+    global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, videoResetCommand,  startedRenderingVideo, needModeReset, options
 
     r = cv2.getTrackbarPos("R", "Controls")
     g = cv2.getTrackbarPos("G", "Controls")
@@ -330,7 +330,7 @@ def ProcessFrame():
 
                     if (colorObjectsOnGray):
                         bufferFrames[streamIndex] = colorizerPeopleRcnn(bufferFrames[streamIndex],
-                                                                        boxes, masks, confidenceValue)
+                                                                        boxes, masks, confidenceValue, rcnnSizeValue)
 
                     if (colorObjectsOnGrayBlur):
                         bufferFrames[streamIndex] = colorizerPeopleRcnnWithBlur(bufferFrames[streamIndex],
@@ -338,7 +338,7 @@ def ProcessFrame():
                                                                                 )
                     if (colorObjectsBlur):
                         bufferFrames[streamIndex] = PeopleRcnnWithBlur(bufferFrames[streamIndex],
-                                                                        boxes, masks, labels, confidenceValue
+                                                                        boxes, masks, labels, confidenceValue, rcnnSizeValue, rcnnBlurValue
                                                                         )
 
                     if (extractAndCutBackground):
@@ -350,11 +350,11 @@ def ProcessFrame():
                         bufferFrames[streamIndex] = extractAndReplaceBackgroundRcnn(bufferFrames[streamIndex],
                                                                                     frameBackground,
                                                                                     boxes, masks, labels, colors, confidenceValue)
-                                                                               
+                                                                            
 
                     if (applyColorCanny):
                         bufferFrames[streamIndex] = colorCannyRcnn(bufferFrames[streamIndex],
-                                                                    boxes, masks, labels, confidenceValue)
+                                                                    boxes, masks, labels, confidenceValue, rcnnBlurValue)
 
                     if (applyColorCannyOnBackground):
                         bufferFrames[streamIndex] = colorCannyOnColorBackgroundRcnn(bufferFrames[streamIndex], boxes,
@@ -377,8 +377,9 @@ def ProcessFrame():
                     # b,g,r = cv2.split(dst)           # get b,g,r
                     # bufferFrames[streamIndex] = cv2.merge([r,g,b])     # switch it to rgb
 
-                    # bufferFrames[streamIndex] = cv2.filter2D(bufferFrames[streamIndex], -1, kernel_sharpening)          
-
+                    # bufferFrames[streamIndex] = cv2.filter2D(bufferFrames[streamIndex], -1, kernel_sharpening)  
+                    #         
+# TODO move to separate function ==============================================================================
                 if cartoonEffect:
                     #bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex])
                     frameCopy = bufferFrames[streamIndex].copy()                        
@@ -408,8 +409,8 @@ def ProcessFrame():
 
                     if key == ord("q"):
                         break
-
-                
+# TODO move to separate function ==============================================================================
+# TODO move to separate function ==============================================================================
 # Limit COLORS ====================================================
                     # (B, G, R) = cv2.split(frameCopy)
                     # M = np.maximum(np.maximum(R, G), B) - 70
@@ -418,7 +419,7 @@ def ProcessFrame():
                     # B[B < M] = 0
                     # frameCopy =  cv2.merge([B, G, R])
 # Limit COLORS ====================================================
-
+# TODO move to separate function ==============================================================================
                     kernel = np.ones((lineThicknessValue,lineThicknessValue),np.uint8)
                     bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
                     frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
@@ -426,6 +427,9 @@ def ProcessFrame():
                     #frameCopy = limitColorsKmeans(frameCopy)
                     #frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
                     bufferFrames[streamIndex] = frameCopy
+                    
+                    bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
+                    bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
 
                 #if denoiser:
                 
@@ -434,7 +438,7 @@ def ProcessFrame():
                 if denoiseAndSharpen:
                     bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
                     bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
-                   
+                
 # BRIGHTNESS AND CONTRAST =======================o=====================================
                 contrast = contrastValue / 100
                 brightness = brightnessValue
@@ -508,11 +512,11 @@ def ProcessFrame():
                         else:
                             if (sourceMode == "video"):
                                 progress = frameProcessed / totalFrames * 100
-                           
+                        
                             if (sourceMode == "video"):
                                 cv2.putText(bufferFrames[streamIndex], f"FPS: {str(round(fps, 2))} {str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])}", (40, 40),
                                         font, 1.4, (0, 0, 255), 2)
-                           
+                        
                             # if (sourceMode == "video") :
                             #     writer.write(bufferFrames[streamIndex])
 
@@ -583,7 +587,6 @@ def video_feed():
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 # return Response(stream_with_context(generate()))
-
 @app.route('/update', methods=['POST'])
 def update():
     global sourceMode, totalFrames, options
@@ -619,7 +622,7 @@ def update():
 
 @app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-    global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue
+    global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue
     
     if request.method == 'POST':
         timerStart = time.perf_counter()
@@ -634,6 +637,8 @@ def sendCommand():
         denoiseValue = int(inputData["denoiseSliderValue"])
         denoiseValue2 = int(inputData["denoise2SliderValue"])
         sharpeningValue = int(inputData["sharpenSliderValue"])
+        rcnnSizeValue = int(inputData["rcnnSizeSliderValue"])
+        rcnnBlurValue = int(inputData["rcnnBlurSliderValue"])
         videoResetCommand = int(inputData["videoResetCommand"])
         modeResetCommand = str(inputData["modeResetCommand"])
 

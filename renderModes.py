@@ -16,7 +16,8 @@ lineThicknessValue = 1
 denoiseValue = 10
 denoiseValue2 = 10
 sharpeningValue = 9
-
+rcnnSizeValue = 10
+rcnnBlurValue = 17
 objectIndex = 0
 
 classes = []
@@ -162,6 +163,8 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
             objectIndex += 1
 
     return inputFrame
+    
+# TODO get rid of global variables ==============================================================================
 
 def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
     global objectIndex
@@ -542,7 +545,7 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
     frameOut = cv2.addWeighted(inputFrame, 1, frameBackground, 1, 0)
     return frameOut
 
-def colorCannyRcnn(inputFrame, boxes, masks, labels, confidenceValue):
+def colorCannyRcnn(inputFrame, boxes, masks, labels, confidenceValue, rcnnBlurValue):
     confidenceValue /= 100
     classesOut = []
     # frameCanny = autoCanny(inputFrame)
@@ -592,7 +595,7 @@ def colorCannyRcnn(inputFrame, boxes, masks, labels, confidenceValue):
             #     inputFrame[startY:endY, startX:endX][mask] = frm
 
     # frameOut = cv2.addWeighted(inputFrame, 1, frameCanny, 1, 0)
-    frameCanny = cv2.GaussianBlur(frameCanny, (13, 13), 13)
+    frameCanny = cv2.GaussianBlur(frameCanny, (rcnnBlurValue, rcnnBlurValue), rcnnBlurValue)
 
     for i in range(0, boxes.shape[2]):
         classID = int(boxes[0, 0, i, 1])
@@ -673,7 +676,7 @@ def colorCannyOnColorBackgroundRcnn(inputFrame, boxes, masks, labels, confidence
     frameOut = inputFrame
     return frameOut
 
-def colorizerPeopleRcnn(inputFrame, boxes, masks, confidenceValue):
+def colorizerPeopleRcnn(inputFrame, boxes, masks, confidenceValue, rcnnSizeValue):
     confidenceValue /= 100
     classesOut = []
     needGRAY2BGR = True
@@ -705,8 +708,11 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks, confidenceValue):
             boxW = endX - startX
             boxH = endY - startY
 
-            smallerX = int(boxW / 30)
-            smallerY = int(boxH / 50)
+            if (rcnnSizeValue == 0):
+                rcnnSizeValue = 2
+                
+            smallerX = int(boxW / rcnnSizeValue)
+            smallerY = int(boxH / rcnnSizeValue)
 
             if (smallerX % 2 != 0):
                 smallerX += 1
@@ -825,7 +831,7 @@ def colorizerPeopleRcnnWithBlur(inputFrame, boxes, masks, confidenceValue):
     frameOut = inputFrame
     return frameOut
 
-def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue):
+def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue, rcnnSizeValue, rcnnBlurValue):
     confidenceValue /= 100
 
     classesOut = []
@@ -833,7 +839,7 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue):
     alreadyBGR = False
     frameCopy = inputFrame
     # inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2GRAY)
-    inputFrame = cv2.GaussianBlur(inputFrame, (17, 17), 17)
+    inputFrame = cv2.GaussianBlur(inputFrame, (rcnnBlurValue, rcnnBlurValue), rcnnBlurValue)
     frameCanny = autoCanny(inputFrame)
     frameCanny = cv2.cvtColor(frameCanny, cv2.COLOR_GRAY2RGB)
 
@@ -853,8 +859,12 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue):
             boxW = endX - startX
             boxH = endY - startY
 
-            smallerX = int(boxW / 10)
-            smallerY = int(boxH / 10)
+            if (rcnnSizeValue == 0):
+                rcnnSizeValue = 2
+
+
+            smallerX = int(boxW / rcnnSizeValue)
+            smallerY = int(boxH / rcnnSizeValue)
             # smallerX = 0
             # smallerY = 0
 
