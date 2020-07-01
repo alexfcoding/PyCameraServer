@@ -710,7 +710,7 @@ def colorizerPeopleRcnn(inputFrame, boxes, masks, confidenceValue, rcnnSizeValue
 
             if (rcnnSizeValue == 0):
                 rcnnSizeValue = 2
-                
+
             smallerX = int(boxW / rcnnSizeValue)
             smallerY = int(boxH / rcnnSizeValue)
 
@@ -914,22 +914,25 @@ def sharpening(inputFrame, sharpeningValue):
     kernelDiff = 9 - kernelValue        
     kernel_sharpening = np.array([[-1, -1, -1], [-1, kernelValue, -1], [-1, -1, -1]])
 
-    while (kernelDiff != 0):
-        for i in range(3):
-            for j in range(3):
-                if (i == 1 and j == 1):
-                    kernel_sharpening[j][i] == kernelValue
-                else:
-                    if (kernelDiff > 0):
-                        kernel_sharpening[j][i] += 1
-                        kernelDiff -= 1
-                    if (kernelDiff < 0):
-                        kernel_sharpening[j][i] -= 1
-                        kernelDiff += 1
-                    if (kernelDiff == 0):
-                        break
+    # while (kernelDiff != 0):
+    #     for i in range(3):
+    #         for j in range(3):
+    #             if (i == 1 and j == 1):
+    #                 kernel_sharpening[j][i] == kernelValue
+    #             else:
+    #                 if (kernelDiff > 0):
+    #                     kernel_sharpening[j][i] += 1
+    #                     kernelDiff -= 1
+    #                 if (kernelDiff < 0):
+    #                     kernel_sharpening[j][i] -= 1
+    #                     kernelDiff += 1
+    #                 if (kernelDiff == 0):
+    #                     break
                 
-    inputFrame = cv2.filter2D(inputFrame, -1, kernel_sharpening)  
+    # inputFrame = cv2.filter2D(inputFrame, -1, kernel_sharpening)  
+
+    inputFrame = cv2.detailEnhance(inputFrame, sigma_s=sharpeningValue, sigma_r=0.15)
+
     return inputFrame
 
 def denoise(inputFrame, denoiseValue, denoiseValue2):    
@@ -996,5 +999,5 @@ def adjustSaturation(inputFrame, saturation = 1):
     inputFrame = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
     return inputFrame
 
-yoloNetwork, layers_names, outputLayers, colorsYolo = initializeYoloNetwork(classes, False)
-rcnnNetwork = initializeRcnnNetwork(True)
+yoloNetwork, layers_names, outputLayers, colorsYolo = initializeYoloNetwork(classes, True)
+rcnnNetwork = initializeRcnnNetwork(False)

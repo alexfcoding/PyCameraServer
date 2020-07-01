@@ -16,11 +16,11 @@
                 "-o",
                 "8002",
                 "-s",
-                "inputVideos/cat.jpg",
+                "inputVideos/tokyo7.webm",
                 "-c",
-                "m",
+                "e",
                 "-m",
-                "image"
+                "video"
             ]
 
         },
