@@ -124,7 +124,7 @@ def checkIfUserIsConnected(timerStart):
 			#shutdown_server()
 
 def ProcessFrame():
-	global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, videoResetCommand,  startedRenderingVideo, needModeReset, options, fileChanged, fileToRender
+	global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, videoResetCommand,  startedRenderingVideo, needModeReset, options, fileChanged, fileToRender
 
 	r = cv2.getTrackbarPos("R", "Controls")
 	g = cv2.getTrackbarPos("G", "Controls")
@@ -152,7 +152,7 @@ def ProcessFrame():
 	colorObjectsOnGray = False
 	videoColorization = False
 	denoiseAndSharpen= False    
-
+	sobel = False
 	imageUpscaler = False
 	cartoonEffect = False
 	showAllObjects = False
@@ -269,7 +269,10 @@ def ProcessFrame():
 					print("imageUpscaler")
 				if (char == "o"):
 					denoiseAndSharpen = True
-					print("denoiseAndSharpen")                
+					print("denoiseAndSharpen") 
+				if (char == "p"):
+					sobel = True
+					print("sobel")                 
 
 				needModeReset = False
 
@@ -405,12 +408,13 @@ def ProcessFrame():
 					#bufferFrames[streamIndex] = morphEdgeDetection(bufferFrames[streamIndex])
 					bufferFrames[streamIndex] = cv2.Canny(bufferFrames[streamIndex], thres1, thres2)
 					bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
-					
-					cv2.imshow("videof",  bufferFrames[streamIndex])
-					key = cv2.waitKey(1) & 0xFF
 
-					if key == ord("q"):
-						break
+				
+					# cv2.imshow("videof",  bufferFrames[streamIndex])
+					# key = cv2.waitKey(1) & 0xFF
+
+					# if key == ord("q"):
+						# break
 # TODO move to separate function ==============================================================================
 # TODO move to separate function ==============================================================================
 # Limit COLORS ====================================================
@@ -440,7 +444,15 @@ def ProcessFrame():
 				if denoiseAndSharpen:
 					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
 					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
-				
+				# = cv2.Laplacian(bufferFrames[streamIndex],cv2.CV_64F)
+
+				if sobel:					
+					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue) 
+					bufferFrames[streamIndex] = cv2.Sobel(bufferFrames[streamIndex],cv2.CV_64F,1,0,ksize=sobelValue)                  
+					
+				#bufferFrames[streamIndex] = cv2.Sobel(bufferFrames[streamIndex],cv2.CV_64F,0,1,ksize=5)	
+				#bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
 # BRIGHTNESS AND CONTRAST =======================o=====================================
 				contrast = contrastValue / 100
 				brightness = brightnessValue
@@ -452,6 +464,14 @@ def ProcessFrame():
 # AMP COLORS ==========================================================================
 				bufferFrames[streamIndex] = adjustSaturation(bufferFrames[streamIndex], saturationValue)
 # AMP COLORS ==========================================================================
+				
+				
+				# cv2.imshow("videof",  frm)
+				# key = cv2.waitKey(1) & 0xFF
+
+				# if key == ord("q"):
+				# 	break
+				
 				with lock:
 					personDetected = False
 					checkIfUserIsConnected(timerStart)
@@ -588,7 +608,7 @@ def generate():
 
 @app.route('/', methods=['GET', 'POST'])
 def index(device=None, action=None):
-	global cap, frameProcessed, writer, fileToRender, videoResetCommand, fileChanged, startedRenderingVideo
+	global cap, cap2, frameProcessed, writer, fileToRender, videoResetCommand, fileChanged, startedRenderingVideo, sourceMode, sourceImage, isImage
 	if request.method == 'POST':        
 		file = request.files['file']
 
@@ -596,15 +616,26 @@ def index(device=None, action=None):
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+			fileExtension = filename.rsplit('.', 1)[1]
+			if (fileExtension == "png" or fileExtension == "jpg" or fileExtension == "jpeg" or fileExtension == "gif"):				
+				sourceMode = "image"
+				sourceImage = filename
+				cap2 = cv2.VideoCapture("inputVideos/snow.webm")
+			else:				
+				sourceMode = "video"
+				cap = cv2.VideoCapture(filename)
+				totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+				cap2 = cv2.VideoCapture("inputVideos/snow.webm")
+				
+
 			CRED = '\033[91m'
 			CEND = '\033[0m'
 			options = request.form.getlist('check')
 			mode = request.form.getlist('checkMode')
 
 			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
-
-			needModeReset = True
-			startedRenderingVideo = True
+			
+			#startedRenderingVideo = True
 			fileToRender = filename
 			fileChanged = True
 
@@ -656,7 +687,7 @@ def update():
 
 @app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-	global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue
+	global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue
 	
 	if request.method == 'POST':
 		timerStart = time.perf_counter()
@@ -673,6 +704,7 @@ def sendCommand():
 		sharpeningValue = int(inputData["sharpenSliderValue"])
 		rcnnSizeValue = int(inputData["rcnnSizeSliderValue"])
 		rcnnBlurValue = int(inputData["rcnnBlurSliderValue"])
+		sobelValue = int(inputData["sobelSliderValue"])
 		videoResetCommand = int(inputData["videoResetCommand"])
 		modeResetCommand = str(inputData["modeResetCommand"])
 

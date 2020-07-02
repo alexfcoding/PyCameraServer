@@ -19,6 +19,7 @@ sharpeningValue = 9
 rcnnSizeValue = 10
 rcnnBlurValue = 17
 objectIndex = 0
+sobelValue = 5
 
 classes = []
 
@@ -1000,4 +1001,4 @@ def adjustSaturation(inputFrame, saturation = 1):
     return inputFrame
 
 yoloNetwork, layers_names, outputLayers, colorsYolo = initializeYoloNetwork(classes, True)
-rcnnNetwork = initializeRcnnNetwork(False)
+rcnnNetwork = initializeRcnnNetwork(True)

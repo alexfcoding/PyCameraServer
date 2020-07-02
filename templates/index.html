@@ -23,8 +23,8 @@
     <div style="text-align: center;">
         <div>
             <div style="margin: 5px;">
-                <div id="grid" >
-                    <div >
+                <div id="grid">
+                    <div>
                         <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
                     </div>
                     <div>
@@ -43,7 +43,7 @@
                     <div>
                         <h1 id="freeRam" style="color: rgb(255, 255, 255);">0</h1>
                     </div>
-                    
+
                     <div>
                         <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
                     </div>
@@ -69,7 +69,7 @@
                         onclick="sendStartCommand()">START</a>
                     <a class="glow"
                         style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;"
-                        onclick="sendStartCommand()">STOP</a>
+                        onclick="sendStopCommand()">STOP</a>
                     <a class="glow"
                         style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;"
                         href="{{pathToRenderedFile}}">DOWNLOAD VIDEO</a>
@@ -98,6 +98,7 @@
                         <optgroup label="WITHOUT NEURAL NETWORKS">
                             <option value="e">CARTOON STYLE</option>
                             <option value="o">DENOISE + SHARPEN</option>
+                            <option value="p">SOBEL OPERATOR</option>
                         </optgroup>
                     </select>
                 </div>
@@ -197,11 +198,19 @@
             </div>
 
             <div id="sharpenIdBlock" style="display: inline-block; ">
-                <div style="display: inline-block; font-size: 18px; color: white;">SHARPEN STRENGTH:</div>
-                <div style=" display: inline-block;font-size: 18px; color: white;" id="sharpenValue"></div>
+                <div style="display: inline-block; font-size: 16px; color: white;">SHARPEN STRENGTH:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue"></div>
                 <div><input
                         style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 5px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"> </div>
+            </div>
+
+            <div id="sobelIdBlock" style="display: inline-block; ">
+                <div style="display: inline-block; font-size: 16px; color: white;">SOBEL FILTER:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="sobelValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 5px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="21" step="2" value="3" class="slider" id="sobelId"> </div>
             </div>
 
         </div>
@@ -218,6 +227,10 @@
                 videoResetCommand = true;
             }
 
+            function sendStopCommand() {
+                videoResetCommand = false;
+            }
+
             function sendModeChangeCommand() {
                 modeResetCommand = $("#modesId").val()
             }
@@ -229,12 +242,12 @@
                     success: function (response) {
                         console.log(response);
                         //$("#num").html(response["value"]);
-                        $("#num").html("FRAME: "+response["value"]);
-                        $("#framesCount").html("TOTAL: "+response["totalFrames"]);
-                        $("#progress").html("MADE: "+response["progress"] + "%");
-                        $("#fps").html("FPS: "+response["fps"]);
-                        $("#cpu").html("CPU: "+response["cpuUsage"] + "%");
-                        $("#freeRam").html("RAM: "+response["freeRam"] + "GB");
+                        $("#num").html("FRAME: " + response["value"]);
+                        $("#framesCount").html("TOTAL: " + response["totalFrames"]);
+                        $("#progress").html("MADE: " + response["progress"] + "%");
+                        $("#fps").html("FPS: " + response["fps"]);
+                        $("#cpu").html("CPU: " + response["cpuUsage"] + "%");
+                        $("#freeRam").html("RAM: " + response["freeRam"] + "GB");
                         frameWidth = response["frameWidth"]
                         frameHeight = response["frameHeight"]
                         maxFrames = response["maxFrames"]
@@ -350,6 +363,19 @@
                             $("#denoise2IdBlock").show()
                         }
 
+                        // SOBEL OPERATOR
+                        if (currentMode == "p") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()
+                            $("#sobelIdBlock").show()
+                        }
+
                         //if (working == false) {
                         //clearInterval(myTimer);
                         //}
@@ -410,6 +436,10 @@
                 var rcnnBlurOutput = document.getElementById("rcnnBlurValue");
                 var rcnnBlurSliderValue = rcnnBlurSlider.value;
 
+                var sobelSlider = document.getElementById("sobelId");
+                var sobelOutput = document.getElementById("sobelValue");
+                var sobelSliderValue = sobelSlider.value;
+
                 outputPosition.innerHTML = positionSlider.value;
                 saturationOutput.innerHTML = saturationSlider.value;
                 cannyBlurOutput.innerHTML = cannyBlurSlider.value;
@@ -422,6 +452,7 @@
                 sharpenOutput.innerHTML = sharpenSlider.value;
                 rcnnSizeOutput.innerHTML = rcnnSizeSlider.value;
                 rcnnBlurOutput.innerHTML = rcnnBlurSlider.value;
+                sobelOutput.innerHTML = sobelSlider.value;
 
                 positionSlider.oninput = function () {
                     outputPosition.innerHTML = this.value;
@@ -471,6 +502,10 @@
                     rcnnBlurOutput.innerHTML = this.value;
                 }
 
+                sobelSlider.oninput = function () {
+                    sobelOutput.innerHTML = this.value;
+                }
+
                 $.ajax({
                     type: "POST",
                     contentType: "application/json;charset=utf-8",
@@ -489,6 +524,7 @@
                         sharpenSliderValue,
                         rcnnSizeSliderValue,
                         rcnnBlurSliderValue,
+                        sobelSliderValue,
                         videoResetCommand,
                         modeResetCommand
                     }),

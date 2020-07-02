@@ -28,13 +28,19 @@ def upload_file():
 	if request.method == 'POST':
 		file = request.files['file']
 		if file and allowed_file(file.filename):
-			filename = secure_filename(file.filename)
+			filename = secure_filename(file.filename)			
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 			CRED = '\033[91m'
 			CEND = '\033[0m'
+			fileExtension = filename.rsplit('.', 1)[1]
+			if (fileExtension == "png" or fileExtension == "jpg" or fileExtension == "jpeg" or fileExtension == "gif"):
+				mode = "image"
+			else:
+				mode = "video"
+
 			options = request.form.getlist('check')
-			mode = request.form.getlist('checkMode')
+			#mode = request.form.getlist('checkMode')
 
 			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
 
@@ -67,11 +73,11 @@ def start_analysis(portToRender, fileToRender, options, mode):
 
 	str2FromList = ""
 
-	for item in mode:
-		str2FromList += item
+	# for item in mode:
+	# 	str2FromList += item
 
 	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
-					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', str2FromList])
+					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', mode])
 
 	time.sleep(10)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
