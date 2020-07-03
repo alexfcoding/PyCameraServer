@@ -76,12 +76,34 @@ def start_analysis(portToRender, fileToRender, options, mode):
 	# for item in mode:
 	# 	str2FromList += item
 
-	subprocess.Popen([f'python', 'localFiles.py', '-i', "192.168.0.12",
-					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', mode])
+	process = subprocess.Popen([f'python', '-u', 'localFiles.py', '-i', "192.168.0.12",
+					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', mode], stdout=subprocess.PIPE)
+	while True:
+		output = process.stdout.readline()
+		out = str(output.decode("utf-8"))	
 
-	time.sleep(10)
+		if (out == 'started\n'):
+			print("FFF" + str(out))
+			return redirect(f"http://192.168.0.12:{portToRender}")
+			
+
+	#lst = process.decode("ascii")
+	#stdout = process.communicate()[0]		
+	#time.sleep(1)
+
+	# while True:
+	# 	line = process.stdout.readline()
+	# 	out = str(line.decode("utf-8"))	
+	# 	print(out)	
+	# 	# nextline = process.stdout.readline()
+	# 	if (out == 'started\n'):
+	# 		return redirect(f"http://192.168.0.12:{portToRender}")
+	# 		print("its started!")
+
+		
+	#time.sleep(1)
 	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
-	return redirect(f"http://192.168.0.12:{portToRender}")
+	
 	#return redirect(f"http://178.140.230.247:{portToRender}")
 
 	# return os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")

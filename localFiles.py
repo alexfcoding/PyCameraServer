@@ -185,7 +185,7 @@ def ProcessFrame():
 	# 	print(totalFrames)
 
 	lineType = cv2.LINE_AA
-
+	
 	while workingOn:
 		
 		#print("working...")
@@ -211,6 +211,7 @@ def ProcessFrame():
 			textRender = False
 			denoiseAndSharpen = False
 			sharpener = False
+			sobel = False
 
 			for char in options:
 				if (char == "a"):
@@ -281,7 +282,6 @@ def ProcessFrame():
 
 		for streamIndex in range(len(streamList)):
 			if (sourceMode == "video"):
-
 				if (startedRenderingVideo == False):
 					cap.set(1,positionValue)
 				else:
@@ -471,7 +471,7 @@ def ProcessFrame():
 
 				# if key == ord("q"):
 				# 	break
-				
+
 				with lock:
 					personDetected = False
 					checkIfUserIsConnected(timerStart)
@@ -526,7 +526,7 @@ def ProcessFrame():
 										print("handbag detected! -> PASS")
 
 						if (writer is None):
-							writer = cv2.VideoWriter(f"static/output{args['port']}.avi"
+							writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
 														f"", fourcc, 25, (
 								bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
 							# writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
@@ -543,7 +543,7 @@ def ProcessFrame():
 							#     writer.write(bufferFrames[streamIndex])
 
 							if (sourceMode == "image"):
-								cv2.imwrite(f"static/{sourceImage}", bufferFrames[streamIndex])
+								cv2.imwrite(f"static/output{args['port']}{sourceImage}", bufferFrames[streamIndex])
 								#workingOn = False
 							if ((sourceMode == "image" and extractAndReplaceBackground == True)):
 								writer.write(bufferFrames[streamIndex])
@@ -564,6 +564,8 @@ def ProcessFrame():
 
 						# outputFrame = concated
 						outputFrame = bufferFrames[streamIndex]
+						print("started")
+							
 			else:
 				resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
 				outputFrame = resized
@@ -590,6 +592,7 @@ def generate():
 	global outputFrame, frameProcessed, lock, workingOn
 
 	while workingOn:
+		
 		with lock:
 			if outputFrame is None:
 				continue
@@ -601,6 +604,7 @@ def generate():
 
 		yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
 			   bytearray(encodedImage) + b'\r\n')
+		
 	# else:
 	# return redirect(url_for("results"))
 	# return redirect('/results')
@@ -608,7 +612,7 @@ def generate():
 
 @app.route('/', methods=['GET', 'POST'])
 def index(device=None, action=None):
-	global cap, cap2, frameProcessed, writer, fileToRender, videoResetCommand, fileChanged, startedRenderingVideo, sourceMode, sourceImage, isImage
+	global cap, cap2, frameProcessed, writer, fileToRender, videoResetCommand, fileChanged, startedRenderingVideo, sourceMode, sourceImage, isImage, totalFrames
 	if request.method == 'POST':        
 		file = request.files['file']
 
@@ -639,8 +643,9 @@ def index(device=None, action=None):
 			fileToRender = filename
 			fileChanged = True
 
+
 	return render_template("index.html", frameProcessed=frameProcessed,
-						   pathToRenderedFile=f"static/output{args['port']}.avi")
+						   pathToRenderedFile=f"static/output{args['port']}{fileToRender}")
 
 @app.route("/video")
 def video_feed():
@@ -693,7 +698,7 @@ def sendCommand():
 		timerStart = time.perf_counter()
 		inputData = request.get_json()
 		blurCannyAmount = int(inputData["sliderValue"])
-		positionValue = int(inputData["positionSliderValue"])
+		positionValueLocal = int(inputData["positionSliderValue"])
 		saturationValue = int(inputData["saturationSliderValue"])
 		contrastValue = int(inputData["contrastSliderValue"])
 		brightnessValue = int(inputData["brightnessSliderValue"])
@@ -706,6 +711,7 @@ def sendCommand():
 		rcnnBlurValue = int(inputData["rcnnBlurSliderValue"])
 		sobelValue = int(inputData["sobelSliderValue"])
 		videoResetCommand = int(inputData["videoResetCommand"])
+		videoStopCommand = int(inputData["videoStopCommand"])
 		modeResetCommand = str(inputData["modeResetCommand"])
 
 		if (modeResetCommand != "default"):           
@@ -714,6 +720,12 @@ def sendCommand():
 
 		if (videoResetCommand):
 			startedRenderingVideo = True
+		else:
+			positionValue = positionValueLocal
+
+		if (videoStopCommand):
+			startedRenderingVideo = False
+			positionValue = 1
 
 		print(videoResetCommand)
 
