@@ -25,6 +25,51 @@
             display: inline-block;
             margin-bottom: 15px;
         }
+
+        button {
+            box-shadow: 6px 4px 8px #000000;
+            background-color: #383838;
+            color: white;
+        }
+
+        button:hover {
+            background-color: orange;
+        }
+
+        button:focus {
+            background-color: red;
+        }
+
+        a {
+            color: orange;
+        }
+
+        a.button {
+            color: green;
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: purple;
+        }
+
+        a:active {
+            color: blue;
+        }
+
+
+        .choose::-webkit-file-upload-button {
+            color: white;
+            display: inline-block;
+            background: #424242;
+            border: none;
+            padding: 7px 15px;
+            font-weight: 700;
+            border-radius: 5px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 10pt;
+        }
     </style>
 
 </head>
@@ -63,36 +108,27 @@
                 <img style="max-width: 40%; border-radius: 20px; box-shadow: 6px 4px 8px #000000;"
                     src="{{ url_for('video_feed') }}">
             </div>
-            <div style="margin-bottom: 20px; margin-top: 5px;">
 
-                <div style="display: inline-block;">
-                    <a class="glow"
-                        style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000; color: rgb(0, 255, 13);"
-                        onclick="sendStartCommand()">START</a>
-                    <a class="glow"
-                        style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000; color: red;"
-                        onclick="sendStopCommand()">STOP</a>
-                    <a class="glow"
-                        style="border-radius: 5px; background-color:#383838;   padding: 10px; box-shadow: 6px 4px 8px #000000;"
-                        href="{{pathToRenderedFile}}">DOWNLOAD</a>
-                    <div style="display: inline-block; text-align: center; margin-top: 15px;">
-                        <form action="" method=post enctype=multipart/form-data>
-                            <label class="getFileLabel"
-                                style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(255, 255, 255);"
-                                for="sendFileId">UPLOAD NEW...</label>
-                            <input style="display: none;" id="sendFileId" name="file" type="file"
-                                onchange="form.submit()" />
-                        </form>
-                    </div>
-                    <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
-                        href="http://192.168.0.12:8000">HOME PAGE</a>
+            <div style="margin-bottom: 10px; margin-top: 5px;">
+
+                <div style="display: inline-block; ">
+                    <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
+                    <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
+
+                    <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
+
+                    <button style="border-radius: 7px; height: 30px;"
+                        onclick="window.open('{{pathToRenderedFile}}')">DOWNLOAD</button>
+
+                    <!-- <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
+                        href="http://192.168.0.12:8000">HOME PAGE</a> -->
                 </div>
-
             </div>
 
             <div>
-                <div style="display:inline-block; margin-bottom: 0px; margin-top: 5px;"><select id="modesId"
-                        onchange="sendModeChangeCommand(), this.form.submit()">
+                <div
+                    style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                    <select id="modesId" onchange="sendModeChangeCommand(), this.form.submit()">
                         <optgroup label="YOLO MODEL">
                             <option value="a">OBJECTS EXTRACTOR</option>
                             <option value="b">BLUR OBJECTS WITH ASCII</option>
@@ -107,13 +143,28 @@
                             <option value="f">NEURAL NETWORK COLORIZER</option>
                         </optgroup>
                         <optgroup label="WITHOUT NEURAL NETWORKS">
+                            <option value="q">ASCII PAINTER</option>
                             <option value="e">CARTOON STYLE</option>
                             <option value="o">DENOISE + SHARPEN</option>
                             <option value="p">SOBEL FILTER</option>
                         </optgroup>
                     </select>
                 </div>
+
             </div>
+            <div style="display: inline-block; text-align: center; margin-top: 10px; box-shadow: 6px 4px 8px #000000;">
+                <form action="" method=post enctype=multipart/form-data>
+                    <!-- <label class="getFileLabel"
+                            style="border-radius: 5px; background-color:#383838;   padding: 10px; color: rgb(255, 255, 255);"
+                            for="sendFileId">UPLOAD NEW...</label> -->
+                    <!-- <input id="sendFileId" name="file" type="file" onchange="form.submit()" /> -->
+
+                    <label></label>
+                    <input type="file" name="file" multiple class="choose" onchange="form.submit()">
+                </form>
+            </div>
+
+
             <!-- <div style="display:inline-block;"><input type="submit" value="Set Mode" onclick="sendModeChangeCommand()"> -->
 
             <!-- </div>  -->
@@ -136,7 +187,7 @@
                         type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"> </div>
             </div>
 
-            
+
 
             <div class="renderSettings"">
                 <div style=" display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
@@ -155,7 +206,7 @@
         </div>
 
         <div id="confidenceIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">CONFIDENCE:</div>
+            <div style="display: inline-block; font-size: 16px; color: white;">CONFIDENCE THRESHOLD:</div>
             <div style=" display: inline-block;font-size: 16px; color: white;" id="confidenceValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
@@ -171,7 +222,7 @@
         </div>
 
         <div id="rcnnBlurIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">RCNN BLUR STRENGTH:</div>
+            <div style="display: inline-block; font-size: 16px; color: white;">BLUR STRENGTH:</div>
             <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnBlurValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
@@ -215,7 +266,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"> </div>
+                    type="range" min="0" max="100" step="1" value="5" class="slider" id="sharpenId"> </div>
         </div>
 
         <div id="sobelIdBlock" class="renderSettings">
@@ -224,6 +275,22 @@
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                     type="range" min="1" max="21" step="2" value="3" class="slider" id="sobelId"> </div>
+        </div>
+
+        <div id="asciiSizeIdBlock" class="renderSettings">
+            <div style="display: inline-block; font-size: 16px; color: white;">FONT SIZE:</div>
+            <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiSizeValue"></div>
+            <div><input
+                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                    type="range" min="1" max="100" step="1" value="8" class="slider" id="asciiSizeId"> </div>
+        </div>
+
+        <div id="asciiIntervalIdBlock" class="renderSettings">
+            <div style="display: inline-block; font-size: 16px; color: white;">FONT INTERVAL:</div>
+            <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiIntervalValue"></div>
+            <div><input
+                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                    type="range" min="1" max="100" step="1" value="24" class="slider" id="asciiIntervalId"> </div>
         </div>
 
     </div>
@@ -247,6 +314,24 @@
 
         function sendModeChangeCommand() {
             modeResetCommand = $("#modesId").val()
+        }
+
+        function resetSettings() {
+            // document.getElementById("positionId").value = 1                        
+            document.getElementById("saturationId").value = 100;    
+            document.getElementById("cannyBlurId").value = 5;                       
+            document.getElementById("contrastId").value = 100;
+            document.getElementById("confidenceId").value = 20; 
+            document.getElementById("brightnessId").value = 0;     
+            document.getElementById("lineThicknessId").value = 2;
+            document.getElementById("denoiseId").value = 7;
+            document.getElementById("denoise2Id").value = 10;
+            document.getElementById("sharpenId").value = 5;
+            document.getElementById("rcnnSizeId").value = 10;
+            document.getElementById("rcnnBlurId").value = 17;
+            document.getElementById("sobelId").value = 3;
+            document.getElementById("asciiSizeId").value = 8;
+            document.getElementById("asciiIntervalId").value = 24;                        
         }
 
         var myTimer = setInterval(function () {
@@ -286,6 +371,8 @@
                         $("#rcnnSizeIdBlock").hide()
                         $("#rcnnBlurIdBlock").hide()
                         $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                         $("#confidenceIdBlock").show()
                     }
                     // BLUR OBJECTS WITH ASCII
@@ -296,9 +383,11 @@
                         $("#denoiseIdBlock").hide()
                         $("#denoise2IdBlock").hide()
                         $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
+                        $("#rcnnBlurIdBlock").show()
                         $("#sobelIdBlock").hide()
                         $("#confidenceIdBlock").show()
+                        $("#asciiSizeIdBlock").show()
+                        $("#asciiIntervalIdBlock").show()  
                     }
                     // CANNY AND GAUSSIAN BLUR COLOR
                     if (currentMode == "j") {
@@ -311,6 +400,8 @@
                         $("#sobelIdBlock").hide()
                         $("#confidenceIdBlock").show()
                         $("#rcnnBlurIdBlock").show()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                     }
                     // CANNY + ANIMATE BACKGROUND
                     if (currentMode == "i") {
@@ -321,7 +412,10 @@
                         $("#denoise2IdBlock").hide()
                         $("#rcnnSizeIdBlock").hide()
                         $("#rcnnBlurIdBlock").hide()
+                        $("#sobelIdBlock").hide()
                         $("#confidenceIdBlock").show()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                     }
                     // GAUSSIAN BLUR BACKGROUND
                     if (currentMode == "m") {
@@ -330,10 +424,12 @@
                         $("#denoiseIdBlock").hide()
                         $("#sharpenIdBlock").hide()
                         $("#denoise2IdBlock").hide()
+                        $("#sobelIdBlock").hide()
                         $("#confidenceIdBlock").show()
                         $("#rcnnSizeIdBlock").show()
-                        $("#rcnnBlurIdBlock").show()
-                        $("#sobelIdBlock").show()
+                        $("#rcnnBlurIdBlock").show()                        
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                     }
                     // FAKE COLORIZER
                     if (currentMode == "k") {
@@ -346,6 +442,8 @@
                         $("#sobelIdBlock").hide()
                         $("#rcnnSizeIdBlock").show()
                         $("#confidenceIdBlock").show()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                     }
                     // CAFFE NEURAL NETWORK COLORIZER
                     if (currentMode == "f") {
@@ -358,6 +456,8 @@
                         $("#rcnnSizeIdBlock").hide()
                         $("#rcnnBlurIdBlock").hide()
                         $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                     }
                     // CARTOON STYLE
                     if (currentMode == "e") {
@@ -370,6 +470,8 @@
                         $("#rcnnSizeIdBlock").hide()
                         $("#rcnnBlurIdBlock").hide()
                         $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                     }
                     // DENOISE + SHARPEN
                     if (currentMode == "o") {
@@ -379,6 +481,8 @@
                         $("#rcnnSizeIdBlock").hide()
                         $("#rcnnBlurIdBlock").hide()
                         $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                         $("#sharpenIdBlock").show()
                         $("#denoiseIdBlock").show()
                         $("#denoise2IdBlock").show()
@@ -392,10 +496,27 @@
                         $("#confidenceIdBlock").hide()
                         $("#rcnnSizeIdBlock").hide()
                         $("#rcnnBlurIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()  
                         $("#sharpenIdBlock").show()
                         $("#denoiseIdBlock").show()
                         $("#denoise2IdBlock").show()
                         $("#sobelIdBlock").show()
+
+                    }
+                    // ASCII FULL SCREEN
+                    if (currentMode == "q") {
+                        $("#cannyBlurIdBlock").hide()
+                        $("#lineThicknessIdBlock").hide()
+                        $("#confidenceIdBlock").hide()
+                        $("#rcnnSizeIdBlock").hide()
+                        $("#rcnnBlurIdBlock").show()
+                        $("#sharpenIdBlock").hide()
+                        $("#denoiseIdBlock").hide()
+                        $("#denoise2IdBlock").hide()
+                        $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").show()
+                        $("#asciiIntervalIdBlock").show()                        
                     }
 
                     //if (working == false) {
@@ -462,6 +583,14 @@
             var sobelOutput = document.getElementById("sobelValue");
             var sobelSliderValue = sobelSlider.value;
 
+            var asciiSizeSlider = document.getElementById("asciiSizeId");
+            var asciiSizeOutput = document.getElementById("asciiSizeValue");
+            var asciiSizeSliderValue = asciiSizeSlider.value;
+
+            var asciiIntervalSlider = document.getElementById("asciiIntervalId");
+            var asciiIntervalOutput = document.getElementById("asciiIntervalValue");
+            var asciiIntervalSliderValue = asciiIntervalSlider.value;
+
             outputPosition.innerHTML = positionSlider.value;
             saturationOutput.innerHTML = saturationSlider.value;
             cannyBlurOutput.innerHTML = cannyBlurSlider.value;
@@ -475,6 +604,8 @@
             rcnnSizeOutput.innerHTML = rcnnSizeSlider.value;
             rcnnBlurOutput.innerHTML = rcnnBlurSlider.value;
             sobelOutput.innerHTML = sobelSlider.value;
+            asciiSizeOutput.innerHTML = asciiSizeSlider.value;
+            asciiIntervalOutput.innerHTML = asciiIntervalSlider.value;
 
             positionSlider.oninput = function () {
                 outputPosition.innerHTML = this.value;
@@ -528,6 +659,15 @@
                 sobelOutput.innerHTML = this.value;
             }
 
+            asciiSizeSlider.oninput = function () {
+                asciiSizeOutput.innerHTML = this.value;
+            }
+
+            asciiIntervalSlider.oninput = function () {
+                asciiIntervalOutput.innerHTML = this.value;
+            }
+
+
             $.ajax({
                 type: "POST",
                 contentType: "application/json;charset=utf-8",
@@ -547,6 +687,8 @@
                     rcnnSizeSliderValue,
                     rcnnBlurSliderValue,
                     sobelSliderValue,
+                    asciiSizeSliderValue,
+                    asciiIntervalSliderValue,
                     videoResetCommand,
                     videoStopCommand,
                     modeResetCommand

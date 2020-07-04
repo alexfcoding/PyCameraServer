@@ -16,9 +16,9 @@
                 "-o",
                 "8002",
                 "-s",
-                "inputVideos/tokyo7.webm",
+                "tokyo7.webm",
                 "-c",
-                "e",
+                "q",
                 "-m",
                 "video"
             ]

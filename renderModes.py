@@ -20,7 +20,8 @@ rcnnSizeValue = 10
 rcnnBlurValue = 17
 objectIndex = 0
 sobelValue = 5
-
+asciiSizeValue = 12
+asciiIntervalValue = 4
 classes = []
 
 with open("coco.names", "r") as f:
@@ -114,9 +115,9 @@ def findRcnnClasses(inputFrame, rcnnNetwork):
               
     return boxes, masks, labels, colors
 
-def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
+def objectsToTextYolo(inputFrame, boxes, indexes, classIds, fontSize, asciiDistance, blurValue):
     global objectIndex
-    
+    fontSize /= 10
     for i in range(len(boxes)):
         if i in indexes:
             x, y, w, h = boxes[i]
@@ -129,13 +130,13 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
                 y = 0
 
             cropImg = inputFrame[y:y + h, x:x + w]
-            cropImg = cv2.GaussianBlur(cropImg, (27, 27), 27)
+            cropImg = cv2.GaussianBlur(cropImg, (blurValue, blurValue), blurValue)
 
             renderStr = "abcdefghijklmnopqrstuvwxyz0123456789"
 
             if (x >= 0) & (y >= 0):
-                for xx in range(0, cropImg.shape[1], 32):
-                    for yy in range(0, cropImg.shape[0], 34):
+                for xx in range(0, cropImg.shape[1], asciiDistance):
+                    for yy in range(0, cropImg.shape[0], asciiDistance):
                         char = randint(0, 1)
                         pixel_b, pixel_g, pixel_r = cropImg[yy, xx]
                         char = renderStr[randint(
@@ -143,7 +144,7 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds):
                         cv2.putText(cropImg, str(char),
                                     (xx, yy),
                                     cv2.FONT_HERSHEY_SIMPLEX,
-                                    1.5,
+                                    fontSize,
                                     (int(pixel_b), int(
                                         pixel_g), int(pixel_r)),
                                     3)
@@ -910,6 +911,25 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue, rcnnSi
     frameOut = inputFrame
     return frameOut
 
+def asciiPaint(inputFrame, fontSize, asciiDistance, blurValue):
+    fontSize /= 10
+
+    inputFrame = cv2.GaussianBlur(inputFrame, (blurValue,blurValue), blurValue)
+
+    blk = np.zeros(
+        inputFrame.shape, np.uint8)
+
+    renderStr = "abcdefghijklmnopqrstuvwxyz0123456789"
+    
+    for xx in range(0, inputFrame.shape[1], asciiDistance):
+        for yy in range(0, inputFrame.shape[0], asciiDistance):
+            char = randint(0, 1)
+            pixel_b, pixel_g, pixel_r = inputFrame[yy, xx]
+            char = renderStr[randint(0, len(renderStr)) - 1]
+            cv2.putText(blk, str(char), (xx, yy), cv2.FONT_HERSHEY_SIMPLEX, fontSize, (int(pixel_b), int(pixel_g), int(pixel_r)), 2)
+    
+    
+    return blk
 def sharpening(inputFrame, sharpeningValue):
     kernelValue = sharpeningValue
     kernelDiff = 9 - kernelValue        
@@ -1001,4 +1021,4 @@ def adjustSaturation(inputFrame, saturation = 1):
     return inputFrame
 
 yoloNetwork, layers_names, outputLayers, colorsYolo = initializeYoloNetwork(classes, True)
-rcnnNetwork = initializeRcnnNetwork(True)
+rcnnNetwork = initializeRcnnNetwork(False)

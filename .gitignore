@@ -111,3 +111,4 @@ pyan/visgraph.py
 pyan/writers.py
 README.md
 pyan/__init__.py
+mask_rcnn_segmentation.py
