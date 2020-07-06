@@ -25,6 +25,7 @@ timerEnd = 0
 alpha_slider_max = 200
 blur_slider_max = 100
 title_window = "win"
+userTime = 0
 
 cv2.namedWindow(title_window)
 
@@ -113,11 +114,13 @@ fourcc = cv2.VideoWriter_fourcc(*"MJPG")
 writer = None
 	
 def checkIfUserIsConnected(timerStart):
+	global userTime
 	timerEnd = time.perf_counter()
 
 	#print(str(timerStart) + "================" + str(timerEnd))
-	
-	if (timerEnd - timerStart < 5 and timerStart != 0):
+	userTime = str(round(timerEnd)) + ":" + str(round(timerStart))
+
+	if (timerEnd - timerStart < 25 and timerStart != 0):
 		print("User is connected")
 	else:
 		if (timerStart != 0):
@@ -128,7 +131,7 @@ def checkIfUserIsConnected(timerStart):
 			#shutdown_server()
 
 def ProcessFrame():
-	global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue, videoResetCommand,  startedRenderingVideo, needModeReset, options, fileChanged, fileToRender
+	global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue, asciiThicknessValue, resizeValue, videoResetCommand,  startedRenderingVideo, needModeReset, options, fileChanged, fileToRender
 
 	r = cv2.getTrackbarPos("R", "Controls")
 	g = cv2.getTrackbarPos("G", "Controls")
@@ -156,14 +159,14 @@ def ProcessFrame():
 	colorObjectsOnGray = False
 	videoColorization = False
 	denoiseAndSharpen= False    
-	sobel = False
-	imageUpscaler = False
+	sobel = False	
 	cartoonEffect = False
 	showAllObjects = False
 	textRender = False
 	frameUpscale = False
 	asciiPainter = True
-
+	
+	changedResolution = False
 
 	font = cv2.FONT_HERSHEY_SIMPLEX
 	workingOn = True
@@ -171,6 +174,7 @@ def ProcessFrame():
 	options = args["optionsList"]
 	sourceMode = args["mode"]
 	concated = None
+	resizeValueLocal = 2
 
 	if (sourceMode == "video"):
 		cap = cv2.VideoCapture(fileToRender)
@@ -220,6 +224,7 @@ def ProcessFrame():
 			sharpener = False
 			sobel = False
 			asciiPainter = False
+			frameUpscale = False
 
 			for char in options:
 				if (char == "a"):
@@ -274,7 +279,7 @@ def ProcessFrame():
 					colorObjectsBlur = True
 					print("colorObjectsOnGrayBlur")
 				if (char == "n"):
-					imageUpscaler = True
+					frameUpscale = True
 					print("imageUpscaler")
 				if (char == "o"):
 					denoiseAndSharpen = True
@@ -300,12 +305,21 @@ def ProcessFrame():
 						cap.set(1,1)
 						frameProcessed = 0
 						cap.release()
-						writer.release()
+
+						if (writer is not None):
+							writer.release()
+
 						cap = cv2.VideoCapture(fileToRender)
+						
 						writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
 														f"", fourcc, 25, (
 								bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
+						print("CREATING WRITER 1 WITH SIZE:" + str(round(bufferFrames[streamIndex].shape[1])))
+						
+						print("1111111111111111111111111111111111" + str(bufferFrames[streamIndex].shape[1]))						
+						
 						fileChanged = False
+						videoResetCommand = False
 
 				ret, frameList[streamIndex] = cap.read()
 				ret2, frameBackground = cap2.read()
@@ -331,7 +345,7 @@ def ProcessFrame():
 
 					if textRender:
 						bufferFrames[streamIndex] = objectsToTextYolo(bufferFrames[streamIndex], boxes, indexes,
-																		classIds, asciiSizeValue, asciiIntervalValue, rcnnBlurValue)
+																		classIds, asciiSizeValue, asciiIntervalValue, rcnnBlurValue, asciiThicknessValue)
 
 					if cannyPeopleOnBlack:
 						bufferFrames[streamIndex] = cannyPeopleOnBlackYolo(bufferFrames[streamIndex], boxes, indexes,
@@ -441,8 +455,8 @@ def ProcessFrame():
 					bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
 					frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
 
-					#frameCopy = limitColorsKmeans(frameCopy)
-					#frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
+					frameCopy = limitColorsKmeans(frameCopy)
+					frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
 					bufferFrames[streamIndex] = frameCopy
 					
 					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
@@ -450,10 +464,14 @@ def ProcessFrame():
 
 				#if denoiser:
 				
-					#bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex])                     
+					#bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex])       
+				if (frameUpscale):	
+					bufferFrames[streamIndex] = upscaleImage(netUpscaler, bufferFrames[streamIndex])   
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)  
+					print("2222222222222222222222222222222222" + str(bufferFrames[streamIndex].shape[1]))						       
 
 				if asciiPainter:					
-					bufferFrames[streamIndex]  = asciiPaint(bufferFrames[streamIndex], asciiSizeValue, asciiIntervalValue, rcnnBlurValue)
+					bufferFrames[streamIndex]  = asciiPaint(bufferFrames[streamIndex], asciiSizeValue, asciiIntervalValue, asciiThicknessValue, rcnnBlurValue)
 
 				if denoiseAndSharpen:
 					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
@@ -465,10 +483,6 @@ def ProcessFrame():
 					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue) 
 					bufferFrames[streamIndex] = cv2.Sobel(bufferFrames[streamIndex],cv2.CV_64F,1,0,ksize=sobelValue)    
 
-				if frameUpscale:
-					bufferFrames[streamIndex] = upscaleImage(netUpscaler, bufferFrames[streamIndex])
-
-				
 
 				# bufferFrames[streamIndex] = cv2.Sobel(bufferFrames[streamIndex],cv2.CV_64F,0,1,ksize=5)	
 				#bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
@@ -492,12 +506,12 @@ def ProcessFrame():
 
 				with lock:
 					personDetected = False
-					checkIfUserIsConnected(timerStart)
+					#checkIfUserIsConnected(timerStart)
 
 					frameProcessed = frameProcessed + 1
 					elapsedTime = time.time()
 					fps = 1 / (elapsedTime - startMoment)
-					#print(fps)
+					# print(fps)
 
 					for streamIndex in range(len(streamList)):
 						if (showAllObjects):
@@ -543,19 +557,14 @@ def ProcessFrame():
 										passFlag = True
 										print("handbag detected! -> PASS")
 
-						if (writer is None):
-							writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
-														f"", fourcc, 25, (
-								bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
+						# if (writer is None):
+						# 	writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
+						# 								f"", fourcc, 25, (
+						# 		bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
 							# writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
 							#     640, 720), True)
 						# else:
-						if (sourceMode == "video"):
-							if (totalFrames != 0):
-								progress = frameProcessed / totalFrames * 100
-
-							cv2.putText(bufferFrames[streamIndex], f"FPS: {str(round(fps, 2))} {str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])}", (40, 40),
-									font, 1.4, (0, 0, 255), 2)
+						
 					
 						# if (sourceMode == "video") :
 						#     writer.write(bufferFrames[streamIndex])
@@ -563,7 +572,7 @@ def ProcessFrame():
 						if (sourceMode == "image"):
 							cv2.imwrite(f"static/output{args['port']}{sourceImage}", bufferFrames[streamIndex])
 							#workingOn = False
-						if ((sourceMode == "image" and extractAndReplaceBackground == True)):
+						if ((sourceMode == "image" and extractAndReplaceBackground == True and writer is not None)):
 							writer.write(bufferFrames[streamIndex])
 						
 						resized1 = cv2.resize(frameList[streamIndex], (640, 360))
@@ -571,9 +580,16 @@ def ProcessFrame():
 						concated = cv2.vconcat([resized2, resized1, ])                           
 						resized = cv2.resize(bufferFrames[streamIndex], (1600, 900))
 
-						if (sourceMode == "video"):								
-							writer.write(bufferFrames[streamIndex])
+						
+						# if (writer is None and frameUpscale):		
+						# 	writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi" f"", fourcc, 25, (round(bufferFrames[streamIndex].shape[1]), round(bufferFrames[streamIndex].shape[0])), True)	
+						# 	print("CREATING WRITER 3 WITH:" + str(round(bufferFrames[streamIndex].shape[1])))
 
+						if (sourceMode == "video" and writer is not None and startedRenderingVideo):
+							writer.write(bufferFrames[streamIndex])							
+							print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!WRITING NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + str(round(bufferFrames[streamIndex].shape[1])))
+
+							
 						cv2.imshow("video",  bufferFrames[streamIndex])                           
 						key = cv2.waitKey(1) & 0xFF
 
@@ -581,12 +597,24 @@ def ProcessFrame():
 							break
 
 						# outputFrame = concated
+
+						resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+
+						if (sourceMode == "video"):
+							if (totalFrames != 0):
+								progress = frameProcessed / totalFrames * 100
+
+						cv2.putText(resized, f"FPS: {str(round(fps, 2))} {str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])}", (40, 40),
+									font, 1.4, (0, 0, 255), 2)	
+									
 						outputFrame = bufferFrames[streamIndex]
-						print("started")
-							
+
+						if (frameProcessed == 1):
+							print("started")							
+						
 			else:
 				resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
-				outputFrame = resized
+				outputFrame = bufferFrames[streamIndex]
 				workingOn = False
 				print("finished")
 
@@ -594,8 +622,8 @@ def ProcessFrame():
 					cap.release()
 					writer.release()
 					cv2.destroyAllWindows()
-				while True:
-					checkIfUserIsConnected(timerStart)
+				# while True:
+				# 	checkIfUserIsConnected(timerStart)
 
 UPLOAD_FOLDER = ''
 ALLOWED_EXTENSIONS = set(
@@ -678,7 +706,7 @@ def video_feed():
 # return Response(stream_with_context(generate()))
 @app.route('/update', methods=['POST'])
 def update():
-	global sourceMode, totalFrames, options
+	global sourceMode, totalFrames, options, userTime
 
 	timerStart = time.perf_counter()
 	frameWidthToPage = 0
@@ -706,15 +734,16 @@ def update():
 		'frameWidth': frameWidthToPage,
 		'frameHeight': frameHeightToPage,
 		'maxFrames': totalFrames,
-		'currentMode': options
+		'currentMode': options,
+		'userTime': userTime,
 		# 'time': datetime.datetime.now().strftime("%H:%M:%S"),
 	})
 	
-	print(timerStart + "////" + timerEnd)
+	
 
 @app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-	global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue
+	global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue, asciiThicknessValue, resizeValue
 	
 	if request.method == 'POST':
 		timerStart = time.perf_counter()
@@ -734,9 +763,13 @@ def sendCommand():
 		sobelValue = int(inputData["sobelSliderValue"])
 		asciiSizeValue = int(inputData["asciiSizeSliderValue"])
 		asciiIntervalValue = int(inputData["asciiIntervalSliderValue"])
+		asciiThicknessValue = int(inputData["asciiThicknessSliderValue"])
+		resizeValue = int(inputData["resizeSliderValue"]) / 100
 		videoResetCommand = int(inputData["videoResetCommand"])
 		videoStopCommand = int(inputData["videoStopCommand"])
 		modeResetCommand = str(inputData["modeResetCommand"])
+
+		#resizeValue = 2
 
 		if (modeResetCommand != "default"):           
 			options = modeResetCommand   

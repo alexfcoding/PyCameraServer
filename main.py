@@ -65,7 +65,7 @@ def start_analysis(portToRender, fileToRender, options, mode):
 	# return Response(generate(),
 	# 	mimetype = "multipart/x-mixed-replace; boundary=frame")
 	# os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")
-
+	processStarted = False
 	strFromList = ""
 
 	for item in options:
@@ -77,14 +77,38 @@ def start_analysis(portToRender, fileToRender, options, mode):
 	# 	str2FromList += item
 
 	process = subprocess.Popen([f'python', '-u', 'localFiles.py', '-i', "192.168.0.12",
-					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', mode], stdout=subprocess.PIPE)
-	while True:
-		output = process.stdout.readline()
-		out = str(output.decode("utf-8"))	
+					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', mode], bufsize=0)
 
-		if (out == 'started\n'):
-			print("FFF" + str(out))
-			return redirect(f"http://192.168.0.12:{portToRender}")
+	# while (process.poll() is None and processStarted == False):
+	# 	output = process.stdout.readline()
+	# 	#output = process.communicate()[0]
+	# 	out = str(output.decode("utf-8"))
+	# 	print (out)
+		
+	# 	if (out == 'started\n'):						
+	# 		processStarted = True
+	# 		#process.stdout.close()	
+	# 		# time.sleep(1)		
+	# 		return redirect(f"http://192.168.0.12:{portToRender}")
+
+	time.sleep(5)		
+	return redirect(f"http://192.168.0.12:{portToRender}")
+
+
+	# print(process.stdout.read())
+	# process.stdout.close()
+
+	# time.sleep(5)
+	# return redirect(f"http://192.168.0.12:{portToRender}")
+
+	# while True:
+	# 	output = process.stdout.readline()
+	# 	out = str(output.decode("utf-8"))	
+	# 	print("FFF" + str(out))
+
+	# 	if (out == 'started\n'):						
+	# 		return redirect(f"http://192.168.0.12:{portToRender}")
+
 			
 
 	#lst = process.decode("ascii")

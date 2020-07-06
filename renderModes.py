@@ -20,9 +20,11 @@ rcnnSizeValue = 10
 rcnnBlurValue = 17
 objectIndex = 0
 sobelValue = 5
-asciiSizeValue = 12
-asciiIntervalValue = 4
+asciiSizeValue = 8
+asciiIntervalValue = 24
+asciiThicknessValue = 3
 classes = []
+resizeValue = 2
 
 with open("coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
@@ -88,7 +90,7 @@ def findYoloClasses(inputFrame, yoloNetwork, outputLayers, confidenceValue):
         if i in indexes:
             classesOut.append(classIds[i])
 
-    print("=========================")
+    #print("=========================")
 
     return boxes, indexes, classIds, confidences, classesOut
 
@@ -115,7 +117,7 @@ def findRcnnClasses(inputFrame, rcnnNetwork):
               
     return boxes, masks, labels, colors
 
-def objectsToTextYolo(inputFrame, boxes, indexes, classIds, fontSize, asciiDistance, blurValue):
+def objectsToTextYolo(inputFrame, boxes, indexes, classIds, fontSize, asciiDistance, blurValue, asciiThicknessValue):
     global objectIndex
     fontSize /= 10
     for i in range(len(boxes)):
@@ -147,7 +149,7 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds, fontSize, asciiDista
                                     fontSize,
                                     (int(pixel_b), int(
                                         pixel_g), int(pixel_r)),
-                                    3)
+                                    asciiThicknessValue)
             blk = np.zeros(
                 inputFrame.shape, np.uint8)
 
@@ -911,7 +913,7 @@ def PeopleRcnnWithBlur(inputFrame, boxes, masks, labels, confidenceValue, rcnnSi
     frameOut = inputFrame
     return frameOut
 
-def asciiPaint(inputFrame, fontSize, asciiDistance, blurValue):
+def asciiPaint(inputFrame, fontSize, asciiDistance, asciiThicknessValue, blurValue):
     fontSize /= 10
 
     inputFrame = cv2.GaussianBlur(inputFrame, (blurValue,blurValue), blurValue)
@@ -926,10 +928,11 @@ def asciiPaint(inputFrame, fontSize, asciiDistance, blurValue):
             char = randint(0, 1)
             pixel_b, pixel_g, pixel_r = inputFrame[yy, xx]
             char = renderStr[randint(0, len(renderStr)) - 1]
-            cv2.putText(blk, str(char), (xx, yy), cv2.FONT_HERSHEY_SIMPLEX, fontSize, (int(pixel_b), int(pixel_g), int(pixel_r)), 2)
+            cv2.putText(blk, str(char), (xx, yy), cv2.FONT_HERSHEY_SIMPLEX, fontSize, (int(pixel_b), int(pixel_g), int(pixel_r)), asciiThicknessValue)
     
     
     return blk
+
 def sharpening(inputFrame, sharpeningValue):
     kernelValue = sharpeningValue
     kernelDiff = 9 - kernelValue        

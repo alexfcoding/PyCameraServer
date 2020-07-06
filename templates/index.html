@@ -128,7 +128,7 @@
             <div>
                 <div
                     style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                    <select id="modesId" onchange="sendModeChangeCommand(), this.form.submit()">
+                    <select id="modesId" onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand(), this.form.submit()">
                         <optgroup label="YOLO MODEL">
                             <option value="a">OBJECTS EXTRACTOR</option>
                             <option value="b">BLUR OBJECTS WITH ASCII</option>
@@ -142,11 +142,15 @@
                         <optgroup label="CAFFE MODEL">
                             <option value="f">NEURAL NETWORK COLORIZER</option>
                         </optgroup>
+                        <optgroup label="UPSCALE MODELS">
+                            <option value="n">LAPRCN UPSCALER</option>
+                        </optgroup>
                         <optgroup label="WITHOUT NEURAL NETWORKS">
                             <option value="q">ASCII PAINTER</option>
                             <option value="e">CARTOON STYLE</option>
                             <option value="o">DENOISE + SHARPEN</option>
                             <option value="p">SOBEL FILTER</option>
+                            
                         </optgroup>
                     </select>
                 </div>
@@ -160,7 +164,7 @@
                     <!-- <input id="sendFileId" name="file" type="file" onchange="form.submit()" /> -->
 
                     <label></label>
-                    <input type="file" name="file" multiple class="choose" onchange="form.submit()">
+                    <input type="file" name="file" multiple class="choose" onchange="sendStopCommand(), form.submit()">
                 </form>
             </div>
 
@@ -293,6 +297,22 @@
                     type="range" min="1" max="100" step="1" value="24" class="slider" id="asciiIntervalId"> </div>
         </div>
 
+        <div id="asciiThicknessIdBlock" class="renderSettings">
+            <div style="display: inline-block; font-size: 16px; color: white;">FONT THICKNESS:</div>
+            <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiThicknessValue"></div>
+            <div><input
+                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                    type="range" min="1" max="20" step="1" value="3" class="slider" id="asciiThicknessId"> </div>
+        </div>
+
+        <div id="resizeIdBlock" class="renderSettings">
+            <div style="display: inline-block; font-size: 16px; color: white;">RESIZE MULTIPLIER:</div>
+            <div style=" display: inline-block;font-size: 16px; color: white;" id="resizeValue"></div>
+            <div><input
+                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                    type="range" min="20" max="400" step="1" value="100" class="slider" id="resizeId"> </div>
+        </div>
+
     </div>
 
     <script>
@@ -326,12 +346,14 @@
             document.getElementById("lineThicknessId").value = 2;
             document.getElementById("denoiseId").value = 7;
             document.getElementById("denoise2Id").value = 10;
-            document.getElementById("sharpenId").value = 5;
+            document.getElementById("sharpenId").value = 3;
             document.getElementById("rcnnSizeId").value = 10;
             document.getElementById("rcnnBlurId").value = 17;
             document.getElementById("sobelId").value = 3;
             document.getElementById("asciiSizeId").value = 8;
-            document.getElementById("asciiIntervalId").value = 24;                        
+            document.getElementById("asciiIntervalId").value = 24;   
+            document.getElementById("asciiThicknessId").value = 3;      
+            document.getElementById("resizeId").value = 1;                   
         }
 
         var myTimer = setInterval(function () {
@@ -351,6 +373,8 @@
                     frameHeight = response["frameHeight"]
                     maxFrames = response["maxFrames"]
                     currentMode = response["currentMode"]
+                    // userTime = response["userTime"]
+                    // $("#frameSize").html(userTime);
 
                     $("#frameSize").html(frameWidth + "x" + frameHeight);
                     $("#positionId")
@@ -372,7 +396,8 @@
                         $("#rcnnBlurIdBlock").hide()
                         $("#sobelIdBlock").hide()
                         $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiIntervalIdBlock").hide()
+                        $("#asciiThicknessIdBlock").hide()   
                         $("#confidenceIdBlock").show()
                     }
                     // BLUR OBJECTS WITH ASCII
@@ -388,6 +413,7 @@
                         $("#confidenceIdBlock").show()
                         $("#asciiSizeIdBlock").show()
                         $("#asciiIntervalIdBlock").show()  
+                        $("#asciiThicknessIdBlock").show()  
                     }
                     // CANNY AND GAUSSIAN BLUR COLOR
                     if (currentMode == "j") {
@@ -401,7 +427,8 @@
                         $("#confidenceIdBlock").show()
                         $("#rcnnBlurIdBlock").show()
                         $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiIntervalIdBlock").hide() 
+                        $("#asciiThicknessIdBlock").hide()   
                     }
                     // CANNY + ANIMATE BACKGROUND
                     if (currentMode == "i") {
@@ -415,7 +442,8 @@
                         $("#sobelIdBlock").hide()
                         $("#confidenceIdBlock").show()
                         $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiIntervalIdBlock").hide() 
+                        $("#asciiThicknessIdBlock").hide()   
                     }
                     // GAUSSIAN BLUR BACKGROUND
                     if (currentMode == "m") {
@@ -429,7 +457,8 @@
                         $("#rcnnSizeIdBlock").show()
                         $("#rcnnBlurIdBlock").show()                        
                         $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiIntervalIdBlock").hide() 
+                        $("#asciiThicknessIdBlock").hide()   
                     }
                     // FAKE COLORIZER
                     if (currentMode == "k") {
@@ -444,6 +473,7 @@
                         $("#confidenceIdBlock").show()
                         $("#asciiSizeIdBlock").hide()
                         $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiThicknessIdBlock").hide()  
                     }
                     // CAFFE NEURAL NETWORK COLORIZER
                     if (currentMode == "f") {
@@ -458,6 +488,7 @@
                         $("#sobelIdBlock").hide()
                         $("#asciiSizeIdBlock").hide()
                         $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiThicknessIdBlock").hide()  
                     }
                     // CARTOON STYLE
                     if (currentMode == "e") {
@@ -471,7 +502,8 @@
                         $("#rcnnBlurIdBlock").hide()
                         $("#sobelIdBlock").hide()
                         $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiIntervalIdBlock").hide() 
+                        $("#asciiThicknessIdBlock").hide()   
                     }
                     // DENOISE + SHARPEN
                     if (currentMode == "o") {
@@ -483,6 +515,7 @@
                         $("#sobelIdBlock").hide()
                         $("#asciiSizeIdBlock").hide()
                         $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiThicknessIdBlock").hide()  
                         $("#sharpenIdBlock").show()
                         $("#denoiseIdBlock").show()
                         $("#denoise2IdBlock").show()
@@ -498,6 +531,7 @@
                         $("#rcnnBlurIdBlock").hide()
                         $("#asciiSizeIdBlock").hide()
                         $("#asciiIntervalIdBlock").hide()  
+                        $("#asciiThicknessIdBlock").hide()  
                         $("#sharpenIdBlock").show()
                         $("#denoiseIdBlock").show()
                         $("#denoise2IdBlock").show()
@@ -516,8 +550,27 @@
                         $("#denoise2IdBlock").hide()
                         $("#sobelIdBlock").hide()
                         $("#asciiSizeIdBlock").show()
-                        $("#asciiIntervalIdBlock").show()                        
+                        $("#asciiIntervalIdBlock").show()   
+                        $("#asciiThicknessIdBlock").show()                       
                     }
+
+                    if (currentMode == "n") {
+                        $("#cannyBlurIdBlock").hide()
+                        $("#lineThicknessIdBlock").hide()
+                        $("#confidenceIdBlock").hide()
+                        $("#rcnnSizeIdBlock").hide()
+                        $("#rcnnBlurIdBlock").hide()
+                        $("#sharpenIdBlock").show()
+                        $("#denoiseIdBlock").hide()
+                        $("#denoise2IdBlock").hide()
+                        $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()   
+                        $("#asciiThicknessIdBlock").hide()     
+                        $("#resizeIdBlock").show()                    
+                    }
+
+                    
 
                     //if (working == false) {
                     //clearInterval(myTimer);
@@ -591,6 +644,14 @@
             var asciiIntervalOutput = document.getElementById("asciiIntervalValue");
             var asciiIntervalSliderValue = asciiIntervalSlider.value;
 
+            var asciiThicknessSlider = document.getElementById("asciiThicknessId");
+            var asciiThicknessOutput = document.getElementById("asciiThicknessValue");
+            var asciiThicknessSliderValue = asciiThicknessSlider.value;
+
+            var resizeSlider = document.getElementById("resizeId");
+            var resizeOutput = document.getElementById("resizeValue");
+            var resizeSliderValue =resizeSlider.value;
+
             outputPosition.innerHTML = positionSlider.value;
             saturationOutput.innerHTML = saturationSlider.value;
             cannyBlurOutput.innerHTML = cannyBlurSlider.value;
@@ -606,6 +667,8 @@
             sobelOutput.innerHTML = sobelSlider.value;
             asciiSizeOutput.innerHTML = asciiSizeSlider.value;
             asciiIntervalOutput.innerHTML = asciiIntervalSlider.value;
+            asciiThicknessOutput.innerHTML = asciiThicknessSlider.value;
+            resizeOutput.innerHTML =resizeSlider.value;
 
             positionSlider.oninput = function () {
                 outputPosition.innerHTML = this.value;
@@ -667,6 +730,13 @@
                 asciiIntervalOutput.innerHTML = this.value;
             }
 
+            asciiThicknessSlider.oninput = function () {
+                asciiThicknessOutput.innerHTML = this.value;
+            }
+
+            resizeSlider.oninput = function () {
+               resizeOutput.innerHTML = this.value;
+            }
 
             $.ajax({
                 type: "POST",
@@ -689,6 +759,8 @@
                     sobelSliderValue,
                     asciiSizeSliderValue,
                     asciiIntervalSliderValue,
+                    asciiThicknessSliderValue,
+                    resizeSliderValue,
                     videoResetCommand,
                     videoStopCommand,
                     modeResetCommand
