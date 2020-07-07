@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from random import randint
 from sklearn.cluster import MiniBatchKMeans, KMeans
+import os
 
 thres1 = 50
 thres2 = 50
@@ -23,6 +24,8 @@ sobelValue = 5
 asciiSizeValue = 8
 asciiIntervalValue = 24
 asciiThicknessValue = 3
+colorCountValue = 32
+
 classes = []
 resizeValue = 2
 
@@ -170,8 +173,11 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds, fontSize, asciiDista
     
 # TODO get rid of global variables ==============================================================================
 
-def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
+def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences, zipArchive, startedRenderingMode):
     global objectIndex
+
+    frameCopy = inputFrame.copy()
+    cropList = []
     font = cv2.FONT_HERSHEY_SIMPLEX
 
     for i in range(len(boxes)):
@@ -190,6 +196,11 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
             blk = np.zeros(
                 inputFrame.shape, np.uint8)
 
+            cropImg = frameCopy[y:y + h, x:x + w]
+
+            cv2.rectangle(
+                inputFrame, (x, y), (x + w, y + h), (255, 255, 255), 2)
+
             if label == "person":
                 cv2.putText(inputFrame, label + "[" + str(np.round(
                     confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0, 255, 0), 2, lineType=cv2.LINE_AA)
@@ -197,7 +208,6 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
                     blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
                 inputFrame = cv2.addWeighted(
                     inputFrame, 1, blk, 0.2, 0)
-
             if label == "car":
                 cv2.putText(inputFrame, label + "[" + str(np.round(
                     confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (213, 160, 47), 2, lineType=cv2.LINE_AA)
@@ -212,13 +222,14 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences):
                     blk, (x, y), (x + w, y + h), color, cv2.FILLED)
                 inputFrame = cv2.addWeighted(
                     inputFrame, 1, blk, 0.2, 0)
-
-            cropImg = inputFrame[y:y + h, x:x + w]
-
-            # cv2.imwrite(f"images/{label}/{label}{str(objectIndex)}.jpg", cropImg)
+            
+            if (startedRenderingMode):           
+                cv2.imwrite(f"static/{label}{str(objectIndex)}.jpg", cropImg)
+                zipArchive.write(f"static/{label}{str(objectIndex)}.jpg")
+                os.remove(f"static/{label}{str(objectIndex)}.jpg")
+            
             # if (blurPeople == False):
-            cv2.rectangle(
-                inputFrame, (x, y), (x + w, y + h), (255, 255, 255), 2)
+           
 
             objectIndex += 1
 
@@ -960,12 +971,15 @@ def sharpening(inputFrame, sharpeningValue):
     return inputFrame
 
 def denoise(inputFrame, denoiseValue, denoiseValue2):    
-    b,g,r = cv2.split(inputFrame)           # get b,g,r
-    inputFrame = cv2.merge([r,g,b])     # switch it to rgb
-    dst = cv2.fastNlMeansDenoisingColored(inputFrame,None,denoiseValue2,denoiseValue,7,15)
-    b,g,r = cv2.split(dst) 
-    inputFrame = cv2.merge([r,g,b])
+    if (denoiseValue2 > 0):
+        b,g,r = cv2.split(inputFrame)           # get b,g,r
+        inputFrame = cv2.merge([r,g,b])     # switch it to rgb
+        dst = cv2.fastNlMeansDenoisingColored(inputFrame,None,denoiseValue2,denoiseValue,7,15)
+        b,g,r = cv2.split(dst) 
+        inputFrame = cv2.merge([r,g,b])
+        
     return inputFrame
+
 
 def morphEdgeDetection(inputFrame):
     morph = inputFrame.copy()
@@ -987,11 +1001,11 @@ def morphEdgeDetection(inputFrame):
     image_channels = cv2.bitwise_not(image_channels)
     return image_channels
 
-def limitColorsKmeans(inputFrame):    
+def limitColorsKmeans(inputFrame, colorCount):    
     (h, w) = inputFrame.shape[:2]
     inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2LAB)
     inputFrame = inputFrame.reshape((inputFrame.shape[0] * inputFrame.shape[1], 3))    
-    clt = MiniBatchKMeans(n_clusters=32)
+    clt = MiniBatchKMeans(n_clusters=colorCount)
     labels = clt.fit_predict(inputFrame)
     quant = clt.cluster_centers_.astype("uint8")[labels]    
     quant = quant.reshape((h, w, 3))

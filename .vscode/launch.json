@@ -16,9 +16,9 @@
                 "-o",
                 "8002",
                 "-s",
-                "film.webm",
+                "bikenycut.webm",
                 "-c",
-                "n",
+                "a",
                 "-m",
                 "video"
             ]

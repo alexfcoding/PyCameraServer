@@ -104,6 +104,7 @@ def cleanFolder(inputFolder, outputFolder, hashSize, threshold):
 	k = 1
 	frame = None
 	hashedFrame = None
+	dublicateCount = 0
 
 	while (i < len(files)):
 		sumDiff = 0
@@ -126,28 +127,22 @@ def cleanFolder(inputFolder, outputFolder, hashSize, threshold):
 
 				print(f"{files[i]} -> {files[k]} sumDiff = {sumDiff}")
 
+				im_h = cv2.hconcat([cv2.resize(frame, (450, 450)), cv2.resize(newFrame, (450, 450))])
+				im_h2 = cv2.hconcat([cv2.resize(hashedFrame, (450, 450)), cv2.resize(hashedSecondFrame, (450, 450))])
+				im_v = cv2.vconcat([im_h, im_h2])
+
 				if (sumDiff < threshold):
 					Path(f"{inputFolder}/{files[k]}").rename(f"{outputFolder}/{files[k]}")
 					print(f"Deleted {k} element ({files[k]}) of {listLength}")
-
 					del files[k]
-
-					cv2.putText(hashedSecondFrame, f"FOUND", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2, lineType=cv2.LINE_AA)
-					im_h = cv2.hconcat([cv2.resize(frame, (450, 450)), cv2.resize(newFrame, (450, 450))])
-					im_h2 = cv2.hconcat([cv2.resize(hashedFrame, (450, 450)), cv2.resize(hashedSecondFrame, (450, 450))])
-					im_v = cv2.vconcat([im_h, im_h2])
-					cv2.imshow("dfs", im_v)
-					cv2.waitKey(1)
-
-				else:
-					cv2.putText(hashedSecondFrame, f"NOT FOUND", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 2, lineType=cv2.LINE_AA)
-					im_h = cv2.hconcat([cv2.resize(frame, (450, 450)), cv2.resize(newFrame, (450, 450))])
-					im_h2 = cv2.hconcat([cv2.resize(hashedFrame, (450, 450)), cv2.resize(hashedSecondFrame, (450, 450))])
-					im_v = cv2.vconcat([im_h, im_h2])
-					cv2.imshow("dfs", im_v)
-					cv2.waitKey(1)
-
+					dublicateCount += 1
+					cv2.putText(im_v, f"FOUND COPY", (5, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, lineType=cv2.LINE_AA)					
+				else:					
 					k += 1
+
+				cv2.putText(im_v, f"SIMILAR: {dublicateCount}", (5, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, lineType=cv2.LINE_AA)	
+				cv2.imshow("hasher", im_v)
+				cv2.waitKey(1)						
 
 				sumDiff = 0
 		i += 1
