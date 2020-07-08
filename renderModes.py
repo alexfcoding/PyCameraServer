@@ -173,7 +173,7 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds, fontSize, asciiDista
     
 # TODO get rid of global variables ==============================================================================
 
-def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences, zipArchive, startedRenderingMode):
+def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences, zipArchive, zipIsOpened, zippedImages, sourceMode, startedRenderingMode):
     global objectIndex
 
     frameCopy = inputFrame.copy()
@@ -223,11 +223,15 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences, zipArc
                 inputFrame = cv2.addWeighted(
                     inputFrame, 1, blk, 0.2, 0)
             
-            if (startedRenderingMode):           
+            if (startedRenderingMode and zipIsOpened and sourceMode == "video"):           
                 cv2.imwrite(f"static/{label}{str(objectIndex)}.jpg", cropImg)
                 zipArchive.write(f"static/{label}{str(objectIndex)}.jpg")
                 os.remove(f"static/{label}{str(objectIndex)}.jpg")
-            
+
+            if (startedRenderingMode and zipIsOpened and sourceMode == "image" and zippedImages == False):           
+                cv2.imwrite(f"static/{label}{str(objectIndex)}.jpg", cropImg)
+                zipArchive.write(f"static/{label}{str(objectIndex)}.jpg")
+                os.remove(f"static/{label}{str(objectIndex)}.jpg")
             # if (blurPeople == False):
            
 

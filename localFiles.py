@@ -180,6 +180,10 @@ def ProcessFrame():
 	sourceMode = args["mode"]
 	concated = None
 	resizeValueLocal = 2
+	needToCreateNewZip = True
+	needToStopNewZip = False
+	zipIsOpened = False
+	zippedImages = False
 
 	if (sourceMode == "video"):
 		cap = cv2.VideoCapture(fileToRender)
@@ -203,9 +207,8 @@ def ProcessFrame():
 
 	lineType = cv2.LINE_AA
 
-	zipObj = ZipFile('static/objects.zip', 'w')
-	# zipObj.write('cat.jpg')
-	# zipObj.close()
+	zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
+	zipIsOpened = True
 
 	while workingOn:
 		
@@ -313,8 +316,11 @@ def ProcessFrame():
 			if (sourceMode == "video"):
 				if (startedRenderingVideo == False):
 					cap.set(1,positionValue)
-
-
+					if (needToStopNewZip):
+						zipObj.close()
+						zipIsOpened = False
+						needToStopNewZip = False
+						needToCreateNewZip = True
 					print ("STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED ")
 				else:
 					print ("INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO ")
@@ -324,7 +330,8 @@ def ProcessFrame():
 						cap.set(1,1)
 						frameProcessed = 0
 						cap.release()
-
+						if (fileChanged):
+							print("1")
 						if (writer is not None):
 							writer.release()
 
@@ -334,9 +341,17 @@ def ProcessFrame():
 													f"", fourcc, 25, (
 							bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
 						print("CREATING WRITER 1 WITH SIZE:" + str(round(bufferFrames[streamIndex].shape[1])))	
-
-						zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
 						
+						if (needToCreateNewZip):
+							zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
+							needToStopNewZip = True
+							needToCreateNewZip = False
+							zipIsOpened = True
+
+						if (fileChanged):
+							zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
+							zipIsOpened = True
+
 						fileChanged = False
 						videoResetCommand = False
 						needToCreateWriter = False
@@ -345,7 +360,28 @@ def ProcessFrame():
 				ret, frameList[streamIndex] = cap.read()
 				ret2, frameBackground = cap2.read()
 				
-			if (sourceMode == "image"):
+			if (sourceMode == "image"):	
+				if (startedRenderingVideo == False):			
+					if (needToStopNewZip):
+						zipObj.close()
+						zipIsOpened = False
+						needToStopNewZip = False
+						needToCreateNewZip = True						
+				else:
+					if (needToCreateWriter == True or fileChanged == True):	
+						zippedImages = False						
+						zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')						
+						needToStopNewZip = True
+						needToCreateNewZip = False
+						zipIsOpened = True						
+
+					if (fileChanged):
+						zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
+						zipIsOpened = True
+
+					fileChanged = False	
+					needToCreateWriter = False
+
 				frameList[streamIndex] = cv2.imread(sourceImage)
 				ret2, frameBackground = cap2.read()
 
@@ -362,7 +398,14 @@ def ProcessFrame():
 
 					if showAllObjects:
 						bufferFrames[streamIndex] = markAllObjectsYolo(bufferFrames[streamIndex], boxes, indexes,
-																		classIds, confidences, zipObj, startedRenderingVideo)
+																		classIds, confidences, zipObj, zipIsOpened, zippedImages, sourceMode, startedRenderingVideo)
+					
+					# if (sourceMode == "image" and needToStopNewZip):
+					# 		zipObj.close()
+					# 		needToCreateNewZip = True
+					# 		needToStopNewImageZip = False
+					if (sourceMode == "image" and zippedImages == False):
+							zippedImages = True
 
 					if textRender:
 						bufferFrames[streamIndex] = objectsToTextYolo(bufferFrames[streamIndex], boxes, indexes,
@@ -633,8 +676,9 @@ def ProcessFrame():
 						# if (sourceMode == "video") :
 						#     writer.write(bufferFrames[streamIndex])
 
-						if (sourceMode == "image"):
+						if (sourceMode == "image"):							
 							cv2.imwrite(f"static/output{args['port']}{sourceImage}", bufferFrames[streamIndex])
+							
 							#workingOn = False
 						if ((sourceMode == "image" and extractAndReplaceBackground == True and writer is not None)):
 							writer.write(bufferFrames[streamIndex])
