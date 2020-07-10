@@ -129,3 +129,6 @@ static/objects8002.zip
 objects.zip
 objects8001 (1).zip
 objects8001.zip
+*.png
+*.jpeg
+*.mkv

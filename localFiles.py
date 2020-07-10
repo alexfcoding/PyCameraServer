@@ -4,6 +4,7 @@ from imutils.video import VideoStream
 from flask import jsonify
 from flask import Flask
 from flask import render_template
+from flask import send_file
 import threading
 import argparse
 import numpy as np
@@ -71,9 +72,12 @@ cap2 = None
 videoResetCommand = False
 startedRenderingVideo = False
 needToCreateWriter = False
+receivedZipCommand = False
+screenshotCommand = False
 fileChanged = False
-
-
+screenshotReady = False
+screenshotPath = ""
+needToCreateScreenshot = False
 
 lock = threading.Lock()
 A = 0
@@ -97,7 +101,6 @@ frameOutList = []
 vsList = []
 grayFrames = []
 total = []
-
 
 for i in range(len(streamList)):
 	vsList.append(VideoStream(streamList[i]))
@@ -125,7 +128,7 @@ def checkIfUserIsConnected(timerStart):
 	#print(str(timerStart) + "================" + str(timerEnd))
 	userTime = str(round(timerEnd)) + ":" + str(round(timerStart))
 
-	if (timerEnd - timerStart < 25 and timerStart != 0):
+	if (timerEnd - timerStart < 7 and timerStart != 0):
 		print("User is connected")
 	else:
 		if (timerStart != 0):
@@ -136,7 +139,7 @@ def checkIfUserIsConnected(timerStart):
 			#shutdown_server()
 
 def ProcessFrame():
-	global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue, asciiThicknessValue, resizeValue, colorCountValue, videoResetCommand,  startedRenderingVideo, needModeReset, options, fileChanged, fileToRender, needToCreateWriter, zipObj
+	global cap, sourceImage, sourceMode, lock, writer, frameProcessed, progress, fps, frameBackground, totalFrames, outputFrame, colors, classIds, blurAmount, blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue, asciiThicknessValue, resizeValue, colorCountValue, sharpeningValue2, videoResetCommand,  startedRenderingVideo, needModeReset, options, fileChanged, fileToRender, needToCreateWriter, zipObj, receivedZipCommand, screenshotReady, screenshotPath, screenshotCommand, needToCreateScreenshot
 
 	r = cv2.getTrackbarPos("R", "Controls")
 	g = cv2.getTrackbarPos("G", "Controls")
@@ -206,7 +209,6 @@ def ProcessFrame():
 	# 	print(totalFrames)
 
 	lineType = cv2.LINE_AA
-
 	zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
 	zipIsOpened = True
 
@@ -320,12 +322,8 @@ def ProcessFrame():
 						zipObj.close()
 						zipIsOpened = False
 						needToStopNewZip = False
-						needToCreateNewZip = True
-					print ("STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED STOPPED ")
-				else:
-					print ("INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO INTO ")
-					
-					print (needToCreateWriter)
+						needToCreateNewZip = True					
+				else:			
 					if (needToCreateWriter == True or fileChanged == True):						
 						cap.set(1,1)
 						frameProcessed = 0
@@ -340,7 +338,8 @@ def ProcessFrame():
 						writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
 													f"", fourcc, 25, (
 							bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
-						print("CREATING WRITER 1 WITH SIZE:" + str(round(bufferFrames[streamIndex].shape[1])))	
+
+						# print("CREATING WRITER 1 WITH SIZE:" + str(round(bufferFrames[streamIndex].shape[1])))	
 						
 						if (needToCreateNewZip):
 							zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
@@ -354,31 +353,21 @@ def ProcessFrame():
 
 						fileChanged = False
 						videoResetCommand = False
-						needToCreateWriter = False
-						print ("CREATED WRITER CREATED WRITER CREATED WRITER CREATED WRITER CREATED WRITER CREATED WRITER CREATED WRITER CREATED WRITER CREATED WRITER ")
+						needToCreateWriter = False						
 
 				ret, frameList[streamIndex] = cap.read()
 				ret2, frameBackground = cap2.read()
 				
 			if (sourceMode == "image"):	
-				if (startedRenderingVideo == False):			
-					if (needToStopNewZip):
-						zipObj.close()
-						zipIsOpened = False
-						needToStopNewZip = False
-						needToCreateNewZip = True						
-				else:
-					if (needToCreateWriter == True or fileChanged == True):	
-						zippedImages = False						
-						zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')						
-						needToStopNewZip = True
-						needToCreateNewZip = False
-						zipIsOpened = True						
+				if (receivedZipCommand == True or fileChanged == True):	
+					zippedImages = False						
+					zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
+					zipIsOpened = True	
+					receivedZipCommand = False					
 
-					if (fileChanged):
-						zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
-						zipIsOpened = True
-
+				if (fileChanged):
+					zipObj = ZipFile(f"static/objects{args['port']}.zip", 'w')
+					zipIsOpened = True
 					fileChanged = False	
 					needToCreateWriter = False
 
@@ -387,9 +376,6 @@ def ProcessFrame():
 
 			if frameList[streamIndex] is not None:
 				bufferFrames[streamIndex] = frameList[streamIndex].copy()
-
-				#frameList[streamIndex] = cv2.resize(frameList[streamIndex], (1280,720))
-				#bufferFrames[streamIndex] = cv2.resize(bufferFrames[streamIndex], (1280,720))
 
 				if usingYoloNeuralNetwork:
 					boxes, indexes, classIds, confidences, classesOut = findYoloClasses(bufferFrames[streamIndex],
@@ -400,12 +386,12 @@ def ProcessFrame():
 						bufferFrames[streamIndex] = markAllObjectsYolo(bufferFrames[streamIndex], boxes, indexes,
 																		classIds, confidences, zipObj, zipIsOpened, zippedImages, sourceMode, startedRenderingVideo)
 					
-					# if (sourceMode == "image" and needToStopNewZip):
-					# 		zipObj.close()
-					# 		needToCreateNewZip = True
-					# 		needToStopNewImageZip = False
+					if (sourceMode == "image" and zipIsOpened):
+						zipObj.close()							
+
 					if (sourceMode == "image" and zippedImages == False):
 							zippedImages = True
+							zipIsOpened = False
 
 					if textRender:
 						bufferFrames[streamIndex] = objectsToTextYolo(bufferFrames[streamIndex], boxes, indexes,
@@ -458,26 +444,8 @@ def ProcessFrame():
 					if videoColorization:
 						bufferFrames[streamIndex] = colorize(caffeNetworkColorizer, bufferFrames[streamIndex])
 
-				# if (imageUpscaler):
-					# kernel_sharpening = np.array([[-1,-1,-1], [-1, 9,-1], [-1,-1,-1]])
-
-					
-					# b,g,r = cv2.split(bufferFrames[streamIndex])           # get b,g,r
-					# bufferFrames[streamIndex] = cv2.merge([r,g,b])     # switch it to rgb
-
-					# # Denoising
-					# dst = cv2.fastNlMeansDenoisingColored(bufferFrames[streamIndex],None,15,20,10,21)
-
-					# b,g,r = cv2.split(dst)           # get b,g,r
-					# bufferFrames[streamIndex] = cv2.merge([r,g,b])     # switch it to rgb
-
-					# bufferFrames[streamIndex] = cv2.filter2D(bufferFrames[streamIndex], -1, kernel_sharpening)  
-					#         
-# TODO move to separate function ==============================================================================
-				if cartoonEffect:
-					#bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex])
-					frameCopy = bufferFrames[streamIndex].copy()                        
-					#frameCopy = sharpening(frameCopy)                        
+				if cartoonEffect:					
+					frameCopy = bufferFrames[streamIndex].copy()   
 					
 					# if (blurAmount % 2 == 0):
 					#     blurAmount += 1
@@ -493,38 +461,20 @@ def ProcessFrame():
 						bufferFrames[streamIndex] = cv2.GaussianBlur(bufferFrames[streamIndex],
 																		(blurCannyAmount, blurCannyAmount),
 																		blurCannyAmount)
-						
-					#bufferFrames[streamIndex] = morphEdgeDetection(bufferFrames[streamIndex])
+											
 					bufferFrames[streamIndex] = cv2.Canny(bufferFrames[streamIndex], thres1, thres2)
-					bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
-
-				
-					# cv2.imshow("videof",  bufferFrames[streamIndex])
-					# key = cv2.waitKey(1) & 0xFF
-
-					# if key == ord("q"):
-						# break
-					
+					bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)	
 					kernel = np.ones((lineThicknessValue,lineThicknessValue),np.uint8)
 					bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
 					frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
-
 					frameCopy = limitColorsKmeans(frameCopy, colorCountValue)
-					frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
-					bufferFrames[streamIndex] = frameCopy
-					
-					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
+					#frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
+					bufferFrames[streamIndex] = frameCopy					
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue, sharpeningValue2)                    
 					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)
 
-				if pencilDrawer:
-					#bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex])
-					frameCopy = bufferFrames[streamIndex].copy()                        
-					#frameCopy = sharpening(frameCopy)                        
-					
-					# if (blurAmount % 2 == 0):
-					#     blurAmount += 1
-					# else:
-					#     frameCopy = cv2.GaussianBlur(frameCopy, (blurAmount, blurAmount), blurAmount)
+				if pencilDrawer:					
+					frameCopy = bufferFrames[streamIndex].copy()    
 
 					if (blurCannyAmount % 2 == 0):
 						blurCannyAmount += 1
@@ -538,27 +488,16 @@ def ProcessFrame():
 						
 					#bufferFrames[streamIndex] = morphEdgeDetection(bufferFrames[streamIndex])
 					bufferFrames[streamIndex] = cv2.Canny(bufferFrames[streamIndex], thres1, thres2)
-					bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
-
-				
-					# cv2.imshow("videof",  bufferFrames[streamIndex])
-					# key = cv2.waitKey(1) & 0xFF
-
-					# if key == ord("q"):
-						# break
-					
+					bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)	
 					kernel = np.ones((lineThicknessValue,lineThicknessValue),np.uint8)
 					bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
 					frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
-
 					frameCopy = limitColorsKmeans(frameCopy, 2)
 					#frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
 					bufferFrames[streamIndex] = frameCopy
-					
-					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
-					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)    
-# TODO move to separate function ==============================================================================
-# TODO move to separate function ==============================================================================
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue, sharpeningValue2)                    
+					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
+					#bufferFrames[streamIndex] = np.bitwise_not(bufferFrames[streamIndex])
 # Limit COLORS ====================================================
 					# (B, G, R) = cv2.split(frameCopy)
 					# M = np.maximum(np.maximum(R, G), B) - 70
@@ -567,58 +506,38 @@ def ProcessFrame():
 					# B[B < M] = 0
 					# frameCopy =  cv2.merge([B, G, R])
 # Limit COLORS ====================================================
-# TODO move to separate function ==============================================================================
 					
-
-				#if denoiser:
-				
-					#bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex])       
-				if (frameUpscale):	
+				if frameUpscale:	
 					bufferFrames[streamIndex] = upscaleImage(netUpscaler, bufferFrames[streamIndex])   
-					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue) 											       
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue, sharpeningValue2) 											       
 
 				if asciiPainter:					
 					bufferFrames[streamIndex]  = asciiPaint(bufferFrames[streamIndex], asciiSizeValue, asciiIntervalValue, asciiThicknessValue, rcnnBlurValue)
 
 				if denoiseAndSharpen:
-					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue)                    
-					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
-				# = cv2.Laplacian(bufferFrames[streamIndex],cv2.CV_64F)
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue, sharpeningValue2)                    
+					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  				
 
 				if sobel:					
 					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)
-					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue) 
-					bufferFrames[streamIndex] = cv2.Sobel(bufferFrames[streamIndex],cv2.CV_64F,1,0,ksize=sobelValue)    
-
-
-				# bufferFrames[streamIndex] = cv2.Sobel(bufferFrames[streamIndex],cv2.CV_64F,0,1,ksize=5)	
-				#bufferFrames[streamIndex] = cv2.cvtColor(bufferFrames[streamIndex], cv2.COLOR_GRAY2BGR)
-# BRIGHTNESS AND CONTRAST =======================o=====================================
-				contrast = contrastValue / 100
-				brightness = brightnessValue
-				alpha = 1  # Contrast control (1.0-3.0)
-				beta = 0  # Brightness control (0-100)                
-				bufferFrames[streamIndex] = cv2.convertScaleAbs(bufferFrames[streamIndex], alpha=contrast,
-												beta=brightness)
-# BRIGHTNESS AND CONTRAST =============================================================
-# AMP COLORS ==========================================================================
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue, sharpeningValue2) 
+					bufferFrames[streamIndex] = cv2.Sobel(bufferFrames[streamIndex],cv2.CV_64F,1,0,ksize=sobelValue)   
+							              
+				bufferFrames[streamIndex] = adjustBrContrast(bufferFrames[streamIndex], contrastValue, brightnessValue)
 				bufferFrames[streamIndex] = adjustSaturation(bufferFrames[streamIndex], saturationValue)
-# AMP COLORS ==========================================================================
-								
-				# cv2.imshow("videof",  frm)
-				# key = cv2.waitKey(1) & 0xFF
-
-				# if key == ord("q"):
-				# 	break
-
+						
 				with lock:
 					personDetected = False
-					#checkIfUserIsConnected(timerStart)
+					checkIfUserIsConnected(timerStart)
 
 					frameProcessed = frameProcessed + 1
 					elapsedTime = time.time()
 					fps = 1 / (elapsedTime - startMoment)
 					# print(fps)
+					xCoeff = 512 / bufferFrames[streamIndex].shape[0] 
+					xSize = round(xCoeff * bufferFrames[streamIndex].shape[1])
+					print (xSize)
+					resized =  cv2.resize(bufferFrames[streamIndex], (xSize, 512))
 
 					for streamIndex in range(len(streamList)):
 						if (showAllObjects):
@@ -637,117 +556,89 @@ def ProcessFrame():
 
 									if (classes[m] == "person"):
 										cv2.rectangle(
-											bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
-											(400, rowIndex * 70 + 16), (0, 0, 0), -1)
-										cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
-											classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
+											resized, (20, rowIndex * 40 - 25),
+											(270, rowIndex * 40 + 11), (0, 0, 0), -1)
+										cv2.putText(resized, classes[m] + ": " + str(
+											classIndexCount[streamIndex][m]), (40, rowIndex * 40), font, 1,
 													(0, 255, 0), 2, lineType=cv2.LINE_AA)
 										personDetected = True
 
 									if (classes[m] == "car"):
 										cv2.rectangle(
-											bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
-											(400, rowIndex * 70 + 16), (0, 0, 0), -1)
-										cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
-											classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
+											resized, (20, rowIndex * 40 - 25),
+											(270, rowIndex * 40 + 11), (0, 0, 0), -1)
+										cv2.putText(resized, classes[m] + ": " + str(
+											classIndexCount[streamIndex][m]), (40, rowIndex * 40), font, 1,
 													(255, 0, 255), 2, lineType=cv2.LINE_AA)
 
 									if ((classes[m] != "car") & (classes[m] != "person")):
 										cv2.rectangle(
-											bufferFrames[streamIndex], (20, rowIndex * 70 - 40),
-											(400, rowIndex * 70 + 16), (0, 0, 0), -1)
-										cv2.putText(bufferFrames[streamIndex], classes[m] + ": " + str(
-											classIndexCount[streamIndex][m]), (40, rowIndex * 70), font, 1.4,
+											resized, (20, rowIndex * 40 - 25),
+											(270, rowIndex * 40 + 11), (0, 0, 0), -1)
+										cv2.putText(resized, classes[m] + ": " + str(
+											classIndexCount[streamIndex][m]), (40, rowIndex * 40), font, 1,
 													colorsYolo[m], 2, lineType=cv2.LINE_AA)
 
 									if (classes[m] == "handbag") | (classes[m] == "backpack"):
 										passFlag = True
 										print("handbag detected! -> PASS")
 
-						# if (writer is None):
-						# 	writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
-						# 								f"", fourcc, 25, (
-						# 		bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
-							# writer = cv2.VideoWriter(f"static/output{args['port']}.avi", fourcc, 25, (
-							#     640, 720), True)
-						# else:
-						
-					
-						# if (sourceMode == "video") :
-						#     writer.write(bufferFrames[streamIndex])
-
 						if (sourceMode == "image"):							
 							cv2.imwrite(f"static/output{args['port']}{sourceImage}", bufferFrames[streamIndex])
-							
-							#workingOn = False
+														
 						if ((sourceMode == "image" and extractAndReplaceBackground == True and writer is not None)):
 							writer.write(bufferFrames[streamIndex])
 						
-						resized1 = cv2.resize(frameList[streamIndex], (640, 360))
-						resized2 = cv2.resize(bufferFrames[streamIndex], (640, 360))                            
-						concated = cv2.vconcat([resized2, resized1, ])                           
-						resized = cv2.resize(bufferFrames[streamIndex], (1600, 900))
-
-						
-						# if (writer is None and frameUpscale):		
-						# 	writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi" f"", fourcc, 25, (round(bufferFrames[streamIndex].shape[1]), round(bufferFrames[streamIndex].shape[0])), True)	
-						# 	print("CREATING WRITER 3 WITH:" + str(round(bufferFrames[streamIndex].shape[1])))
+						# resized1 = cv2.resize(frameList[streamIndex], (640, 360))
+						# resized2 = cv2.resize(bufferFrames[streamIndex], (640, 360))                            
+						# concated = cv2.vconcat([resized2, resized1, ])                           
+						# resized = cv2.resize(bufferFrames[streamIndex], (1600, 900))
 
 						if (sourceMode == "video" and writer is not None and startedRenderingVideo):
-							writer.write(bufferFrames[streamIndex])							
-							#print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!WRITING NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + str(round(bufferFrames[streamIndex].shape[1])))
-
+							writer.write(bufferFrames[streamIndex])	
 							
 						cv2.imshow("video",  bufferFrames[streamIndex])                           
 						key = cv2.waitKey(1) & 0xFF
 
 						if key == ord("q"):
 							break
-
-						# outputFrame = concated
-
-						resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
+						
+						
 
 						if (sourceMode == "video"):
 							if (totalFrames != 0):
 								progress = frameProcessed / totalFrames * 100
 						
-						cv2.putText(bufferFrames[streamIndex], f"FPS: {str(round(fps, 2))} {str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])}", (40, 70),
-									font, 2, (0, 255, 0), 3)	
-							
-									
-						outputFrame = bufferFrames[streamIndex]
+						# cv2.putText(resized, f"FPS: {str(round(fps, 2))} {str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])}", (40, 70),
+						# 			font, 2, (0, 255, 0), 3)	
+						cv2.putText(resized, f"FPS: {str(round(fps, 2))} ({str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])})", (40, 35),
+									font, 0.8, (0, 255, 255), 2, lineType=cv2.LINE_AA)		
+						outputFrame = resized
 
 						if (frameProcessed == 1):
-							print("started")							
+							print("started")	
 						
+						if (needToCreateScreenshot == True):
+							print("screenshot")
+							cv2.imwrite(f"static/output{args['port']}Screenshot.jpg", bufferFrames[streamIndex])
+							screenshotPath = f"static/output{args['port']}Screenshot.jpg"
+							screenshotReady = True						
+																		
 			else:
-				resized = cv2.resize(bufferFrames[streamIndex], (1280, 720))
-				outputFrame = bufferFrames[streamIndex]
-				#workingOn = False
-				zipObj.close()				
-				print("finished")
-
-				# while True:
-				# 	checkIfUserIsConnected(timerStart)
-
+				xCoeff = bufferFrames[streamIndex].shape[0] / 512
+				xSize = round(xCoeff * bufferFrames[streamIndex].shape[1])
+				print (xSize)
+				resized =  cv2.resize(bufferFrames[streamIndex], (xSize, 640))
+				outputFrame = bufferFrames[streamIndex]				
+				zipObj.close()
+				checkIfUserIsConnected(timerStart)
 				startedRenderingVideo = False
 				positionValue = 1
-						
-
-				# if (writer is not None):
-				# 	writer.release()
-
-				# cap.release()
-				# cap = cv2.VideoCapture(fileToRender)
-				# cap.set(1,1)	
-								
-				#frameProcessed = 0
-				#needToCreateWriter = True
+				print("finished")										
 
 UPLOAD_FOLDER = ''
 ALLOWED_EXTENSIONS = set(
-	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v', 'webm'])
+	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v', 'webm', 'mkv'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
@@ -757,8 +648,7 @@ def allowed_file(filename):
 def generate():
 	global outputFrame, frameProcessed, lock, workingOn
 
-	while workingOn:
-		
+	while workingOn:		
 		with lock:
 			if outputFrame is None:
 				continue
@@ -779,6 +669,7 @@ def generate():
 @app.route('/', methods=['GET', 'POST'])
 def index(device=None, action=None):
 	global cap, cap2, frameProcessed, writer, fileToRender, videoResetCommand, fileChanged, startedRenderingVideo, sourceMode, sourceImage, isImage, totalFrames
+	
 	if request.method == 'POST':        
 		file = request.files['file']
 
@@ -787,6 +678,7 @@ def index(device=None, action=None):
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 			fileExtension = filename.rsplit('.', 1)[1]
+
 			if (fileExtension == "png" or fileExtension == "jpg" or fileExtension == "jpeg" or fileExtension == "gif"):				
 				sourceMode = "image"
 				sourceImage = filename
@@ -826,14 +718,17 @@ def video_feed():
 # return Response(stream_with_context(generate()))
 @app.route('/update', methods=['POST'])
 def update():
-	global sourceMode, totalFrames, options, userTime
+	global sourceMode, totalFrames, options, userTime, screenshotReady, screenshotPath, needToCreateScreenshot
 
 	timerStart = time.perf_counter()
 	frameWidthToPage = 0
 	frameHeightToPage = 0
-		
-			# return f"Файл {filename} загружен. Запускаю сервер обработки..."
-	# return redirect(url_for('video_feed',prt=8000))
+	screenshotReadyLocal = False
+
+	if (screenshotReady == True):
+		screenshotReadyLocal = True		
+		screenshotReady = False
+		needToCreateScreenshot = False
 
 	if (sourceMode == "video"):
 		frameWidthToPage = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -841,6 +736,9 @@ def update():
 	if (sourceMode == "image"):
 		frameWidthToPage = 0
 		frameHeightToPage = 0  
+
+	if (screenshotReadyLocal == True):
+		print("sendingScreenshot================================================")
 
 	return jsonify({
 		'value': frameProcessed,
@@ -856,14 +754,14 @@ def update():
 		'maxFrames': totalFrames,
 		'currentMode': options,
 		'userTime': userTime,
+		'screenshotReady': screenshotReadyLocal,
+		'screenshotPath': screenshotPath
 		# 'time': datetime.datetime.now().strftime("%H:%M:%S"),
 	})
 	
-	
-
 @app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-	global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue, asciiThicknessValue, resizeValue, colorCountValue, needToCreateWriter
+	global blurCannyAmount, positionValue, saturationValue, contrastValue, brightnessValue, videoResetCommand, startedRenderingVideo, timerStart, timerEnd, modeResetCommand, options, needModeReset, writer, confidenceValue, lineThicknessValue, denoiseValue, denoiseValue2, sharpeningValue, rcnnSizeValue, rcnnBlurValue, sobelValue, asciiSizeValue, asciiIntervalValue, asciiThicknessValue, resizeValue, colorCountValue, needToCreateWriter, receivedZipCommand, sharpeningValue2, screenshotCommand, needToCreateScreenshot
 	
 	if request.method == 'POST':
 		timerStart = time.perf_counter()
@@ -878,6 +776,7 @@ def sendCommand():
 		denoiseValue = int(inputData["denoiseSliderValue"])
 		denoiseValue2 = int(inputData["denoise2SliderValue"])
 		sharpeningValue = int(inputData["sharpenSliderValue"])
+		sharpeningValue2 = int(inputData["sharpenSliderValue2"])
 		rcnnSizeValue = int(inputData["rcnnSizeSliderValue"])
 		rcnnBlurValue = int(inputData["rcnnBlurSliderValue"])
 		sobelValue = int(inputData["sobelSliderValue"])
@@ -889,8 +788,7 @@ def sendCommand():
 		videoResetCommand = int(inputData["videoResetCommand"])
 		videoStopCommand = int(inputData["videoStopCommand"])
 		modeResetCommand = str(inputData["modeResetCommand"])
-
-		#resizeValue = 2
+		screenshotCommand = str(inputData["screenshotCommand"])
 
 		if (modeResetCommand != "default"):           
 			options = modeResetCommand   
@@ -900,18 +798,15 @@ def sendCommand():
 			positionValue = 1
 			needToCreateWriter = True
 			startedRenderingVideo = True
-			
-			
+			receivedZipCommand = True
 		else:
 			positionValue = positionValueLocal
 
 		if (videoStopCommand):
-			positionValue = 1
-			#print("STOP FROM HTML STOP FROM HTML STOP FROM HTML STOP FROM HTML STOP FROM HTML STOP FROM HTML STOP FROM HTML ")
+			positionValue = 1			
 			startedRenderingVideo = False
-			
-
-		print(videoResetCommand, videoStopCommand)
+		if (screenshotCommand == 'True'):
+			needToCreateScreenshot = True
 
 	return '', 200
 
@@ -925,6 +820,12 @@ def shutdown_server():
 def shutdown():
 	shutdown_server()
 	return 'Server shutting down...'
+
+@app.route('/download')
+def downloadFile ():
+    #For windows you need to use drive name [ex: F:/Example.pdf]
+    path = "static/cat53.jpg"
+    return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':
 	ap = argparse.ArgumentParser()

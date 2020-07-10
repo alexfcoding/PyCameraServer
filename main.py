@@ -12,7 +12,7 @@ import time
 
 UPLOAD_FOLDER = ''
 ALLOWED_EXTENSIONS = set(
-	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v', 'webm'])
+	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v', 'webm', 'mkv'])
 
 app = Flask(__name__, static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER

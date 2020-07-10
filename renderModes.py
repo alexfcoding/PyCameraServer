@@ -24,6 +24,7 @@ sobelValue = 5
 asciiSizeValue = 8
 asciiIntervalValue = 24
 asciiThicknessValue = 3
+sharpeningValue2 = 5
 colorCountValue = 32
 
 classes = []
@@ -948,27 +949,27 @@ def asciiPaint(inputFrame, fontSize, asciiDistance, asciiThicknessValue, blurVal
     
     return blk
 
-def sharpening(inputFrame, sharpeningValue):
-    kernelValue = sharpeningValue
+def sharpening(inputFrame, sharpeningValue, sharpeningValue2):
+    kernelValue = sharpeningValue2
     kernelDiff = 9 - kernelValue        
     kernel_sharpening = np.array([[-1, -1, -1], [-1, kernelValue, -1], [-1, -1, -1]])
 
-    # while (kernelDiff != 0):
-    #     for i in range(3):
-    #         for j in range(3):
-    #             if (i == 1 and j == 1):
-    #                 kernel_sharpening[j][i] == kernelValue
-    #             else:
-    #                 if (kernelDiff > 0):
-    #                     kernel_sharpening[j][i] += 1
-    #                     kernelDiff -= 1
-    #                 if (kernelDiff < 0):
-    #                     kernel_sharpening[j][i] -= 1
-    #                     kernelDiff += 1
-    #                 if (kernelDiff == 0):
-    #                     break
+    while (kernelDiff != 0):
+        for i in range(3):
+            for j in range(3):
+                if (i == 1 and j == 1):
+                    kernel_sharpening[j][i] == kernelValue
+                else:
+                    if (kernelDiff > 0):
+                        kernel_sharpening[j][i] += 1
+                        kernelDiff -= 1
+                    if (kernelDiff < 0):
+                        kernel_sharpening[j][i] -= 1
+                        kernelDiff += 1
+                    if (kernelDiff == 0):
+                        break
                 
-    # inputFrame = cv2.filter2D(inputFrame, -1, kernel_sharpening)  
+    inputFrame = cv2.filter2D(inputFrame, -1, kernel_sharpening)  
 
     inputFrame = cv2.detailEnhance(inputFrame, sigma_s=sharpeningValue, sigma_r=0.15)
 
@@ -983,7 +984,6 @@ def denoise(inputFrame, denoiseValue, denoiseValue2):
         inputFrame = cv2.merge([r,g,b])
         
     return inputFrame
-
 
 def morphEdgeDetection(inputFrame):
     morph = inputFrame.copy()
@@ -1005,18 +1005,20 @@ def morphEdgeDetection(inputFrame):
     image_channels = cv2.bitwise_not(image_channels)
     return image_channels
 
-def limitColorsKmeans(inputFrame, colorCount):    
-    (h, w) = inputFrame.shape[:2]
-    inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2LAB)
-    inputFrame = inputFrame.reshape((inputFrame.shape[0] * inputFrame.shape[1], 3))    
-    clt = MiniBatchKMeans(n_clusters=colorCount)
-    labels = clt.fit_predict(inputFrame)
-    quant = clt.cluster_centers_.astype("uint8")[labels]    
-    quant = quant.reshape((h, w, 3))
-    inputFrame = inputFrame.reshape((h, w, 3))    
-    quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
-    inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_LAB2BGR)  
-    inputFrame = quant
+def limitColorsKmeans(inputFrame, colorCount): 
+    if (colorCount > 0):   
+        (h, w) = inputFrame.shape[:2]
+        inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_BGR2LAB)
+        inputFrame = inputFrame.reshape((inputFrame.shape[0] * inputFrame.shape[1], 3))    
+        clt = MiniBatchKMeans(n_clusters=colorCount)
+        labels = clt.fit_predict(inputFrame)
+        quant = clt.cluster_centers_.astype("uint8")[labels]    
+        quant = quant.reshape((h, w, 3))
+        inputFrame = inputFrame.reshape((h, w, 3))    
+        quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
+        inputFrame = cv2.cvtColor(inputFrame, cv2.COLOR_LAB2BGR)  
+        inputFrame = quant
+    
     return inputFrame
 
 def autoCanny(image: object, sigma: object = 0.33) -> object:
@@ -1039,6 +1041,14 @@ def adjustSaturation(inputFrame, saturation = 1):
     hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], saturation)
     hsv[:, :, 2] = cv2.multiply(hsv[:, :, -1], 1)
     inputFrame = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    return inputFrame
+
+def adjustBrContrast(inputFrame, contrastValue, brightnessValue):
+    contrastValue = contrastValue / 100   
+    alpha = 1  # Contrast control (1.0-3.0)
+    beta = 0  # Brightness control (0-100)                
+    inputFrame = cv2.convertScaleAbs(inputFrame, alpha=contrastValue,
+                                    beta=brightnessValue)
     return inputFrame
 
 yoloNetwork, layers_names, outputLayers, colorsYolo = initializeYoloNetwork(classes, True)
