@@ -4,32 +4,9 @@ from random import randint
 from sklearn.cluster import MiniBatchKMeans, KMeans
 import os
 
-thres1 = 50
-thres2 = 50
-blurAmount = 5
-blurCannyAmount = 5
-positionValue = 1
-saturationValue = 100
-contrastValue = 100
-brightnessValue = 0
-confidenceValue = 0
-lineThicknessValue = 1
-denoiseValue = 10
-denoiseValue2 = 10
-sharpeningValue = 9
-rcnnSizeValue = 10
-rcnnBlurValue = 17
-objectIndex = 0
-sobelValue = 5
-asciiSizeValue = 8
-asciiIntervalValue = 24
-asciiThicknessValue = 3
-sharpeningValue2 = 5
-colorCountValue = 32
-resizeValue = 2
 
 classes = []
-
+objectIndex = 0
 
 with open("coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
