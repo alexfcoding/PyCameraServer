@@ -152,6 +152,7 @@
                             <option value="q">ASCII PAINTER</option>
                             <option value="e">CARTOON STYLE</option>
                             <option value="r">PENCIL DRAWER</option>
+                            <option value="s">TWO-COLORED</option>
                             <option value="o">DENOISE + SHARPEN</option>
                             <option value="p">SOBEL FILTER</option>
                         </optgroup>
@@ -274,7 +275,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="5" class="slider" id="sharpenId"> </div>
+                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"> </div>
         </div>
 
         <div id="sharpenIdBlock2" class="renderSettings">
@@ -362,27 +363,7 @@
             document.getElementById("brightnessId").value = 0;
             document.getElementById("lineThicknessId").value = 2;
             document.getElementById("denoiseId").value = 7;
-
-            if (document.getElementById("modesId").value == "e")
-            {
-                document.getElementById("denoise2Id").value = 50;
-            }
-            else
-            {
-                document.getElementById("denoise2Id").value = 10;
-            }   
-            
-            if (document.getElementById("modesId").value == "o")
-            {
-                document.getElementById("sharpenId").value = 1;
-                document.getElementById("sharpenId2").value = 3;
-            }
-            else
-            {
-                document.getElementById("sharpenId").value = 5;
-                document.getElementById("sharpenId2").value = 0;
-            }    
-            
+            document.getElementById("denoise2Id").value = 10;
             document.getElementById("rcnnSizeId").value = 10;
             document.getElementById("rcnnBlurId").value = 9;
             document.getElementById("sobelId").value = 3;
@@ -391,6 +372,21 @@
             document.getElementById("asciiThicknessId").value = 3;
             document.getElementById("colorCountId").value = 0;
             document.getElementById("resizeId").value = 1;
+            document.getElementById("saturationId").value = 100;
+            document.getElementById("sharpenId").value = 0;
+            document.getElementById("sharpenId2").value = 0;
+
+            if (document.getElementById("modesId").value == "e")
+            {               
+                document.getElementById("denoise2Id").value = 50;
+                document.getElementById("saturationId").value = 200;                
+            }
+            if (document.getElementById("modesId").value == "o")
+            {
+                document.getElementById("denoise2Id").value = 10;                
+                document.getElementById("sharpenId").value = 3;
+                document.getElementById("sharpenId2").value = 0;
+            }  
         }
 
         
@@ -587,6 +583,25 @@
                     // PENSIL DRAWER
                     if (currentMode == "r") {
                         $("#cannyBlurIdBlock").show()
+                        $("#lineThicknessIdBlock").show()
+                        $("#colorCountIdBlock").hide()
+                        $("#sharpenIdBlock").show()
+                        $("#sharpenIdBlock2").show()
+                        $("#denoiseIdBlock").show()
+                        $("#denoise2IdBlock").show()
+                        $("#confidenceIdBlock").hide()
+                        $("#rcnnSizeIdBlock").hide()
+                        $("#rcnnBlurIdBlock").hide()
+                        $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()
+                        $("#asciiThicknessIdBlock").hide()
+                        $("#resizeIdBlock").hide()
+                        $("#downloadObjectsId").hide()
+                    }
+                    // TWO-COLORED
+                    if (currentMode == "s") {
+                        $("#cannyBlurIdBlock").hide()
                         $("#lineThicknessIdBlock").show()
                         $("#colorCountIdBlock").hide()
                         $("#sharpenIdBlock").show()

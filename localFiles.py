@@ -240,6 +240,7 @@ def ProcessFrame():
 			sobel = False
 			asciiPainter = False
 			pencilDrawer = False
+			twoColored = False
 			frameUpscale = False
 
 			for char in options:
@@ -307,8 +308,12 @@ def ProcessFrame():
 					asciiPainter = True
 					print("asciiPainter") 
 				if (char == "r"):
-						pencilDrawer = True
-						print("pencilDrawer")
+					pencilDrawer = True
+					print("pencilDrawer")
+				if (char == "s"):
+					twoColored = True
+					print("twoColored")
+
 				needModeReset = False
 
 		classesIndex = []
@@ -507,6 +512,21 @@ def ProcessFrame():
 					# frameCopy =  cv2.merge([B, G, R])
 # Limit COLORS ====================================================
 					
+
+				if twoColored:					
+					frameCopy = bufferFrames[streamIndex].copy()    
+	
+					#bufferFrames[streamIndex] = morphEdgeDetection(bufferFrames[streamIndex])
+					
+					kernel = np.ones((lineThicknessValue,lineThicknessValue),np.uint8)
+					#bufferFrames[streamIndex] = cv2.dilate(bufferFrames[streamIndex],kernel,iterations = 1)
+					#frameCopy[np.where((bufferFrames[streamIndex] > [0, 0, 0]).all(axis=2))] = [0,0,0]
+					frameCopy = limitColorsKmeans(frameCopy, 2)
+					#frameCopy = cv2.GaussianBlur(frameCopy, (3, 3), 2)
+					bufferFrames[streamIndex] = frameCopy
+					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue, sharpeningValue2)                    
+					bufferFrames[streamIndex] = denoise(bufferFrames[streamIndex], denoiseValue, denoiseValue2)  
+
 				if frameUpscale:	
 					bufferFrames[streamIndex] = upscaleImage(netUpscaler, bufferFrames[streamIndex])   
 					bufferFrames[streamIndex] = sharpening(bufferFrames[streamIndex], sharpeningValue, sharpeningValue2) 											       

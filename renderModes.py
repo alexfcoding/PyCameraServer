@@ -26,9 +26,10 @@ asciiIntervalValue = 24
 asciiThicknessValue = 3
 sharpeningValue2 = 5
 colorCountValue = 32
+resizeValue = 2
 
 classes = []
-resizeValue = 2
+
 
 with open("coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
@@ -513,7 +514,7 @@ def extractAndReplaceBackgroundRcnn(inputFrame, frameBackground, boxes, masks, l
     classesOut = []
     frameCopy = inputFrame
 
-    inputFrame = cv2.resize(inputFrame, (1280, 720))
+    frameBackground = cv2.resize(frameBackground, (inputFrame.shape[1], inputFrame.shape[0]))
     frameCopy = cv2.resize(frameCopy, (1280, 720))
     
     inputFrame = cv2.GaussianBlur(inputFrame, (5, 5), 5)
@@ -944,7 +945,7 @@ def asciiPaint(inputFrame, fontSize, asciiDistance, asciiThicknessValue, blurVal
             char = randint(0, 1)
             pixel_b, pixel_g, pixel_r = inputFrame[yy, xx]
             char = renderStr[randint(0, len(renderStr)) - 1]
-            cv2.putText(blk, str(char), (xx, yy), cv2.FONT_HERSHEY_SIMPLEX, fontSize, (int(pixel_b), int(pixel_g), int(pixel_r)), asciiThicknessValue)
+            cv2.putText(blk, str(char), (xx, yy), cv2.FONT_HERSHEY_SIMPLEX, fontSize, (int(pixel_b), int(pixel_g), int(pixel_r)), asciiThicknessValue, lineType=cv2.LINE_AA)
     
     
     return blk
