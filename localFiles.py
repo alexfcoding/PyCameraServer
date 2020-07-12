@@ -21,6 +21,12 @@ from renderModes import *
 from werkzeug.utils import secure_filename
 import uuid
 from zipfile import ZipFile
+import pafy
+import youtube_dl
+
+# url = 'https://youtu.be/ih5KhSAxfUE'
+# vPafy = pafy.new(url)
+# play = vPafy.streams[2]
 
 class Container:
 	pass
@@ -34,6 +40,8 @@ userTime = 0
 inputData = None
 
 settings = Container()
+commands = Container()
+serverStates = Container()
 
 settings.thres1 = 50
 settings.thres2 = 50
@@ -52,35 +60,27 @@ settings.rcnnSizeValue = 10
 settings.rcnnBlurValue = 17
 settings.objectIndex = 0
 settings.sobelValue = 5
-settings.asciiSizeValue = 8
-settings.asciiIntervalValue = 24
-settings.asciiThicknessValue = 3
 settings.sharpeningValue2 = 5
 settings.colorCountValue = 32
 settings.resizeValue = 2
 
-commands = Container()
 commands.videoResetCommand = False
 commands.videoStopCommand = False
 commands.modeResetCommand = False
 commands.screenshotCommand = False
 
-
-
-serverStates = Container()
 serverStates.sourceImage = ""
 serverStates.sourceMode = ""
-# serverStates.startedRenderingVideo = False
-# serverStates.needToCreateWriter = False
-# serverStates.needModeReset = False
-# serverStates.receivedZipCommand = False
-serverStates.screenshotCommand = False
-# serverStates.fileChanged = False
 serverStates.screenshotPath = ""
 serverStates.needToCreateScreenshot = False
 serverStates.screenshotReady = False
 serverStates.workingOn = True
 serverStates.frameProcessed = 0
+serverStates.totalFrames = 0
+serverStates.options = ""
+serverStates.screenshotLock = False
+serverStates.videoResetLock = False
+serverStates.videoStopLock = False
 
 cv2.namedWindow(title_window)
 
@@ -123,9 +123,7 @@ fps = 0
 cap = None
 cap2 = None
 
-
 # videoResetCommand = False
-
 
 lock = threading.Lock()
 A = 0
@@ -187,7 +185,9 @@ def checkIfUserIsConnected(timerStart):
 			#shutdown_server()
 
 def ProcessFrame():
-	global cap, inputData, settings, serverStates, lock, writer, progress, fps, frameBackground, totalFrames, outputFrame, options, fileToRender, zipObj
+	global cap, lock, writer, progress, fps, outputFrame, fileToRender, zipObj
+
+	frameBackground = None
 
 	receivedZipCommand = False
 	fileChanged = False
@@ -200,7 +200,7 @@ def ProcessFrame():
 
 	serverStates.frameProcessed = 0
 	fileIterator = 0
-	totalFrames = 0
+	serverStates.totalFrames = 0
 	needModeReset = True
 
 	usingYoloNeuralNetwork = False
@@ -232,7 +232,7 @@ def ProcessFrame():
 	font = cv2.FONT_HERSHEY_SIMPLEX
 	serverStates.workingOn = True
 	fileToRender = args["source"]
-	options = args["optionsList"]
+	serverStates.options = args["optionsList"]
 	serverStates.sourceMode = args["mode"]
 	concated = None
 	resizeValueLocal = 2
@@ -242,9 +242,10 @@ def ProcessFrame():
 	zippedImages = False
 
 	if (serverStates.sourceMode == "video"):
+		# cap = cv2.VideoCapture(play.url)
 		cap = cv2.VideoCapture(fileToRender)
 		#cap = cv2.VideoCapture(0)
-		totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+		serverStates.totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 		cap2 = cv2.VideoCapture("inputVideos/snow.webm")
 
 	if (serverStates.sourceMode == "image"):
@@ -285,31 +286,34 @@ def ProcessFrame():
 			settings.asciiThicknessValue = int(inputData["asciiThicknessSliderValue"])		
 			settings.resizeValue = int(inputData["resizeSliderValue"]) / 100
 			settings.colorCountValue = int(inputData["colorCountSliderValue"])
-			
-			commands.videoResetCommand = int(inputData["videoResetCommand"])
-			commands.videoStopCommand = int(inputData["videoStopCommand"])
-			commands.modeResetCommand = str(inputData["modeResetCommand"])
-			commands.screenshotCommand = str(inputData["screenshotCommand"])
-
 			positionValueLocal = int(inputData["positionSliderValue"])
 
 			if (commands.modeResetCommand != "default"):           
-				options = commands.modeResetCommand   
+				serverStates.options = commands.modeResetCommand   
 				needModeReset = True                                   
 
-			if (commands.videoResetCommand):
+			if (serverStates.videoResetLock == True):
 				settings.positionValue = 1
 				needToCreateWriter = True
 				startedRenderingVideo = True
 				receivedZipCommand = True
+				serverStates.videoResetLock = False
+				print('in loop reset')
 			else:
 				settings.positionValue = positionValueLocal
 
-			if (commands.videoStopCommand):
+			if (serverStates.videoStopLock == True):
 				settings.positionValue = 1			
 				startedRenderingVideo = False
-			if (commands.screenshotCommand == 'True'):
+				serverStates.videoStopLock = False
+				print('in loop stop')
+
+			if (serverStates.screenshotLock == True):
+				print('in loop screenshot')
 				serverStates.needToCreateScreenshot = True
+				serverStates.screenshotLock = False
+			
+			
 
 		#print("working...")
 		if (needModeReset):
@@ -340,7 +344,7 @@ def ProcessFrame():
 			twoColored = False
 			frameUpscale = False
 
-			for char in options:
+			for char in serverStates.options:
 				if (char == "a"):
 					showAllObjects = True
 					usingYoloNeuralNetwork = True
@@ -436,6 +440,7 @@ def ProcessFrame():
 							writer.release()
 
 						cap = cv2.VideoCapture(fileToRender)
+						# cap = cv2.VideoCapture(play.url)
 						
 						writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
 													f"", fourcc, 25, (
@@ -721,8 +726,8 @@ def ProcessFrame():
 							break												
 
 						if (serverStates.sourceMode == "video"):
-							if (totalFrames != 0):
-								progress = serverStates.frameProcessed / totalFrames * 100
+							if (serverStates.totalFrames != 0):
+								progress = serverStates.frameProcessed / serverStates.totalFrames * 100
 													
 						cv2.putText(resized, f"FPS: {str(round(fps, 2))} ({str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])})", (40, 35),
 									font, 0.8, (0, 255, 255), 2, lineType=cv2.LINE_AA)		
@@ -733,10 +738,11 @@ def ProcessFrame():
 						
 						if (serverStates.needToCreateScreenshot == True):
 							print("screenshot")
-							cv2.imwrite(f"static/output{args['port']}Screenshot.jpg", bufferFrames[streamIndex])
-							serverStates.screenshotPath = f"static/output{args['port']}Screenshot.jpg"
-							serverStates.screenshotReady = True						
-																		
+							cv2.imwrite(f"static/output{args['port']}Screenshot.png", bufferFrames[streamIndex])
+							time.sleep(1)		
+							serverStates.screenshotPath = f"static/output{args['port']}Screenshot.png"
+							serverStates.screenshotReady = True	
+																	
 			else:
 				xCoeff = bufferFrames[streamIndex].shape[0] / 512
 				xSize = round(xCoeff * bufferFrames[streamIndex].shape[1])
@@ -781,7 +787,7 @@ def generate():
 
 @app.route('/', methods=['GET', 'POST'])
 def index(device=None, action=None):
-	global cap, cap2, fileToRender, fileChanged, serverStates, totalFrames
+	global cap, cap2, fileToRender, fileChanged, serverStates
 	
 	if request.method == 'POST':        
 		file = request.files['file']
@@ -799,12 +805,12 @@ def index(device=None, action=None):
 			else:				
 				serverStates.sourceMode = "video"
 				cap = cv2.VideoCapture(filename)
-				totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+				serverStates.totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 				cap2 = cv2.VideoCapture("inputVideos/snow.webm")
 				
 			CRED = '\033[91m'
 			CEND = '\033[0m'
-			options = request.form.getlist('check')
+			serverStates.options = request.form.getlist('check')
 			mode = request.form.getlist('checkMode')
 
 			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
@@ -830,7 +836,7 @@ def video_feed():
 # return Response(stream_with_context(generate()))
 @app.route('/update', methods=['POST'])
 def update():
-	global totalFrames, options, userTime, serverStates
+	global serverStates, userTime
 
 	timerStart = time.perf_counter()
 	frameWidthToPage = 0
@@ -850,11 +856,11 @@ def update():
 		frameHeightToPage = 0  
 
 	if (screenshotReadyLocal == True):
-		print("sendingScreenshot================================================")
+		print("sendingScreenshot ================================================")
 
 	return jsonify({
 		'value': serverStates.frameProcessed,
-		'totalFrames': totalFrames,
+		'totalFrames': serverStates.totalFrames,
 		'progress': round(progress, 2),
 		'fps': round(fps, 2),
 		'workingOn': serverStates.workingOn,
@@ -863,8 +869,8 @@ def update():
 		'ramPercent': psutil.virtual_memory()[2],
 		'frameWidth': frameWidthToPage,
 		'frameHeight': frameHeightToPage,
-		'maxFrames': totalFrames,
-		'currentMode': options,
+		'maxFrames': serverStates.totalFrames,
+		'currentMode': serverStates.options,
 		'userTime': userTime,
 		'screenshotReady': screenshotReadyLocal,
 		'screenshotPath': serverStates.screenshotPath
@@ -873,11 +879,26 @@ def update():
 	
 @app.route('/update2', methods=['GET','POST'])
 def sendCommand():
-	global inputData, timerStart, timerEnd, writer
+	global inputData, timerStart, timerEnd, writer, serverStates, commands
 	
 	if request.method == 'POST':
 		timerStart = time.perf_counter()
-		inputData = request.get_json()				
+		inputData = request.get_json()
+
+		commands.modeResetCommand = str(inputData["modeResetCommand"])
+
+		if (serverStates.videoStopLock == False):
+			if (str(inputData["videoStopCommand"]) == 'True'):				
+				serverStates.videoStopLock = True
+					
+		if (serverStates.videoResetLock == False):
+			if (str(inputData["videoResetCommand"]) == 'True'):				
+				serverStates.videoResetLock = True
+			
+		if (serverStates.screenshotLock == False):
+			if (str(inputData["screenshotCommand"]) == 'True'):				
+				serverStates.screenshotLock = True
+			
 
 	return '', 200
 

@@ -105,7 +105,7 @@
                 </div>
             </div>
             <div>
-                <img style="max-width: 40%; border-radius: 20px; box-shadow: 6px 4px 8px #000000;"
+                <img style="max-width: 70%; border-radius: 20px; box-shadow: 6px 4px 8px #000000;"
                     src="{{ url_for('video_feed') }}">
             </div>
 
@@ -805,7 +805,6 @@
             resizeOutput.innerHTML = resizeSlider.value;
             colorCountOutput.innerHTML = colorCountSlider.value;
             
-
             positionSlider.oninput = function () {
                 outputPosition.innerHTML = this.value;
             }
@@ -915,7 +914,6 @@
                 dataType: "json"
             });
             console.log(screenshotCommand);
-
             
             screenshotCommand = false;            
             videoResetCommand = false;

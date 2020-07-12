@@ -94,7 +94,6 @@ def start_analysis(portToRender, fileToRender, options, mode):
 	time.sleep(5)		
 	return redirect(f"http://192.168.0.12:{portToRender}")
 
-
 	# print(process.stdout.read())
 	# process.stdout.close()
 

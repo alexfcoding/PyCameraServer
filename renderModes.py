@@ -4,7 +4,6 @@ from random import randint
 from sklearn.cluster import MiniBatchKMeans, KMeans
 import os
 
-
 classes = []
 objectIndex = 0
 
@@ -149,9 +148,7 @@ def objectsToTextYolo(inputFrame, boxes, indexes, classIds, fontSize, asciiDista
             objectIndex += 1
 
     return inputFrame
-    
-# TODO get rid of global variables ==============================================================================
-
+   
 def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences, zipArchive, zipIsOpened, zippedImages, sourceMode, startedRenderingMode):
     global objectIndex
 
