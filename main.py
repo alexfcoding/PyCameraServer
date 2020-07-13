@@ -27,6 +27,15 @@ def allowed_file(filename):
 def upload_file():
 	if request.method == 'POST':
 		file = request.files['file']
+		youtubeUrl = request.form.get('textbox')
+
+		if (youtubeUrl != ''):
+			mode = "youtube"
+			options = request.form.getlist('check')
+			global connectionPort
+			connectionPort = connectionPort + 1
+			return start_analysis(connectionPort, youtubeUrl, options, mode)
+
 		if file and allowed_file(file.filename):
 			filename = secure_filename(file.filename)			
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -34,6 +43,7 @@ def upload_file():
 			CRED = '\033[91m'
 			CEND = '\033[0m'
 			fileExtension = filename.rsplit('.', 1)[1]
+
 			if (fileExtension == "png" or fileExtension == "jpg" or fileExtension == "jpeg" or fileExtension == "gif"):
 				mode = "image"
 			else:
@@ -45,7 +55,7 @@ def upload_file():
 			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
 
 			# return redirect(url_for('start_analysis', prt=8001, filee=filename))
-			global connectionPort
+			connectionPort
 			connectionPort = connectionPort + 1
 			return start_analysis(connectionPort, filename, options, mode)
 

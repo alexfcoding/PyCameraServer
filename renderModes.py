@@ -199,7 +199,7 @@ def markAllObjectsYolo(inputFrame, boxes, indexes, classIds, confidences, zipArc
                 inputFrame = cv2.addWeighted(
                     inputFrame, 1, blk, 0.2, 0)
             
-            if (startedRenderingMode and zipIsOpened and sourceMode == "video"):           
+            if (startedRenderingMode and zipIsOpened and sourceMode in ("video", "youtube")):           
                 cv2.imwrite(f"static/{label}{str(objectIndex)}.jpg", cropImg)
                 zipArchive.write(f"static/{label}{str(objectIndex)}.jpg")
                 os.remove(f"static/{label}{str(objectIndex)}.jpg")

@@ -16,11 +16,11 @@
                 "-o",
                 "8002",
                 "-s",
-                "cat.jpg",
+                "bikeny.webm",
                 "-c",
                 "a",
                 "-m",
-                "image"
+                "youtube"
             ]
 
         },

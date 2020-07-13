@@ -202,6 +202,14 @@
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
                                 <label class="getFileLabel" style="border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeAVideo">UPLOAD VIDEO OR IMAGE</label>
                                 <input style="display: none;" type="button" id="setModeAVideo" onclick="callVideoOrImage('video'), callInput('a')"/>
+                                <div style="margin-top: 15px;">
+                                    <input type="text" name="textbox" size="40">
+                                    <div style="margin-left: 20px; display: inline-block;"">
+                                        <label class="getFileLabel" style="width: 50px; border-radius: 5px; background-color:#383838;   padding: 10px; color: #ffa600;" for="setModeAYVideo">GO</label>
+                                        <input style="display: none;" type="submit" id="setModeAYVideo" onclick="callVideoOrImage('youtube'), callYoutube('a')"/>
+                                    </div>
+                                </div>
+                               
                                 <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                             </div>
                         </div>
@@ -415,6 +423,11 @@
             <script>
                 function callInput(value) {
                   document.getElementById("getFile").click();
+                  document.getElementById("selectedModeId").value = value;
+                  document.getElementById("selectedModeId").checked = true;
+                }
+
+                function callYoutube(value) { 
                   document.getElementById("selectedModeId").value = value;
                   document.getElementById("selectedModeId").checked = true;
                 }

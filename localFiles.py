@@ -185,7 +185,7 @@ def checkIfUserIsConnected(timerStart):
 			#shutdown_server()
 
 def ProcessFrame():
-	global cap, lock, writer, progress, fps, outputFrame, fileToRender, zipObj
+	global cap, lock, writer, progress, fps, outputFrame, fileToRender, zipObj, youtubeUrl
 
 	frameBackground = None
 
@@ -232,6 +232,7 @@ def ProcessFrame():
 	font = cv2.FONT_HERSHEY_SIMPLEX
 	serverStates.workingOn = True
 	fileToRender = args["source"]
+	youtubeUrl =  args["source"]
 	serverStates.options = args["optionsList"]
 	serverStates.sourceMode = args["mode"]
 	concated = None
@@ -241,17 +242,22 @@ def ProcessFrame():
 	zipIsOpened = False
 	zippedImages = False
 
-	if (serverStates.sourceMode == "video"):
-		# cap = cv2.VideoCapture(play.url)
-		cap = cv2.VideoCapture(fileToRender)
-		#cap = cv2.VideoCapture(0)
+	if (serverStates.sourceMode == "youtube"):	
+		#url = 'https://youtu.be/ih5KhSAxfUE'
+		vPafy = pafy.new(youtubeUrl)
+		play = vPafy.streams[1]
+		cap = cv2.VideoCapture(play.url)		
 		serverStates.totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-		cap2 = cv2.VideoCapture("inputVideos/snow.webm")
-
+		
+	if (serverStates.sourceMode == "video"):
+		cap = cv2.VideoCapture(fileToRender)	
+		serverStates.totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+			
 	if (serverStates.sourceMode == "image"):
 		serverStates.sourceImage = args["source"]
-		cap2 = cv2.VideoCapture("inputVideos/snow.webm")
+		
 
+	cap2 = cv2.VideoCapture("inputVideos/snow.webm")
 	# while True:
 	# 	# grab the current frame
 	# 	(grabbed, frame) = cap.read()
@@ -421,7 +427,7 @@ def ProcessFrame():
 		startMoment = time.time()
 
 		for streamIndex in range(len(streamList)):
-			if (serverStates.sourceMode == "video"):
+			if (serverStates.sourceMode in ("video", "youtube")):
 				if (startedRenderingVideo == False):
 					cap.set(1, settings.positionValue)
 					if (needToStopNewZip):
@@ -438,10 +444,15 @@ def ProcessFrame():
 							print("1")
 						if (writer is not None):
 							writer.release()
-
-						cap = cv2.VideoCapture(fileToRender)
-						# cap = cv2.VideoCapture(play.url)
 						
+						if (serverStates.sourceMode == "video"):
+							cap = cv2.VideoCapture(fileToRender)	
+							serverStates.totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+						if (serverStates.sourceMode == "youtube"):
+							cap = cv2.VideoCapture(play.url)		
+							serverStates.totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)												
+							
 						writer = cv2.VideoWriter(f"static/output{args['port']}{fileToRender}.avi"
 													f"", fourcc, 25, (
 							bufferFrames[streamIndex].shape[1], bufferFrames[streamIndex].shape[0]), True)
@@ -464,7 +475,7 @@ def ProcessFrame():
 
 				ret, frameList[streamIndex] = cap.read()
 				ret2, frameBackground = cap2.read()
-				
+
 			if (serverStates.sourceMode == "image"):	
 				if (receivedZipCommand == True or fileChanged == True):	
 					zippedImages = False						
@@ -716,7 +727,7 @@ def ProcessFrame():
 						# concated = cv2.vconcat([resized2, resized1, ])                           
 						# resized = cv2.resize(bufferFrames[streamIndex], (1600, 900))
 
-						if (serverStates.sourceMode == "video" and writer is not None and startedRenderingVideo):
+						if (serverStates.sourceMode in ("video", "youtube") and writer is not None and startedRenderingVideo):
 							writer.write(bufferFrames[streamIndex])	
 							
 						cv2.imshow("video",  bufferFrames[streamIndex])                           
@@ -725,12 +736,12 @@ def ProcessFrame():
 						if key == ord("q"):
 							break												
 
-						if (serverStates.sourceMode == "video"):
+						if (serverStates.sourceMode in ("video", "youtube")):							
 							if (serverStates.totalFrames != 0):
 								progress = serverStates.frameProcessed / serverStates.totalFrames * 100
 													
 						cv2.putText(resized, f"FPS: {str(round(fps, 2))} ({str(bufferFrames[streamIndex].shape[1])}x{str(bufferFrames[streamIndex].shape[0])})", (40, 35),
-									font, 0.8, (0, 255, 255), 2, lineType=cv2.LINE_AA)		
+									font, 0.8, (0, 0, 255), 2, lineType=cv2.LINE_AA)		
 						outputFrame = resized
 
 						if (serverStates.frameProcessed == 1):
@@ -821,7 +832,7 @@ def index(device=None, action=None):
 	
 	fileOutput = fileToRender 
 
-	if (serverStates.sourceMode == "video"):
+	if (serverStates.sourceMode in ("video", "youtube")):
 		fileOutput = fileToRender + ".avi"	
 		
 	return render_template("index.html", frameProcessed=serverStates.frameProcessed,
@@ -848,15 +859,13 @@ def update():
 		serverStates.screenshotReady = False
 		serverStates.needToCreateScreenshot = False
 
-	if (serverStates.sourceMode == "video"):
+	if (serverStates.sourceMode in ("video", "youtube")):
 		frameWidthToPage = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 		frameHeightToPage = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) 
+
 	if (serverStates.sourceMode == "image"):
 		frameWidthToPage = 0
 		frameHeightToPage = 0  
-
-	if (screenshotReadyLocal == True):
-		print("sendingScreenshot ================================================")
 
 	return jsonify({
 		'value': serverStates.frameProcessed,
@@ -930,7 +939,7 @@ if __name__ == '__main__':
 	ap.add_argument("-c", "--optionsList", type=str, required=True,
 					help="rendering iptions")
 	ap.add_argument("-m", "--mode", type=str, required=True,
-					help="rendering mode: 'video' or 'image'")
+					help="rendering mode: 'video' or 'image'")	
 
 	args = vars(ap.parse_args())
 
