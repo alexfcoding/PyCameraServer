@@ -1,155 +1,136 @@
-# python main.py -i 192.168.0.12 -o 8000
+# example: python main.py -i 192.168.0.12 -o 8000
 
 import os
 import argparse
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 from flask import render_template
-import sys
 import subprocess
 import time
 
-UPLOAD_FOLDER = ''
-ALLOWED_EXTENSIONS = set(
-	['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'm4v', 'webm', 'mkv'])
+UPLOAD_FOLDER = ""
+ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "mp4", "avi", "m4v", "webm", "mkv"])
 
-app = Flask(__name__, static_url_path='/static')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app = Flask(__name__, static_url_path="/static")
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-connectionPort = 8000
+connection_port = 8000
+
 
 def allowed_file(filename):
-	return '.' in filename and \
-		   filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/', methods=['GET', 'POST'])
+
+@app.route("/", methods=["GET", "POST"])
 def upload_file():
-	if request.method == 'POST':
-		file = request.files['file']
-		youtubeUrl = request.form.get('textbox')
+    if request.method == "POST":
+        file = request.files["file"]
+        youtube_url = request.form.get("textbox")
 
-		if (youtubeUrl != ''):
-			mode = "youtube"
-			options = request.form.getlist('check')
-			global connectionPort
-			connectionPort = connectionPort + 1
-			return start_analysis(connectionPort, youtubeUrl, options, mode)
+        if youtube_url != "":
+            mode = "youtube"
+            options = request.form.getlist("check")
+            global connection_port
+            connection_port = connection_port + 1
+            return start_analysis(connection_port, youtube_url, options, mode)
 
-		if file and allowed_file(file.filename):
-			filename = secure_filename(file.filename)			
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            file_extension = filename.rsplit(".", 1)[1]
 
-			CRED = '\033[91m'
-			CEND = '\033[0m'
-			fileExtension = filename.rsplit('.', 1)[1]
+            if file_extension in ("png", "jpg", "jpeg"):
+                mode = "image"
+            else:
+                mode = "video"
 
-			if (fileExtension == "png" or fileExtension == "jpg" or fileExtension == "jpeg" or fileExtension == "gif"):
-				mode = "image"
-			else:
-				mode = "video"
+            options = request.form.getlist("check")
+            # mode = request.form.getlist('checkMode')
 
-			options = request.form.getlist('check')
-			#mode = request.form.getlist('checkMode')
+            CRED = "\033[91m"
+            CEND = "\033[0m"
+            print(
+                CRED
+                + f"==============  file {filename} uploaded ============== "
+                + CEND
+            )
 
-			print(CRED + f"==============  file {filename} uploaded ============== " + CEND)
+            connection_port = connection_port + 1
+            return start_analysis(connection_port, filename, options, mode)
 
-			# return redirect(url_for('start_analysis', prt=8001, filee=filename))
-			connectionPort
-			connectionPort = connectionPort + 1
-			return start_analysis(connectionPort, filename, options, mode)
+    return render_template("main.html")
 
-			# return f"Файл {filename} загружен. Запускаю сервер обработки..."
-			# return redirect(url_for('video_feed',prt=8000))
 
-	return render_template('main.html')
-
-@app.route('/uploads/<filename>')
+@app.route("/uploads/<filename>")
 def uploaded_file(filename):
 
-	return send_from_directory(app.config['UPLOAD_FOLDER'],
-							   filename)
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
 
 @app.route("/")
-def start_analysis(portToRender, fileToRender, options, mode):
-	# return Response(generate(),
-	# 	mimetype = "multipart/x-mixed-replace; boundary=frame")
-	# os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")
-	processStarted = False
-	strFromList = ""
+def start_analysis(port_to_render, file_to_render, options, mode):
+    process_started = False
+    str_from_list = ""
 
-	for item in options:
-		strFromList += item
+    for item in options:
+        str_from_list += item
 
-	str2FromList = ""
+    process = subprocess.Popen(
+        [
+            f"python",
+            "-u",
+            "processing.py",
+            "-i",
+            "192.168.0.12",
+            "-o",
+            str(port_to_render),
+            "-s",
+            str(file_to_render),
+            "-c",
+            str_from_list,
+            "-m",
+            mode,
+        ],
+        bufsize=0,
+        stdout=subprocess.PIPE,
+    )
 
-	# for item in mode:
-	# 	str2FromList += item
+    while process.poll() is None and not process_started:
+        output = process.stdout.readline()
+        # output = process.communicate()[0]
+        out = str(output.decode("utf-8"))
+        print(out)
 
-	process = subprocess.Popen([f'python', '-u', 'localFiles.py', '-i', "192.168.0.12",
-					  '-o', str(portToRender), '-s', str(fileToRender), '-c', strFromList, '-m', mode], bufsize=0)
+        if out == "started\n":
+            process_started = True
+            # process.stdout.close()
+            time.sleep(1)
+            return redirect(f"http://192.168.0.12:{port_to_render}")
 
-	# while (process.poll() is None and processStarted == False):
-	# 	output = process.stdout.readline()
-	# 	#output = process.communicate()[0]
-	# 	out = str(output.decode("utf-8"))
-	# 	print (out)
-		
-	# 	if (out == 'started\n'):						
-	# 		processStarted = True
-	# 		#process.stdout.close()	
-	# 		# time.sleep(1)		
-	# 		return redirect(f"http://192.168.0.12:{portToRender}")
+    # time.sleep(6)
+    # return redirect(f"http://192.168.0.12:{port_to_render}")
 
-	time.sleep(5)		
-	return redirect(f"http://192.168.0.12:{portToRender}")
 
-	# print(process.stdout.read())
-	# process.stdout.close()
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-i", "--ip", type=str, required=True, help="ip address of the device"
+    )
+    ap.add_argument(
+        "-o",
+        "--port",
+        type=int,
+        required=True,
+        help="port number of the server (1024 to 65535)",
+    )
 
-	# time.sleep(5)
-	# return redirect(f"http://192.168.0.12:{portToRender}")
+    args = vars(ap.parse_args())
 
-	# while True:
-	# 	output = process.stdout.readline()
-	# 	out = str(output.decode("utf-8"))	
-	# 	print("FFF" + str(out))
-
-	# 	if (out == 'started\n'):						
-	# 		return redirect(f"http://192.168.0.12:{portToRender}")
-
-			
-
-	#lst = process.decode("ascii")
-	#stdout = process.communicate()[0]		
-	#time.sleep(1)
-
-	# while True:
-	# 	line = process.stdout.readline()
-	# 	out = str(line.decode("utf-8"))	
-	# 	print(out)	
-	# 	# nextline = process.stdout.readline()
-	# 	if (out == 'started\n'):
-	# 		return redirect(f"http://192.168.0.12:{portToRender}")
-	# 		print("its started!")
-
-		
-	#time.sleep(1)
-	# return f"Обработка доступна по адресу: http://192.168.0.12:{prt}"
-	
-	#return redirect(f"http://178.140.230.247:{portToRender}")
-
-	# return os.system(f"python localFiles.py -i 192.168.0.12 -o {prt} -s {filee}")
-
-if __name__ == '__main__':
-	ap = argparse.ArgumentParser()
-	ap.add_argument("-i", "--ip", type=str, required=True,
-					help="ip address of the device")
-	ap.add_argument("-o", "--port", type=int, required=True,
-					help="ephemeral port number of the server (1024 to 65535)")
-	ap.add_argument("-f", "--frame-count", type=int, default=32,
-					help="# of frames used to construct the background model")
-	args = vars(ap.parse_args())
-
-	app.run(host=args["ip"], port=args["port"], debug=False,
-			threaded=True, use_reloader=False)
+    app.run(
+        host=args["ip"],
+        port=args["port"],
+        debug=False,
+        threaded=True,
+        use_reloader=False,
+    )

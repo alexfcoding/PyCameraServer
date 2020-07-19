@@ -1,136 +1,155 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-yolov3.cfg
-yolov3.weights
-videoplayback.mp4
-testOutput2.avi
-dog_park.mp4
-kuz.avi
-static/t.jpg
-static/output8001.avi
-static/output8002.avi
-static/output8003.avi
-static/output8004.avi
-templates/t.jpg
-test.avi
-VID-20200206-WA0018.mp4
-VID_20200526_172941.mp4
-VID_20200526_173146.mp4
-VID_20200526_174555.mp4
-VID_20200526_174814.mp4
-VID_20200527_012616.mp4
-VID_20200526_173041.mp4
-t.jpg
-VID_20200526_173036.mp4
-VID_20200524_233346.mp4
-static/output.avi
-static/output8000.avi
-static/output.avi
-static/output.avi
-IMG_20200525_181830.jpg
-IMG-b0a12d5d51d47a2b330c1d3eef6fb256-V.jpg
-*.mp4
-*.avi
-*.m4v
-*.webm
-*.jpg
-templates/.prettierrc
-__pycache__/colorizer.cpython-38.pyc
-__pycache__/upscaler.cpython-38.pyc
-model/colorization_deploy_v2.prototxt
-model/colorization_release_v2.caffemodel
-model/pts_in_hull.npy
-.vscode/launch.json
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
 .idea/vcs.xml
 .idea/PyCameraServer.iml
-.idea/other.xml
 .idea/modules.xml
-.idea/misc.xml
-.idea/inspectionProfiles/profiles_settings.xml
-.vscode/launch.json
-.vscode/launch.json
-mask-rcnn-coco/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt
-mask-rcnn-coco/frozen_inference_graph.pb
-mask-rcnn-coco/object_detection_classes_coco.txt
-mask-rcnn-coco/colors.txt
-maskRcnn.py
-processing/__init__.py
-processing/__pycache__/__init__.cpython-35.pyc
-processing/__pycache__/__init__.cpython-36.pyc
-processing/__pycache__/__init__.cpython-37.pyc
-processing/__pycache__/__init__.cpython-38.pyc
-processing/motion_detection/__init__.py
-processing/motion_detection/__pycache__/__init__.cpython-35.pyc
-processing/motion_detection/__pycache__/__init__.cpython-36.pyc
-processing/motion_detection/__pycache__/__init__.cpython-37.pyc
-processing/motion_detection/__pycache__/__init__.cpython-38.pyc
-processing/motion_detection/__pycache__/detector.cpython-36.pyc
-processing/motion_detection/__pycache__/detector.cpython-37.pyc
-processing/motion_detection/__pycache__/detector.cpython-38.pyc
-processing/__init__.py
-processing/__pycache__/__init__.cpython-35.pyc
-processing/__pycache__/__init__.cpython-36.pyc
-processing/__pycache__/__init__.cpython-37.pyc
-processing/__pycache__/__init__.cpython-38.pyc
-processing/motion_detection/__init__.py
-processing/motion_detection/__pycache__/__init__.cpython-35.pyc
-processing/motion_detection/__pycache__/__init__.cpython-36.pyc
-processing/motion_detection/__pycache__/__init__.cpython-37.pyc
-processing/motion_detection/__pycache__/__init__.cpython-38.pyc
-processing/motion_detection/__pycache__/detector.cpython-36.pyc
-processing/motion_detection/__pycache__/detector.cpython-37.pyc
-processing/motion_detection/__pycache__/detector.cpython-38.pyc
-processing/motion_detection/__pycache__/detector.cpython-38.pyc
-static/2.png
-1.png
-static/videos/2.png
-static/videos/bear.ogv
-static/w.png
-static/w2.png
-w.png
-w2.png
-templates/1.js
-noisy.jpeg
-noisy2.png
-.~lock.pycallgraph.dot#
-classes_myproject2.png
-colorized.png
-myuses.dot
-pyan.py
-pyan/__pycache__/__init__.cpython-38.pyc
-pyan/__pycache__/analyzer.cpython-38.pyc
-pyan/__pycache__/anutils.cpython-38.pyc
-pyan/__pycache__/main.cpython-38.pyc
-pyan/__pycache__/node.cpython-38.pyc
-pyan/__pycache__/visgraph.cpython-38.pyc
-pyan/__pycache__/writers.cpython-38.pyc
-pyan/analyzer.py
-pyan/anutils.py
-pyan/main.py
-pyan/node.py
-pyan/visgraph.py
-pyan/writers.py
-README.md
-pyan/__init__.py
-mask_rcnn_segmentation.py
-Screenshot_from_2020-07-07_02-28-57.png
-shrek.jpeg
-static/bilinear.png
-static/edsrmonkey.png
-static/lapsrnmonkey.png
-static/output8001colorized.png
-static/output8001noisy.jpeg
-static/output8001Screenshot_from_2020-07-07_02-28-57.png
-static/output8001shrek.jpeg
-static/output8002monkey.png
-static/output8002shrek.jpeg
-static/objects.zip
+static/previews/cannyBlur.webm
+static/previews/cannyFull.webm
+static/previews/cannyReplaceBack.webm
+static/previews/colorCanny.webm
+static/previews/colorized.webm
+static/previews/grayBackground.webm
+static/previews/showAllYolo.webm
+static/previews/textYolo.webm
+models/caffe/colorization_deploy_v2.prototxt
+models/caffe/colorization_release_v2.caffemodel
+models/caffe/pts_in_hull.npy
+models/mask-rcnn/colors.txt
+models/mask-rcnn/frozen_inference_graph.pb
+models/mask-rcnn/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt
+models/mask-rcnn/object_detection_classes_coco.txt
+models/upscalers/EDSR_x3.pb
+models/upscalers/EDSR_x4.pb
+models/upscalers/FSRCNN-small_x4.pb
+models/upscalers/FSRCNN_x4.pb
+models/upscalers/LapSRN_x4.pb
+models/upscalers/LapSRN_x8.pb
+models/yolo/coco.names
+models/yolo/yolov3.cfg
+models/yolo/yolov3.weights
 static/objects8001.zip
-static/objects8002.zip
-objects.zip
-objects8001 (1).zip
-objects8001.zip
-*.png
-*.jpeg
-*.mkv
-static/objects8003.zip
-static/objects8004.zip
+templates/.prettierrc
+bikenycut.webm

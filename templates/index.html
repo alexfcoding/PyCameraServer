@@ -114,7 +114,8 @@
                 <div style="display: inline-block; ">
                     <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
                     <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
-                    <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE SCREENSHOT</button>
+                    <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE
+                        SCREENSHOT</button>
 
                     <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
 
@@ -131,7 +132,8 @@
             <div>
                 <div
                     style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                    <select id="modesId" onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand(), this.form.submit()">
+                    <select id="modesId"
+                        onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand(), this.form.submit()">
                         <optgroup label="YOLO MODEL">
                             <option value="a">OBJECTS EXTRACTOR</option>
                             <option value="b">BLUR OBJECTS WITH ASCII</option>
@@ -158,12 +160,14 @@
                         </optgroup>
                     </select>
                 </div>
-                <div style="display: inline-block; text-align: center; margin-top: 10px; margin-left: 20px; box-shadow: 6px 4px 8px #000000;">
+                <div
+                    style="display: inline-block; text-align: center; margin-top: 10px; margin-left: 20px; box-shadow: 6px 4px 8px #000000;">
                     <form action="" method=post enctype=multipart/form-data>
                         <label class="getFileLabel"
-                                style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255);"
-                                for="sendFileId">UPLOAD NEW...</label>
-                        <input style="display:none" id="sendFileId" name="file" type="file" onchange="sendStopCommand(), form.submit()"/>
+                            style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255);"
+                            for="sendFileId">UPLOAD NEW...</label>
+                        <input style="display:none" id="sendFileId" name="file" type="file"
+                            onchange="sendStopCommand(), form.submit()" />
 
                         <!-- <label></label>
                         <input type="file" name="file" multiple class="choose"
@@ -351,13 +355,13 @@
         }
 
         function sendScreenshotCommand() {
-            screenshotCommand = true;            
+            screenshotCommand = true;
         }
 
         function resetSettings() {
             // document.getElementById("positionId").value = 1                        
             document.getElementById("saturationId").value = 100;
-            document.getElementById("cannyBlurId").value = 5;
+            document.getElementById("cannyBlurId").value = 3;
             document.getElementById("contrastId").value = 100;
             document.getElementById("confidenceId").value = 20;
             document.getElementById("brightnessId").value = 0;
@@ -376,24 +380,27 @@
             document.getElementById("sharpenId").value = 0;
             document.getElementById("sharpenId2").value = 0;
 
-            if (document.getElementById("modesId").value == "e")
-            {               
+            if (document.getElementById("modesId").value == "e") {
                 document.getElementById("denoise2Id").value = 50;
-                document.getElementById("saturationId").value = 200;                
+                document.getElementById("saturationId").value = 200;
             }
-            if (document.getElementById("modesId").value == "o")
-            {
-                document.getElementById("denoise2Id").value = 10;                
+            if (document.getElementById("modesId").value == "o") {
+                document.getElementById("denoise2Id").value = 10;
                 document.getElementById("sharpenId").value = 3;
                 document.getElementById("sharpenId2").value = 0;
-            }  
+            }
+            if (document.getElementById("modesId").value == "k") {
+                document.getElementById("rcnnSizeId").value = 150;
+            }
+            if (document.getElementById("modesId").value == "r") {
+                document.getElementById("denoise2Id").value = 30;
+                document.getElementById("cannyBlurId").value = 5;
+            }
         }
-
-        
 
         var myTimer = setInterval(function () {
             $.ajax({
-                url: '/update',
+                url: '/stats',
                 type: 'POST',
                 success: function (response) {
                     console.log(response);
@@ -406,11 +413,11 @@
                     $("#freeRam").html("RAM: " + response["freeRam"] + "GB");
                     frameWidth = response["frameWidth"]
                     frameHeight = response["frameHeight"]
-                    maxFrames = response["maxFrames"]
+                    maxFrames = response["totalFrames"]
                     currentMode = response["currentMode"]
 
-                    if (response["screenshotReady"] == true){
-                        window.open(response["screenshotPath"], '_blank');                        
+                    if (response["screenshotReady"] == true) {
+                        window.open(response["screenshotPath"], '_blank');
                     }
 
                     document.getElementById("modesId").value = currentMode;
@@ -719,7 +726,7 @@
 
             var cannyBlurSlider = document.getElementById("cannyBlurId");
             var cannyBlurOutput = document.getElementById("cannyBlurValue");
-            var sliderValue = cannyBlurSlider.value;
+            var cannyBlurSliderValue = cannyBlurSlider.value;
 
             var contrastSlider = document.getElementById("contrastId");
             var contrastOutput = document.getElementById("contrastValue");
@@ -804,7 +811,7 @@
             asciiThicknessOutput.innerHTML = asciiThicknessSlider.value;
             resizeOutput.innerHTML = resizeSlider.value;
             colorCountOutput.innerHTML = colorCountSlider.value;
-            
+
             positionSlider.oninput = function () {
                 outputPosition.innerHTML = this.value;
             }
@@ -884,10 +891,10 @@
             $.ajax({
                 type: "POST",
                 contentType: "application/json;charset=utf-8",
-                url: "/update2",
+                url: "/settings",
                 traditional: "true",
                 data: JSON.stringify({
-                    sliderValue,
+                    cannyBlurSliderValue,
                     saturationSliderValue,
                     contrastSliderValue,
                     brightnessSliderValue,
@@ -914,33 +921,12 @@
                 dataType: "json"
             });
             console.log(screenshotCommand);
-            
-            screenshotCommand = false;            
+
+            screenshotCommand = false;
             videoResetCommand = false;
             videoStopCommand = false;
 
         }, 300);
-
-        // var myTimer3 = setInterval(function () {
-        //     $.ajax({
-        //         url: '/update',
-        //         type: 'POST',
-        //         success: function (response) {
-        //             console.log(response);
-        //             //$("#num").html(response["value"]);                   
-        //             receiveScreenshotCommand = response["screenshotFile"]
-
-        //             //if (working == false) {
-        //             //clearInterval(myTimer);
-        //             //}
-
-        //         },
-        //         error: function (error) {
-        //             console.log(error);
-        //         }
-        //     })
-        // }, 1000);
-        
 
     </script>
     </div>
