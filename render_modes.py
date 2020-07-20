@@ -3,6 +3,8 @@ import numpy as np
 from random import randint
 from sklearn.cluster import MiniBatchKMeans
 import os
+import torch
+import architecture as arch
 
 classes = []
 object_index = 0
@@ -55,16 +57,33 @@ def initialize_caffe_network():
     return net
 
 
-def initialize_network_upscale():
+def initialize_superres_network():
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
-    # sr.readModel("EDSR_x4.pb")
-    # sr.setModel("edsr", 4)
-    sr.readModel("models/upscalers/LapSRN_x4.pb")
-    sr.setModel("lapsrn", 4)
+    sr.readModel("models/upscalers/EDSR_x4.pb")
+    sr.setModel("edsr", 4)
+    # sr.readModel("models/upscalers/LapSRN_x4.pb")
+    # sr.setModel("lapsrn", 4)
     # sr.readModel("FSRCNN_x4.pb")
     # sr.setModel("fsrcnn", 4)
     return sr
 
+
+def initialize_esrgan_network():
+    model_path = "models/esrgan/falcoon.pth"  # models/RRDB_ESRGAN_x4.pth OR models/RRDB_PSNR_x4.pth
+    device = torch.device('cuda')  # if you want to run on CPU, change 'cuda' -> cpu
+    # device = torch.device('cpu')
+
+    test_img_folder = 'LR/*'
+
+    model = arch.RRDB_Net(3, 3, 64, 23, gc=32, upscale=4, norm_type=None, act_type='leakyrelu', \
+                          mode='CNA', res_scale=1, upsample_mode='upconv')
+    model.load_state_dict(torch.load(model_path), strict=True)
+    model.eval()
+    for k, v in model.named_parameters():
+        v.requires_grad = False
+    model = model.to(device)
+
+    return model, device
 
 def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value):
     classes_out = []
@@ -1130,11 +1149,24 @@ def colorizer_caffe(net, image):
     return colorized
 
 
-def upscale_image(network, image):
+def upscale_with_superres(network, image):
     # result = cv2.resize(image, (round(image.shape[1]*resize_value), round(image.shape[0]*resize_value)))
     result = network.upsample(image)
     return result
 
+
+def upscale_with_esrgan(network, device, image):
+    image = image * 1.0 / 255
+    image = torch.from_numpy(np.transpose(image[:, :, [2, 1, 0]], (2, 0, 1))).float()
+    img_LR = image.unsqueeze(0)
+    img_LR = img_LR.to(device)
+
+    output = network(img_LR).data.squeeze().float().cpu().clamp_(0, 1).numpy()
+    output = np.transpose(output[[2, 1, 0], :, :], (1, 2, 0))
+    output = (output * 255.0).round()
+    # cv2.imwrite('results/{:s}_rlt.png'.format(base), output)
+
+    return output
 
 def ascii_paint(input_frame, font_size, ascii_distance, ascii_thickness_value, blur_value):
     font_size /= 10
@@ -1288,7 +1320,8 @@ def adjust_br_contrast(input_frame, contrast_value, brightness_value):
 caffe_network = initialize_caffe_network()
 caffe_network.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
 caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-superres_network = initialize_network_upscale()
+superres_network = initialize_superres_network()
+esrgan_network, device = initialize_esrgan_network()
 yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
     classes, True
 )

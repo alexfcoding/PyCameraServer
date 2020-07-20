@@ -167,7 +167,7 @@ def process_frame():
             ascii_interval_value = int(input_data["asciiIntervalSliderValue"])
             ascii_thickness_value = int(input_data["asciiThicknessSliderValue"])
             resize_value = int(input_data["resizeSliderValue"]) / 100
-            color_count_value = int(input_data["color_countSliderValue"])
+            color_count_value = int(input_data["colorCountSliderValue"])
             position_valueLocal = int(input_data["positionSliderValue"])
 
             if commands.mode_reset_command != "default":
@@ -219,6 +219,7 @@ def process_frame():
             pencil_drawer = False
             two_colored = False
             upscale_opencv = False
+            upscale_esrgan = False
 
             for char in server_states.options:
                 if char == "a":
@@ -290,6 +291,9 @@ def process_frame():
                 if char == "s":
                     two_colored = True
                     print("two_colored")
+                if char == "t":
+                    upscale_esrgan = True
+                    print("upscale_esrgan")
 
                 need_mode_reset = False
 
@@ -544,7 +548,11 @@ def process_frame():
                 main_frame = denoise(main_frame, denoise_value, denoise_value2)
 
             if upscale_opencv:
-                main_frame = upscale_image(superres_network, main_frame)
+                main_frame = upscale_with_superres(superres_network, main_frame)
+                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
+
+            if upscale_esrgan:
+                main_frame = upscale_with_esrgan(esrgan_network, device, main_frame)
                 main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
 
             if ascii_painter:
@@ -575,12 +583,12 @@ def process_frame():
                 check_if_user_is_connected(timer_start)
 
                 server_states.frame_processed = server_states.frame_processed + 1
-                elapsedTime = time.time()
-                fps = 1 / (elapsedTime - start_moment)
+                elapsed_time = time.time()
+                fps = 1 / (elapsed_time - start_moment)
                 # print(fps)
-                xCoeff = 512 / main_frame.shape[0]
-                xSize = round(xCoeff * main_frame.shape[1])
-                resized = cv2.resize(main_frame, (xSize, 512))
+                x_coeff = 512 / main_frame.shape[0]
+                x_size = round(x_coeff * main_frame.shape[1])
+                resized = cv2.resize(main_frame, (x_size, 512))
 
                 if extract_objects_yolo_mode:
                     class_index_count = [
@@ -733,7 +741,7 @@ def process_frame():
 
 UPLOAD_FOLDER = ""
 ALLOWED_EXTENSIONS = set(
-    ["png", "jpg", "jpeg", "mp4", "avi", "m4v", "webm", "mkv"]
+    ["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"]
 )
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER

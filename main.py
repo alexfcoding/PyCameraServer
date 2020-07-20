@@ -10,7 +10,7 @@ import subprocess
 import time
 
 UPLOAD_FOLDER = ""
-ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "mp4", "avi", "m4v", "webm", "mkv"])
+ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"])
 
 app = Flask(__name__, static_url_path="/static")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -76,6 +76,26 @@ def start_analysis(port_to_render, file_to_render, options, mode):
     for item in options:
         str_from_list += item
 
+    # process = subprocess.Popen(
+    #     [
+    #         f"python",
+    #         "-u",
+    #         "processing.py",
+    #         "-i",
+    #         "192.168.0.12",
+    #         "-o",
+    #         str(port_to_render),
+    #         "-s",
+    #         str(file_to_render),
+    #         "-c",
+    #         str_from_list,
+    #         "-m",
+    #         mode,
+    #     ],
+    #     bufsize=0,
+    #     stdout=subprocess.PIPE,
+    # )
+
     process = subprocess.Popen(
         [
             f"python",
@@ -92,24 +112,23 @@ def start_analysis(port_to_render, file_to_render, options, mode):
             "-m",
             mode,
         ],
-        bufsize=0,
-        stdout=subprocess.PIPE,
+        bufsize=0
     )
 
-    while process.poll() is None and not process_started:
-        output = process.stdout.readline()
-        # output = process.communicate()[0]
-        out = str(output.decode("utf-8"))
-        print(out)
+    # while process.poll() is None and not process_started:
+    #     output = process.stdout.readline()
+    #     # output = process.communicate()[0]
+    #     out = str(output.decode("utf-8"))
+    #     print(out)
+    #
+    #     if out == "started\n":
+    #         process_started = True
+    #         # process.stdout.close()
+    #         time.sleep(1)
+    #         return redirect(f"http://192.168.0.12:{port_to_render}")
 
-        if out == "started\n":
-            process_started = True
-            # process.stdout.close()
-            time.sleep(1)
-            return redirect(f"http://192.168.0.12:{port_to_render}")
-
-    # time.sleep(6)
-    # return redirect(f"http://192.168.0.12:{port_to_render}")
+    time.sleep(6)
+    return redirect(f"http://192.168.0.12:{port_to_render}")
 
 
 if __name__ == "__main__":

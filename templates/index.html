@@ -149,6 +149,7 @@
                         </optgroup>
                         <optgroup label="UPSCALE MODELS">
                             <option value="n">LapSRN X4 UPSCALER</option>
+                            <option value="t">ESRGAN X4 UPSCALER</option>
                         </optgroup>
                         <optgroup label="WITHOUT NEURAL NETWORKS">
                             <option value="q">ASCII PAINTER</option>
@@ -686,6 +687,25 @@
                     }
                     // UPSCALER   
                     if (currentMode == "n") {
+                        $("#cannyBlurIdBlock").hide()
+                        $("#lineThicknessIdBlock").hide()
+                        $("#confidenceIdBlock").hide()
+                        $("#rcnnSizeIdBlock").hide()
+                        $("#rcnnBlurIdBlock").hide()
+                        $("#sharpenIdBlock").show()
+                        $("#sharpenIdBlock2").show()
+                        $("#denoiseIdBlock").hide()
+                        $("#colorCountIdBlock").hide()
+                        $("#denoise2IdBlock").hide()
+                        $("#sobelIdBlock").hide()
+                        $("#asciiSizeIdBlock").hide()
+                        $("#asciiIntervalIdBlock").hide()
+                        $("#asciiThicknessIdBlock").hide()
+                        $("#downloadObjectsId").hide()
+                        $("#resizeIdBlock").show()
+                    }
+
+                    if (currentMode == "t") {
                         $("#cannyBlurIdBlock").hide()
                         $("#lineThicknessIdBlock").hide()
                         $("#confidenceIdBlock").hide()

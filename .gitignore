@@ -153,3 +153,17 @@ models/yolo/yolov3.weights
 static/objects8001.zip
 templates/.prettierrc
 bikenycut.webm
+input_videos/snow.webm
+models/esrgan/falcoon.pth
+models/esrgan/interp_00.pth
+models/esrgan/interp_01.pth
+models/esrgan/interp_02.pth
+models/esrgan/interp_03.pth
+models/esrgan/interp_08.pth
+models/esrgan/interp_09.pth
+models/esrgan/interp_10.pth
+models/esrgan/Manga109Attempt.pth
+models/esrgan/RRDB_ESRGAN_x4.pth
+models/esrgan/RRDB_ESRGAN_x4_old_arch.pth
+models/esrgan/RRDB_PSNR_x4.pth
+models/esrgan/RRDB_PSNR_x4_old_arch.pth
