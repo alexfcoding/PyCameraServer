@@ -57,10 +57,20 @@ def initialize_caffe_network():
     return net
 
 
-def initialize_superres_network():
+def initialize_superres_network(modelType):
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
-    sr.readModel("models/upscalers/EDSR_x4.pb")
-    sr.setModel("edsr", 4)
+    if (modelType == "EDSR"):
+        sr.readModel("models/upscalers/EDSR_x4.pb")
+        sr.setModel("edsr", 4)
+    if (modelType == "LAPSRN"):
+        sr.readModel("models/upscalers/LapSRN_x4.pb")
+        sr.setModel("lapsrn", 4)
+    if (modelType == "FSRCNN"):
+        sr.readModel("models/upscalers/FSRCNN_x4.pb")
+        sr.setModel("fsrcnn", 4)
+    if (modelType == "FSRCNN_SMALL"):
+        sr.readModel("models/upscalers/FSRCNN-small_x4.pb")
+        sr.setModel("fsrcnn", 4)
     # sr.readModel("models/upscalers/LapSRN_x4.pb")
     # sr.setModel("lapsrn", 4)
     # sr.readModel("FSRCNN_x4.pb")
@@ -70,13 +80,24 @@ def initialize_superres_network():
 
 def initialize_esrgan_network():
     model_path = "models/esrgan/falcoon.pth"  # models/RRDB_ESRGAN_x4.pth OR models/RRDB_PSNR_x4.pth
-    device = torch.device('cuda')  # if you want to run on CPU, change 'cuda' -> cpu
+    device = torch.device("cuda")  # if you want to run on CPU, change 'cuda' -> cpu
     # device = torch.device('cpu')
 
-    test_img_folder = 'LR/*'
+    test_img_folder = "LR/*"
 
-    model = arch.RRDB_Net(3, 3, 64, 23, gc=32, upscale=4, norm_type=None, act_type='leakyrelu', \
-                          mode='CNA', res_scale=1, upsample_mode='upconv')
+    model = arch.RRDB_Net(
+        3,
+        3,
+        64,
+        23,
+        gc=32,
+        upscale=4,
+        norm_type=None,
+        act_type="leakyrelu",
+        mode="CNA",
+        res_scale=1,
+        upsample_mode="upconv",
+    )
     model.load_state_dict(torch.load(model_path), strict=True)
     model.eval()
     for k, v in model.named_parameters():
@@ -84,6 +105,7 @@ def initialize_esrgan_network():
     model = model.to(device)
 
     return model, device
+
 
 def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value):
     classes_out = []
@@ -144,7 +166,7 @@ def objects_to_text_yolo(
     indexes,
     class_ids,
     font_size,
-    ascii_distance,
+    ascii_distance_value,
     blur_value,
     ascii_thickness_value,
 ):
@@ -168,9 +190,9 @@ def objects_to_text_yolo(
             render_str = "abcdefghijklmnopqrstuvwxyz0123456789"
 
             if (x >= 0) & (y >= 0):
-                for xx in range(0, crop_img.shape[1], ascii_distance):
-                    for yy in range(0, crop_img.shape[0], ascii_distance):
-                        char = randint(0, 1)
+                for xx in range(0, crop_img.shape[1], ascii_distance_value):
+                    for yy in range(0, crop_img.shape[0], ascii_distance_value):
+                        # char = randint(0, 1)
                         pixel_b, pixel_g, pixel_r = crop_img[yy, xx]
                         char = render_str[randint(0, len(render_str)) - 1]
                         cv2.putText(
@@ -608,7 +630,9 @@ def canny_people_on_background_yolo(input_frame, boxes, indexes, class_ids):
     return input_frame
 
 
-def extract_and_cut_background_rcnn(input_frame, boxes, masks, labels, confidence_value):
+def extract_and_cut_background_rcnn(
+    input_frame, boxes, masks, labels, confidence_value
+):
     confidence_value /= 100
     classes_out = []
     frame_canny = auto_canny(input_frame)
@@ -710,7 +734,9 @@ def extract_and_replace_background_rcnn(
     return frame_out
 
 
-def color_canny_rcnn(input_frame, boxes, masks, labels, confidence_value, rcnn_blur_value):
+def color_canny_rcnn(
+    input_frame, boxes, masks, labels, confidence_value, rcnn_blur_value
+):
     confidence_value /= 100
     classes_out = []
     # frame_canny = auto_canny(input_frame)
@@ -831,7 +857,9 @@ def color_canny_rcnn(input_frame, boxes, masks, labels, confidence_value, rcnn_b
     return frame_out
 
 
-def color_canny_on_color_background_rcnn(input_frame, boxes, masks, labels, confidence_value):
+def color_canny_on_color_background_rcnn(
+    input_frame, boxes, masks, labels, confidence_value
+):
     confidence_value /= 100
     classes_out = []
     frame_canny = auto_canny(input_frame)
@@ -1039,7 +1067,13 @@ def colorizer_people_with_blur_rcnn(input_frame, boxes, masks, confidence_value)
 
 
 def people_with_blur_rcnn(
-    input_frame, boxes, masks, labels, confidence_value, rcnn_size_value, rcnn_blur_value
+    input_frame,
+    boxes,
+    masks,
+    labels,
+    confidence_value,
+    rcnn_size_value,
+    rcnn_blur_value,
 ):
     confidence_value /= 100
 
@@ -1168,7 +1202,10 @@ def upscale_with_esrgan(network, device, image):
 
     return output
 
-def ascii_paint(input_frame, font_size, ascii_distance, ascii_thickness_value, blur_value):
+
+def ascii_paint(
+    input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value
+):
     font_size /= 10
 
     input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
@@ -1177,8 +1214,8 @@ def ascii_paint(input_frame, font_size, ascii_distance, ascii_thickness_value, b
 
     render_str = "abcdefghijklmnopqrstuvwxyz0123456789"
 
-    for xx in range(0, input_frame.shape[1], ascii_distance):
-        for yy in range(0, input_frame.shape[0], ascii_distance):
+    for xx in range(0, input_frame.shape[1], ascii_distance_value):
+        for yy in range(0, input_frame.shape[0], ascii_distance_value):
             char = randint(0, 1)
             pixel_b, pixel_g, pixel_r = input_frame[yy, xx]
             char = render_str[randint(0, len(render_str)) - 1]
@@ -1267,7 +1304,9 @@ def limit_colors_kmeans(input_frame, color_count):
     if color_count > 0:
         (h, w) = input_frame.shape[:2]
         input_frame = cv2.cvtColor(input_frame, cv2.COLOR_BGR2LAB)
-        input_frame = input_frame.reshape((input_frame.shape[0] * input_frame.shape[1], 3))
+        input_frame = input_frame.reshape(
+            (input_frame.shape[0] * input_frame.shape[1], 3)
+        )
         clt = MiniBatchKMeans(n_clusters=color_count)
         labels = clt.fit_predict(input_frame)
         quant = clt.cluster_centers_.astype("uint8")[labels]
@@ -1320,7 +1359,7 @@ def adjust_br_contrast(input_frame, contrast_value, brightness_value):
 caffe_network = initialize_caffe_network()
 caffe_network.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
 caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-superres_network = initialize_superres_network()
+superres_network = initialize_superres_network("LAPSRN")
 esrgan_network, device = initialize_esrgan_network()
 yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
     classes, True

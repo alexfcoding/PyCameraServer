@@ -31,13 +31,40 @@ class ServerState:
     frame_processed = 0
     total_frames = 0
     options = ""
+    model_superres = "LAPSRN"
     screenshot_lock = False
     video_reset_lock = False
     video_stop_lock = False
 
+render_modes_dict = {
+    'using_yolo_network' : False,
+    'using_caffe_network' : False,
+    'using_mask_rcnn_network' : False,
+    'canny_people_on_background' : False,
+    'canny_people_on_black' : False,
+    'extract_and_replace_background' : False,
+    'extract_and_cut_background' : False,
+    'color_canny' : False,
+    'color_canny_on_background' : False,
+    'color_objects_on_gray_blur' : False,
+    'color_objects_blur' : False,
+    'color_objects_on_gray' : False,
+    'caffe_colorization' : False,
+    'cartoon_effect' : False,
+    'extract_objects_yolo_mode' : False,
+    'text_render_yolo' : False,
+    'denoise_and_sharpen' : False,
+    'sobel' : False,
+    'ascii_painter' : False,
+    'pencil_drawer' : False,
+    'two_colored' : False,
+    'upscale_opencv' : False,
+    'upscale_esrgan' : False
+}
 
 commands = Command()
 server_states = ServerState()
+
 
 timer_start = 0
 timer_end = 0
@@ -172,6 +199,7 @@ def process_frame():
 
             if commands.mode_reset_command != "default":
                 server_states.options = commands.mode_reset_command
+
                 need_mode_reset = True
 
             if server_states.video_reset_lock:
@@ -197,102 +225,90 @@ def process_frame():
 
         # print("working...")
         if need_mode_reset:
-            using_yolo_network = False
-            using_caffe_network = False
-            using_mask_rcnn_network = False
-            canny_people_on_background = False
-            canny_people_on_black = False
-            extract_and_replace_background = False
-            extract_and_cut_background = False
-            color_canny = False
-            color_canny_on_background = False
-            color_objects_on_gray_blur = False
-            color_objects_blur = False
-            color_objects_on_gray = False
-            caffe_colorization = False
-            cartoon_effect = False
-            extract_objects_yolo_mode = False
-            text_render_yolo = False
-            denoise_and_sharpen = False
-            sobel = False
-            ascii_painter = False
-            pencil_drawer = False
-            two_colored = False
-            upscale_opencv = False
-            upscale_esrgan = False
+            for mode in render_modes_dict:
+                render_modes_dict[mode] = False
 
-            for char in server_states.options:
-                if char == "a":
-                    extract_objects_yolo_mode = True
-                    using_yolo_network = True
+            if (server_states.model_superres == "EDSR"):
+                superres_network = initialize_superres_network("EDSR")
+            if (server_states.model_superres == "LAPSRN"):
+                superres_network = initialize_superres_network("LAPSRN")
+            if (server_states.model_superres == "FSRCNN"):
+                superres_network = initialize_superres_network("FSRCNN")
+            if (server_states.model_superres == "FSRCNN_SMALL"):
+                superres_network = initialize_superres_network("FSRCNN_SMALL")
+
+            for mode in server_states.options:
+                if mode == "a":
+                    render_modes_dict['extract_objects_yolo_mode'] = True
+                    render_modes_dict['using_yolo_network'] = True
                     print("extract_objects_yolo")
-                if char == "b":
-                    text_render_yolo = True
-                    using_yolo_network = True
+                if mode == "b":
+                    render_modes_dict['text_render_yolo'] = True
+                    render_modes_dict['using_yolo_network'] = True
                     print("text_render_yolo")
-                if char == "c":
-                    canny_people_on_black = True
-                    using_yolo_network = True
+                if mode == "c":
+                    render_modes_dict['canny_people_on_black'] = True
+                    render_modes_dict['using_yolo_network'] = True
                     print("canny_people_on_black")
-                if char == "d":
-                    canny_people_on_background = True
-                    using_yolo_network = True
+                if mode == "d":
+                    render_modes_dict['canny_people_on_background'] = True
+                    render_modes_dict['using_yolo_network'] = True
                     print("canny_people_on_background")
-                if char == "e":
-                    cartoon_effect = True
+                if mode == "e":
+                    render_modes_dict['cartoon_effect'] = True
                     print("cartoon_effect")
-                if char == "f":
-                    caffe_colorization = True
-                    using_caffe_network = True
+                if mode == "f":
+                    render_modes_dict['caffe_colorization'] = True
+                    render_modes_dict['using_caffe_network'] = True
                     print("caffe_colorization")
-                if char == "g":
-                    using_mask_rcnn_network = True
-                    extract_and_cut_background = True
+                if mode == "g":
+                    render_modes_dict['using_mask_rcnn_network'] = True
+                    render_modes_dict['extract_and_cut_background'] = True
                     print("cannyPeopleRCNN + cut background")
-                if char == "h":
-                    using_mask_rcnn_network = True
-                    color_canny_on_background = True
+                if mode == "h":
+                    render_modes_dict['using_mask_rcnn_network'] = True
+                    render_modes_dict['color_canny_on_background'] = True
                     print("color_canny_on_background")
-                if char == "i":
-                    using_mask_rcnn_network = True
-                    extract_and_replace_background = True
+                if mode == "i":
+                    render_modes_dict['using_mask_rcnn_network'] = True
+                    render_modes_dict['extract_and_replace_background'] = True
                     print("cannyPeopleRCNN + replace background")
-                if char == "j":
-                    using_mask_rcnn_network = True
-                    color_canny = True
+                if mode == "j":
+                    render_modes_dict['using_mask_rcnn_network'] = True
+                    render_modes_dict['color_canny'] = True
                     print("color_canny")
-                if char == "k":
-                    using_mask_rcnn_network = True
-                    color_objects_on_gray = True
+                if mode == "k":
+                    render_modes_dict['using_mask_rcnn_network'] = True
+                    render_modes_dict['color_objects_on_gray'] = True
                     print("color_objects_on_gray")
-                if char == "l":
-                    using_mask_rcnn_network = True
-                    color_objects_on_gray_blur = True
+                if mode == "l":
+                    render_modes_dict['using_mask_rcnn_network'] = True
+                    render_modes_dict['color_objects_on_gray_blur'] = True
                     print("color_objects_on_gray_blur")
-                if char == "m":
-                    using_mask_rcnn_network = True
-                    color_objects_blur = True
+                if mode == "m":
+                    render_modes_dict['using_mask_rcnn_network'] = True
+                    render_modes_dict['color_objects_blur'] = True
                     print("color_objects_on_gray_blur")
-                if char == "n":
-                    upscale_opencv = True
+                if mode == "n":
+                    render_modes_dict['upscale_opencv'] = True
                     print("imageUpscaler")
-                if char == "o":
-                    denoise_and_sharpen = True
+                if mode == "o":
+                    render_modes_dict['denoise_and_sharpen'] = True
                     print("denoise_and_sharpen")
-                if char == "p":
-                    sobel = True
+                if mode == "p":
+                    render_modes_dict['sobel'] = True
                     print("sobel")
-                if char == "q":
-                    ascii_painter = True
+                if mode == "q":
+                    render_modes_dict['ascii_painter'] = True
                     print("ascii_painter")
-                if char == "r":
-                    pencil_drawer = True
+                if mode == "r":
+                    render_modes_dict['pencil_drawer'] = True
                     print("pencil_drawer")
-                if char == "s":
-                    two_colored = True
+                if mode == "s":
+                    render_modes_dict['two_colored'] = True
                     print("two_colored")
-                if char == "t":
-                    upscale_esrgan = True
+                if mode == "t":
+                    render_modes_dict['upscale_esrgan'] = True
                     print("upscale_esrgan")
 
                 need_mode_reset = False
@@ -321,18 +337,25 @@ def process_frame():
                     if server_states.source_mode == "video":
                         cap = cv2.VideoCapture(file_to_render)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+                        writer = cv2.VideoWriter(
+                            f"static/output{args['port']}{file_to_render}.avi",
+                            fourcc,
+                            25,
+                            (main_frame.shape[1], main_frame.shape[0]),
+                            True,
+                        )
 
                     if server_states.source_mode == "youtube":
                         cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+                        writer = cv2.VideoWriter(
+                            f"static/output{args['port']}youtube.avi",
+                            fourcc,
+                            25,
+                            (main_frame.shape[1], main_frame.shape[0]),
+                            True,
+                        )
 
-                    writer = cv2.VideoWriter(
-                        f"static/output{args['port']}{file_to_render}.avi" f"",
-                        fourcc,
-                        25,
-                        (main_frame.shape[1], main_frame.shape[0]),
-                        True,
-                    )
 
                     # print("CREATING WRITER 1 WITH SIZE:" + str(round(main_frame.shape[1])))
 
@@ -370,13 +393,13 @@ def process_frame():
             ret2, frame_background = cap2.read()
 
         if main_frame is not None:
-            if using_yolo_network:
+            if render_modes_dict['using_yolo_network']:
                 boxes, indexes, class_ids, confidences, classes_out = find_yolo_classes(
                     main_frame, yolo_network, output_layers, confidence_value
                 )
                 classes_index.append(classes_out)
 
-                if extract_objects_yolo_mode:
+                if render_modes_dict['extract_objects_yolo_mode']:
                     main_frame = extract_objects_yolo(
                         main_frame,
                         boxes,
@@ -397,7 +420,7 @@ def process_frame():
                     zipped_images = True
                     zip_is_opened = False
 
-                if text_render_yolo:
+                if render_modes_dict['text_render_yolo']:
                     main_frame = objects_to_text_yolo(
                         main_frame,
                         boxes,
@@ -409,29 +432,29 @@ def process_frame():
                         ascii_thickness_value,
                     )
 
-                if canny_people_on_black:
+                if render_modes_dict['canny_people_on_black']:
                     main_frame = canny_people_on_black_yolo(
                         main_frame, boxes, indexes, class_ids
                     )
 
-                if canny_people_on_background:
+                if render_modes_dict['canny_people_on_background']:
                     main_frame = canny_people_on_background_yolo(
                         main_frame, boxes, indexes, class_ids
                     )
 
-            if using_mask_rcnn_network:
+            if render_modes_dict['using_mask_rcnn_network']:
                 boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
 
-                if color_objects_on_gray:
+                if render_modes_dict['color_objects_on_gray']:
                     main_frame = colorizer_people_rcnn(
                         main_frame, boxes, masks, confidence_value, rcnn_size_value
                     )
 
-                if color_objects_on_gray_blur:
+                if render_modes_dict['color_objects_on_gray_blur']:
                     main_frame = colorizer_people_with_blur_rcnn(
                         main_frame, boxes, masks, confidence_value
                     )
-                if color_objects_blur:
+                if render_modes_dict['color_objects_blur']:
                     main_frame = people_with_blur_rcnn(
                         main_frame,
                         boxes,
@@ -442,12 +465,12 @@ def process_frame():
                         rcnn_blur_value,
                     )
 
-                if extract_and_cut_background:
+                if render_modes_dict['extract_and_cut_background']:
                     main_frame = extract_and_cut_background_rcnn(
                         main_frame, boxes, masks, labels, confidence_value
                     )
 
-                if extract_and_replace_background:
+                if render_modes_dict['extract_and_replace_background']:
                     main_frame = extract_and_replace_background_rcnn(
                         main_frame,
                         frame_background,
@@ -458,7 +481,7 @@ def process_frame():
                         confidence_value,
                     )
 
-                if color_canny:
+                if render_modes_dict['color_canny']:
                     main_frame = color_canny_rcnn(
                         main_frame,
                         boxes,
@@ -468,16 +491,16 @@ def process_frame():
                         rcnn_blur_value,
                     )
 
-                if color_canny_on_background:
+                if render_modes_dict['color_canny_on_background']:
                     main_frame = color_canny_on_color_background_rcnn(
                         main_frame, boxes, masks, labels, confidence_value
                     )
 
-            if using_caffe_network:
-                if caffe_colorization:
+            if render_modes_dict['using_caffe_network']:
+                if render_modes_dict['caffe_colorization']:
                     main_frame = colorizer_caffe(caffe_network, main_frame)
 
-            if cartoon_effect:
+            if render_modes_dict['cartoon_effect']:
                 frame_copy = main_frame.copy()
 
                 if blur_canny_value % 2 == 0:
@@ -505,7 +528,7 @@ def process_frame():
                 main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
                 main_frame = denoise(main_frame, denoise_value, denoise_value2)
 
-            if pencil_drawer:
+            if render_modes_dict['pencil_drawer']:
                 frame_copy = main_frame.copy()
 
                 if blur_canny_value % 2 == 0:
@@ -535,7 +558,7 @@ def process_frame():
                 main_frame = denoise(main_frame, denoise_value, denoise_value2)
                 # main_frame = np.bitwise_not(main_frame)
 
-            if two_colored:
+            if render_modes_dict['two_colored']:
                 frame_copy = main_frame.copy()
                 # main_frame = morph_edge_detection(main_frame)
                 kernel = np.ones((line_thickness_value, line_thickness_value), np.uint8)
@@ -547,15 +570,15 @@ def process_frame():
                 main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
                 main_frame = denoise(main_frame, denoise_value, denoise_value2)
 
-            if upscale_opencv:
+            if render_modes_dict['upscale_opencv']:
                 main_frame = upscale_with_superres(superres_network, main_frame)
                 main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
 
-            if upscale_esrgan:
+            if render_modes_dict['upscale_esrgan']:
                 main_frame = upscale_with_esrgan(esrgan_network, device, main_frame)
                 main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
 
-            if ascii_painter:
+            if render_modes_dict['ascii_painter']:
                 main_frame = ascii_paint(
                     main_frame,
                     ascii_size_value,
@@ -564,11 +587,11 @@ def process_frame():
                     rcnn_blur_value,
                 )
 
-            if denoise_and_sharpen:
+            if render_modes_dict['denoise_and_sharpen']:
                 main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
                 main_frame = denoise(main_frame, denoise_value, denoise_value2)
 
-            if sobel:
+            if render_modes_dict['sobel']:
                 main_frame = denoise(main_frame, denoise_value, denoise_value2)
                 main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
                 grad_x = cv2.Sobel(main_frame, cv2.CV_64F, 1, 0, ksize=sobel_value)
@@ -590,7 +613,7 @@ def process_frame():
                 x_size = round(x_coeff * main_frame.shape[1])
                 resized = cv2.resize(main_frame, (x_size, 512))
 
-                if extract_objects_yolo_mode:
+                if render_modes_dict['extract_objects_yolo_mode']:
                     class_index_count = [
                         [0 for x in range(80)] for x in range(len(stream_list))
                     ]
@@ -674,7 +697,7 @@ def process_frame():
 
                 if (
                     server_states.source_mode == "image"
-                    and extract_and_replace_background == True
+                    and render_modes_dict['extract_and_replace_background']
                     and writer is not None
                 ):
                     writer.write(main_frame)
@@ -721,7 +744,7 @@ def process_frame():
                     print("started")
 
                 if server_states.need_to_create_screenshot == True:
-                    print("screenshot")
+                    print("Taking screenshot...")
                     cv2.imwrite(
                         f"static/output{args['port']}Screenshot.png", main_frame
                     )
@@ -800,7 +823,7 @@ def index(device=None, action=None):
                 cap2 = cv2.VideoCapture("input_videos/snow.webm")
 
             server_states.options = request.form.getlist("check")
-            mode = request.form.getlist("checkMode")
+            # mode = request.form.getlist("checkMode")
 
             CRED = "\033[91m"
             CEND = "\033[0m"
@@ -815,8 +838,10 @@ def index(device=None, action=None):
 
     file_output = file_to_render
 
-    if server_states.source_mode in ("video", "youtube"):
+    if server_states.source_mode == "video":
         file_output = file_to_render + ".avi"
+    if server_states.source_mode == "youtube":
+        file_output = "youtube.avi"
 
     return render_template(
         "index.html",
@@ -884,6 +909,7 @@ def receive_settings():
         input_data = request.get_json()
 
         commands.mode_reset_command = str(input_data["modeResetCommand"])
+        server_states.model_superres = str(input_data["modelResetCommand"])
 
         if not server_states.video_stop_lock:
             if bool(input_data["videoStopCommand"]) == True:

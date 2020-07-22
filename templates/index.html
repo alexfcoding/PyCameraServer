@@ -161,6 +161,7 @@
                         </optgroup>
                     </select>
                 </div>
+                
                 <div
                     style="display: inline-block; text-align: center; margin-top: 10px; margin-left: 20px; box-shadow: 6px 4px 8px #000000;">
                     <form action="" method=post enctype=multipart/form-data>
@@ -175,8 +176,22 @@
                             onchange="sendStopCommand(), form.submit()"> -->
                     </form>
                 </div>
-            </div>
 
+                <div>
+                    <div style="display:inline-block; margin: 5px; font-size: 14px;">UPSCALER MODEL:</div>
+                    <div
+                        style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                        <select id="modelsId"
+                            onchange="sendStopCommand(), resetSettings(), sendModelChangeCommand(), this.form.submit()">
+                            <optgroup label="UPSCALE MODELS">
+                                <option value="LAPSRN">LapSRN X4 (SLOW)</option>
+                                <option value="EDSR">EDSR X4 (VERY SLOW)</option>
+                                <option value="FSRCNN">FSRCNN X4 (FAST)</option>
+                                <option value="FSRCNN_SMALL">FSRCNN-SMALL X4 (VERY FAST)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+            </div>
         </div>
 
         <div class="positionSettings">
@@ -341,6 +356,7 @@
         var videoResetCommand = false;
         var videoStopCommand = false;
         var modeResetCommand = "default";
+        var modelResetCommand = "LAPSRN";
         var screenshotCommand = false;
 
         function sendStartCommand() {
@@ -353,6 +369,10 @@
 
         function sendModeChangeCommand() {
             modeResetCommand = $("#modesId").val();
+        }
+
+        function sendModelChangeCommand() {
+            modelResetCommand = $("#modelsId").val();
         }
 
         function sendScreenshotCommand() {
@@ -936,6 +956,7 @@
                     videoResetCommand,
                     videoStopCommand,
                     modeResetCommand,
+                    modelResetCommand,
                     screenshotCommand
                 }),
                 dataType: "json"
