@@ -167,3 +167,7 @@ models/esrgan/RRDB_ESRGAN_x4.pth
 models/esrgan/RRDB_ESRGAN_x4_old_arch.pth
 models/esrgan/RRDB_PSNR_x4.pth
 models/esrgan/RRDB_PSNR_x4_old_arch.pth
+models/esrgan/interp_06.pth
+models/esrgan/interp_04.pth
+static/output8001catLowRes.jpg
+catLowRes.jpg

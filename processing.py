@@ -32,6 +32,7 @@ class ServerState:
     total_frames = 0
     options = ""
     model_superres = "LAPSRN"
+    model_esrgan = "FALCOON"
     screenshot_lock = False
     video_reset_lock = False
     video_stop_lock = False
@@ -175,6 +176,18 @@ def process_frame():
     zip_obj = ZipFile(f"static/objects{args['port']}.zip", "w")
     zip_is_opened = True
 
+    caffe_network = initialize_caffe_network()
+    caffe_network.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    superres_network = initialize_superres_network("LAPSRN")
+    esrgan_network, device = initialize_esrgan_network("FALCOON", True)
+    rcnn_network = initialize_rcnn_network(False)
+
+    yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
+        classes, True
+    )
+
+
     while server_states.working_on:
         if input_data is not None:
             blur_canny_value = int(input_data["cannyBlurSliderValue"])
@@ -199,7 +212,6 @@ def process_frame():
 
             if commands.mode_reset_command != "default":
                 server_states.options = commands.mode_reset_command
-
                 need_mode_reset = True
 
             if server_states.video_reset_lock:
@@ -227,15 +239,9 @@ def process_frame():
         if need_mode_reset:
             for mode in render_modes_dict:
                 render_modes_dict[mode] = False
-
-            if (server_states.model_superres == "EDSR"):
-                superres_network = initialize_superres_network("EDSR")
-            if (server_states.model_superres == "LAPSRN"):
-                superres_network = initialize_superres_network("LAPSRN")
-            if (server_states.model_superres == "FSRCNN"):
-                superres_network = initialize_superres_network("FSRCNN")
-            if (server_states.model_superres == "FSRCNN_SMALL"):
-                superres_network = initialize_superres_network("FSRCNN_SMALL")
+            print("need mode reset")
+            superres_network = initialize_superres_network(server_states.model_superres)
+            esrgan_network, device  = initialize_esrgan_network(server_states.model_esrgan, True)
 
             for mode in server_states.options:
                 if mode == "a":
@@ -909,7 +915,8 @@ def receive_settings():
         input_data = request.get_json()
 
         commands.mode_reset_command = str(input_data["modeResetCommand"])
-        server_states.model_superres = str(input_data["modelResetCommand"])
+        server_states.model_superres = str(input_data["superresResetCommand"])
+        server_states.model_esrgan = str(input_data["esrganResetCommand"])
 
         if not server_states.video_stop_lock:
             if bool(input_data["videoStopCommand"]) == True:

@@ -130,6 +130,7 @@
             </div>
 
             <div>
+                <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">RENDER MODE:</div>
                 <div
                     style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
                     <select id="modesId"
@@ -147,9 +148,9 @@
                         <optgroup label="CAFFE MODEL">
                             <option value="f">NEURAL NETWORK COLORIZER</option>
                         </optgroup>
-                        <optgroup label="UPSCALE MODELS">
-                            <option value="n">LapSRN X4 UPSCALER</option>
-                            <option value="t">ESRGAN X4 UPSCALER</option>
+                        <optgroup label="X4 UPSCALE MODELS">
+                            <option value="n">EDSR / LAPSRN / FSRNN X4</option>
+                            <option value="t">ESRGAN / PSNR X4</option>
                         </optgroup>
                         <optgroup label="WITHOUT NEURAL NETWORKS">
                             <option value="q">ASCII PAINTER</option>
@@ -177,22 +178,40 @@
                     </form>
                 </div>
 
-                <div>
-                    <div style="display:inline-block; margin: 5px; font-size: 14px;">UPSCALER MODEL:</div>
-                    <div
-                        style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                        <select id="modelsId"
+                <div id="superresIdBlock">
+                    <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER MODEL:</div>
+                    <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                        <select id="modelsSuperresId"
                             onchange="sendStopCommand(), resetSettings(), sendModelChangeCommand(), this.form.submit()">
                             <optgroup label="UPSCALE MODELS">
-                                <option value="LAPSRN">LapSRN X4 (SLOW)</option>
-                                <option value="EDSR">EDSR X4 (VERY SLOW)</option>
-                                <option value="FSRCNN">FSRCNN X4 (FAST)</option>
-                                <option value="FSRCNN_SMALL">FSRCNN-SMALL X4 (VERY FAST)</option>
+                                <option value="LAPSRN">LapSRN (SLOW)</option>
+                                <option value="EDSR">EDSR (VERY SLOW)</option>
+                                <option value="FSRCNN">FSRCNN (FAST)</option>
+                                <option value="FSRCNN_SMALL">FSRCNN-SMALL (VERY FAST)</option>
                             </optgroup>
                         </select>
                     </div>
+                </div>
+
+                <div id="esrganIdBlock">
+                    <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER MODEL:</div>
+                    <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                        <select id="modelsEsrganId"
+                            onchange="sendStopCommand(), resetSettings(), sendEsrganChangeCommand(), this.form.submit()">
+                            <optgroup label="ESRGAN MODELS">
+                                <option value="FALCOON">FALCOON</option>
+                                <option value="MANGA">MANGA109</option>
+                                <option value="RRDB_ESRGAN">RRDB_ESRGAN</option>
+                                <option value="RRDB_PSNR">RRDB_PSNR</option>
+                                <option value="RRDB_INTERP_0.2">ESRGAN-PSNR INTERPOLATION_0.2</option>
+                                <option value="RRDB_INTERP_0.4">ESRGAN-PSNR INTERPOLATION_0.4</option>
+                                <option value="RRDB_INTERP_0.6">ESRGAN-PSNR INTERPOLATION_0.6</option>
+                                <option value="RRDB_INTERP_0.8">ESRGAN-PSNR INTERPOLATION_0.8</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
             </div>
-        </div>
 
         <div class="positionSettings">
             <div style="display: inline-block; font-size: 16px; color: white;">POSITION:</div>
@@ -356,7 +375,8 @@
         var videoResetCommand = false;
         var videoStopCommand = false;
         var modeResetCommand = "default";
-        var modelResetCommand = "LAPSRN";
+        var superresResetCommand = "LAPSRN";
+        var esrganResetCommand = "FALCOON";
         var screenshotCommand = false;
 
         function sendStartCommand() {
@@ -372,7 +392,11 @@
         }
 
         function sendModelChangeCommand() {
-            modelResetCommand = $("#modelsId").val();
+            superresResetCommand = $("#modelsSuperresId").val();
+        }
+
+        function sendEsrganChangeCommand() {
+            esrganResetCommand = $("#modelsEsrganId").val();
         }
 
         function sendScreenshotCommand() {
@@ -471,6 +495,8 @@
                         $("#asciiThicknessIdBlock").hide()
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                         $("#confidenceIdBlock").show()
 
                         $("#downloadObjectsId").show()
@@ -489,6 +515,8 @@
                         $("#resizeIdBlock").hide()
                         $("#downloadObjectsId").hide()
                         $("#colorCountIdBlock").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                         $("#confidenceIdBlock").show()
                         $("#asciiSizeIdBlock").show()
                         $("#asciiIntervalIdBlock").show()
@@ -507,6 +535,8 @@
                         $("#confidenceIdBlock").show()
                         $("#rcnnBlurIdBlock").show()
                         $("#asciiSizeIdBlock").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                         $("#asciiIntervalIdBlock").hide()
                         $("#asciiThicknessIdBlock").hide()
                         $("#resizeIdBlock").hide()
@@ -531,6 +561,8 @@
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                     }
                     // GAUSSIAN BLUR BACKGROUND
                     if (currentMode == "m") {
@@ -550,6 +582,8 @@
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                     }
                     // FAKE COLORIZER
                     if (currentMode == "k") {
@@ -569,6 +603,8 @@
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                     }
                     // CAFFE NEURAL NETWORK COLORIZER
                     if (currentMode == "f") {
@@ -588,6 +624,8 @@
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                     }
                     // CARTOON STYLE
                     if (currentMode == "e") {
@@ -607,6 +645,8 @@
                         $("#asciiThicknessIdBlock").hide()
                         $("#resizeIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                     }
                     // PENSIL DRAWER
                     if (currentMode == "r") {
@@ -626,6 +666,8 @@
                         $("#asciiThicknessIdBlock").hide()
                         $("#resizeIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                     }
                     // TWO-COLORED
                     if (currentMode == "s") {
@@ -645,6 +687,8 @@
                         $("#asciiThicknessIdBlock").hide()
                         $("#resizeIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                     }
                     // DENOISE + SHARPEN
                     if (currentMode == "o") {
@@ -660,6 +704,8 @@
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                         $("#sharpenIdBlock").show()
                         $("#sharpenIdBlock2").show()
                         $("#denoiseIdBlock").show()
@@ -679,12 +725,13 @@
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                         $("#sharpenIdBlock").show()
                         $("#sharpenIdBlock2").show()
                         $("#denoiseIdBlock").show()
                         $("#denoise2IdBlock").show()
                         $("#sobelIdBlock").show()
-
                     }
                     // ASCII FULL SCREEN
                     if (currentMode == "q") {
@@ -701,6 +748,8 @@
                         $("#resizeIdBlock").hide()
                         $("#colorCountIdBlock").hide()
                         $("#downloadObjectsId").hide()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").hide()
                         $("#asciiSizeIdBlock").show()
                         $("#asciiIntervalIdBlock").show()
                         $("#asciiThicknessIdBlock").show()
@@ -723,8 +772,11 @@
                         $("#asciiThicknessIdBlock").hide()
                         $("#downloadObjectsId").hide()
                         $("#resizeIdBlock").show()
-                    }
 
+                        $("#superresIdBlock").show()
+                        $("#esrganIdBlock").hide()
+                    }
+                    // ESRGAN UPSCALER
                     if (currentMode == "t") {
                         $("#cannyBlurIdBlock").hide()
                         $("#lineThicknessIdBlock").hide()
@@ -742,6 +794,8 @@
                         $("#asciiThicknessIdBlock").hide()
                         $("#downloadObjectsId").hide()
                         $("#resizeIdBlock").show()
+                        $("#superresIdBlock").hide()
+                        $("#esrganIdBlock").show()
                     }
 
                     //if (working == false) {
@@ -956,7 +1010,8 @@
                     videoResetCommand,
                     videoStopCommand,
                     modeResetCommand,
-                    modelResetCommand,
+                    superresResetCommand,
+                    esrganResetCommand,
                     screenshotCommand
                 }),
                 dataType: "json"

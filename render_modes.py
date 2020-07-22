@@ -7,10 +7,13 @@ import torch
 import architecture as arch
 
 classes = []
-object_index = 0
 
 with open("models/yolo/coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
+
+colors_yolo = np.random.uniform(0, 255, size=(len(classes), 3))
+
+object_index = 0
 
 
 def initialize_yolo_network(classes, use_cuda):
@@ -57,30 +60,55 @@ def initialize_caffe_network():
     return net
 
 
-def initialize_superres_network(modelType):
+def initialize_superres_network(model_type):
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
-    if (modelType == "EDSR"):
+    if (model_type == "EDSR"):
         sr.readModel("models/upscalers/EDSR_x4.pb")
         sr.setModel("edsr", 4)
-    if (modelType == "LAPSRN"):
+    if (model_type == "LAPSRN"):
         sr.readModel("models/upscalers/LapSRN_x4.pb")
         sr.setModel("lapsrn", 4)
-    if (modelType == "FSRCNN"):
+    if (model_type == "FSRCNN"):
         sr.readModel("models/upscalers/FSRCNN_x4.pb")
         sr.setModel("fsrcnn", 4)
-    if (modelType == "FSRCNN_SMALL"):
+    if (model_type == "FSRCNN_SMALL"):
         sr.readModel("models/upscalers/FSRCNN-small_x4.pb")
         sr.setModel("fsrcnn", 4)
-    # sr.readModel("models/upscalers/LapSRN_x4.pb")
-    # sr.setModel("lapsrn", 4)
-    # sr.readModel("FSRCNN_x4.pb")
-    # sr.setModel("fsrcnn", 4)
     return sr
 
 
-def initialize_esrgan_network():
-    model_path = "models/esrgan/falcoon.pth"  # models/RRDB_ESRGAN_x4.pth OR models/RRDB_PSNR_x4.pth
-    device = torch.device("cuda")  # if you want to run on CPU, change 'cuda' -> cpu
+def initialize_esrgan_network(model_type, use_cuda):
+    model_path = ""
+    device = torch.device("cpu")
+
+    if (model_type == "FALCOON"):
+        model_path = "models/esrgan/falcoon.pth"
+
+    if (model_type == "MANGA"):
+        model_path = "models/esrgan/Manga109Attempt.pth"
+
+    if (model_type == "RRDB_ESRGAN"):
+        model_path = "models/esrgan/RRDB_ESRGAN_x4_old_arch.pth"
+
+    if (model_type == "RRDB_PSNR"):
+        model_path = "models/esrgan/RRDB_PSNR_x4_old_arch.pth"
+
+    if (model_type == "RRDB_INTERP_0.2"):
+        model_path = "models/esrgan/interp_02.pth"
+
+    if (model_type == "RRDB_INTERP_0.4"):
+        model_path = "models/esrgan/interp_04.pth"
+
+    if (model_type == "RRDB_INTERP_0.6"):
+        model_path = "models/esrgan/interp_06.pth"
+
+    if (model_type == "RRDB_INTERP_0.8"):
+        model_path = "models/esrgan/interp_08.pth"
+
+    if use_cuda:
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
     # device = torch.device('cpu')
 
     test_img_folder = "LR/*"
@@ -1356,12 +1384,4 @@ def adjust_br_contrast(input_frame, contrast_value, brightness_value):
     return input_frame
 
 
-caffe_network = initialize_caffe_network()
-caffe_network.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-superres_network = initialize_superres_network("LAPSRN")
-esrgan_network, device = initialize_esrgan_network()
-yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
-    classes, True
-)
-rcnn_network = initialize_rcnn_network(False)
+
