@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="726d8ba5-1c85-47d1-a6af-9716e370d019" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/architecture.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/block.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/net_interp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/processing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/render_modes.py" beforeDir="false" afterPath="$PROJECT_DIR$/render_modes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1f62lzcgl1HVvd8AfR8EWjUD95o" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="PyCameraServer" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/.virtualenvs/opencv_gpu/bin/python" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/processing.py" />
+      <option name="PARAMETERS" value="-i 192.168.0.12 -o 8002 -z 6fps.webm -u y -r video" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="processing" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="PyCameraServer" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/.virtualenvs/opencv_gpu/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/processing.py" />
+      <option name="PARAMETERS" value="-i 192.168.0.12 -o 8002 -s gif.gif -c y -m video" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="726d8ba5-1c85-47d1-a6af-9716e370d019" name="Default Changelist" comment="" />
+      <created>1595524376793</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1595524376793</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="2724" y="422" width="251" height="270" key="#Notifications" timestamp="1595532821972">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2724" y="422" width="251" height="270" key="#Notifications/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595532821972" />
+    <state x="2295" y="205" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1595542829812">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2295" y="205" key="#com.intellij.execution.impl.EditConfigurationsDialog/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542829812" />
+    <state x="2547" y="355" width="606" height="403" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1595539888470">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2547" y="355" width="606" height="403" key="#com.intellij.fileTypes.FileTypeChooser/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595539888470" />
+    <state width="1596" height="506" key="DebuggerActiveHint" timestamp="1595536099313">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1596" height="506" key="DebuggerActiveHint/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595536099313" />
+    <state width="1847" height="330" key="GridCell.Tab.0.bottom" timestamp="1595542933694">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933694" />
+    <state width="1847" height="330" key="GridCell.Tab.0.center" timestamp="1595542933694">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.0.center/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933694" />
+    <state width="1847" height="330" key="GridCell.Tab.0.left" timestamp="1595542933694">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.0.left/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933694" />
+    <state width="1847" height="330" key="GridCell.Tab.0.right" timestamp="1595542933694">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.0.right/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933694" />
+    <state width="1847" height="330" key="GridCell.Tab.1.bottom" timestamp="1595542933645">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.1.bottom/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933645" />
+    <state width="1847" height="330" key="GridCell.Tab.1.center" timestamp="1595542933645">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.1.center/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933645" />
+    <state width="1847" height="330" key="GridCell.Tab.1.left" timestamp="1595542933645">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.1.left/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933645" />
+    <state width="1847" height="330" key="GridCell.Tab.1.right" timestamp="1595542933645">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1847" height="330" key="GridCell.Tab.1.right/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595542933645" />
+    <state x="2546" y="263" width="618" height="580" key="find.popup" timestamp="1595527022726">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2546" y="263" width="618" height="580" key="find.popup/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1595527022726" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/DAIN/MegaDepth/data/image_folder.py</url>
+          <line>6</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

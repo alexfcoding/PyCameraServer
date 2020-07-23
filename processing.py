@@ -13,14 +13,6 @@ from werkzeug.utils import secure_filename
 from zipfile import ZipFile
 import pafy
 
-
-class Command:
-    video_reset_command = False
-    video_stop_command = False
-    mode_reset_command = False
-    screenshot_command = False
-
-
 class ServerState:
     source_image = ""
     source_mode = ""
@@ -31,11 +23,13 @@ class ServerState:
     frame_processed = 0
     total_frames = 0
     options = ""
-    model_superres = "LAPSRN"
-    model_esrgan = "FALCOON"
     screenshot_lock = False
     video_reset_lock = False
     video_stop_lock = False
+    mode_reset_lock = False
+    render_mode = ""
+    superres_model = "LAPSRN"
+    esrgan_model = "FALCOON"
 
 render_modes_dict = {
     'using_yolo_network' : False,
@@ -60,12 +54,11 @@ render_modes_dict = {
     'pencil_drawer' : False,
     'two_colored' : False,
     'upscale_opencv' : False,
-    'upscale_esrgan' : False
+    'upscale_esrgan' : False,
+    'boost_fps_dain' : False
 }
 
-commands = Command()
 server_states = ServerState()
-
 
 timer_start = 0
 timer_end = 0
@@ -101,7 +94,7 @@ def check_if_user_is_connected(timer_start):
     global user_time
     timer_end = time.perf_counter()
     user_time = str(round(timer_end)) + ":" + str(round(timer_start))
-
+    print(timer_start)
     if timer_end - timer_start < 7 and timer_start != 0:
         print("User is connected")
     else:
@@ -133,7 +126,12 @@ def process_frame():
     sobel_value = 3
     sharpening_value2 = 5
     color_count_value = 32
+    ascii_size_value = 8
+    ascii_interval_value = 24
+    ascii_thickness_value = 3
     resize_value = 2
+    frame_boost_list = []
+    frame_boost_sequence = []
 
     server_states.frame_processed = 0
     server_states.total_frames = 0
@@ -153,9 +151,12 @@ def process_frame():
     zipped_images = False
     font = cv2.FONT_HERSHEY_SIMPLEX
 
+    frame_index = 0
+    frameEdge = None
+
     file_to_render = args["source"]
     youtube_url = args["source"]
-    server_states.options = args["optionsList"]
+    server_states.render_mode = args["optionsList"]
     server_states.source_mode = args["mode"]
 
     if server_states.source_mode == "youtube":
@@ -182,14 +183,22 @@ def process_frame():
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
     rcnn_network = initialize_rcnn_network(False)
+    dain_network = initialize_dain_network(True)
 
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
         classes, True
     )
 
+    iter = 0
+    main_frame = None
+    f = f1 = None
 
     while server_states.working_on:
         if input_data is not None:
+            mode_from_page = str(input_data["mode"])
+            superres_model_from_page = str(input_data["superresModel"])
+            esrgan_model_from_page = str(input_data["esrganModel"])
+
             blur_canny_value = int(input_data["cannyBlurSliderValue"])
             saturation_value = int(input_data["saturationSliderValue"])
             contrast_value = int(input_data["contrastSliderValue"])
@@ -210,8 +219,12 @@ def process_frame():
             color_count_value = int(input_data["colorCountSliderValue"])
             position_valueLocal = int(input_data["positionSliderValue"])
 
-            if commands.mode_reset_command != "default":
-                server_states.options = commands.mode_reset_command
+            if server_states.mode_reset_lock:
+                server_states.render_mode = mode_from_page
+                server_states.superres_model = superres_model_from_page
+                server_states.esrgan_model = esrgan_model_from_page
+
+                server_states.mode_reset_lock = False
                 need_mode_reset = True
 
             if server_states.video_reset_lock:
@@ -239,11 +252,12 @@ def process_frame():
         if need_mode_reset:
             for mode in render_modes_dict:
                 render_modes_dict[mode] = False
-            print("need mode reset")
-            superres_network = initialize_superres_network(server_states.model_superres)
-            esrgan_network, device  = initialize_esrgan_network(server_states.model_esrgan, True)
 
-            for mode in server_states.options:
+            print("need mode reset")
+            superres_network = initialize_superres_network(server_states.superres_model)
+            esrgan_network, device  = initialize_esrgan_network(server_states.esrgan_model, True)
+
+            for mode in server_states.render_mode:
                 if mode == "a":
                     render_modes_dict['extract_objects_yolo_mode'] = True
                     render_modes_dict['using_yolo_network'] = True
@@ -317,13 +331,17 @@ def process_frame():
                     render_modes_dict['upscale_esrgan'] = True
                     print("upscale_esrgan")
 
+                if mode == "z":
+                    render_modes_dict['boost_fps_dain'] = True
+                    print("boost_fps_dain")
+
                 need_mode_reset = False
 
         classes_index = []
         start_moment = time.time()
 
         if server_states.source_mode in ("video", "youtube"):
-            if started_rendering_video == False:
+            if not started_rendering_video:
                 cap.set(1, position_value)
                 if need_to_stop_new_zip:
                     zip_obj.close()
@@ -343,13 +361,22 @@ def process_frame():
                     if server_states.source_mode == "video":
                         cap = cv2.VideoCapture(file_to_render)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-                        writer = cv2.VideoWriter(
-                            f"static/output{args['port']}{file_to_render}.avi",
-                            fourcc,
-                            25,
-                            (main_frame.shape[1], main_frame.shape[0]),
-                            True,
-                        )
+                        if (render_modes_dict['boost_fps_dain']):
+                            writer = cv2.VideoWriter(
+                                f"static/output{args['port']}{file_to_render}.avi",
+                                fourcc,
+                                180,
+                                (main_frame.shape[1], main_frame.shape[0]),
+                                True,
+                            )
+                        else:
+                            writer = cv2.VideoWriter(
+                                f"static/output{args['port']}{file_to_render}.avi",
+                                fourcc,
+                                25,
+                                (main_frame.shape[1], main_frame.shape[0]),
+                                True,
+                            )
 
                     if server_states.source_mode == "youtube":
                         cap = cv2.VideoCapture(play.url)
@@ -376,11 +403,23 @@ def process_frame():
                         zip_is_opened = True
 
                     file_changed = False
-                    commands.video_reset_command = False
+
                     need_to_create_writer = False
 
-            ret, main_frame = cap.read()
-            ret2, frame_background = cap2.read()
+            if (render_modes_dict['boost_fps_dain'] and started_rendering_video):
+                if (iter == 0):
+                    ret, f = cap.read()
+                    ret, f1 = cap.read()
+                    main_frame = f1.copy()
+                    iter += 1
+                else:
+                    f = frameEdge
+                    print(frameEdge)
+                    ret, f1 = cap.read()
+                    main_frame = f1.copy()
+            else:
+                ret, main_frame = cap.read()
+                ret2, frame_background = cap2.read()
 
         if server_states.source_mode == "image":
             if received_zip_command or file_changed:
@@ -604,6 +643,9 @@ def process_frame():
                 grad_y = cv2.Sobel(main_frame, cv2.CV_64F, 0, 1, ksize=sobel_value)
                 main_frame = cv2.addWeighted(grad_x, 0.5, grad_y, 0.5, 0)
 
+            if render_modes_dict['boost_fps_dain'] and started_rendering_video:
+                frame_boost_sequence, frame_boost_list = boost_fps_with_dain(dain_network, f, f1, True)
+
             main_frame = adjust_br_contrast(main_frame, contrast_value, brightness_value)
             main_frame = adjust_saturation(main_frame, saturation_value)
 
@@ -718,7 +760,20 @@ def process_frame():
                     and writer is not None
                     and started_rendering_video
                 ):
-                    writer.write(main_frame)
+                    if render_modes_dict['boost_fps_dain'] and started_rendering_video:
+                        frame_boost_sequence, frame_boost_list = zip(*sorted(zip(frame_boost_sequence, frame_boost_list)))
+                        frameEdge = frame_boost_list[len(frame_boost_list) - 1]
+
+                        for frame in frame_boost_list:
+                            writer.write(frame)
+                            cv2.imshow("video", frame)
+                            key = cv2.waitKey(1) & 0xFF
+
+                            if key == ord("q"):
+                                break
+
+                    else:
+                        writer.write(main_frame)
 
                 cv2.imshow("video", main_frame)
                 key = cv2.waitKey(1) & 0xFF
@@ -749,7 +804,7 @@ def process_frame():
                 if server_states.frame_processed == 1:
                     print("started")
 
-                if server_states.need_to_create_screenshot == True:
+                if server_states.need_to_create_screenshot:
                     print("Taking screenshot...")
                     cv2.imwrite(
                         f"static/output{args['port']}Screenshot.png", main_frame
@@ -828,9 +883,6 @@ def index(device=None, action=None):
                 server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                 cap2 = cv2.VideoCapture("input_videos/snow.webm")
 
-            server_states.options = request.form.getlist("check")
-            # mode = request.form.getlist("checkMode")
-
             CRED = "\033[91m"
             CEND = "\033[0m"
             print(
@@ -897,7 +949,7 @@ def send_stats():
             "ramPercent": psutil.virtual_memory()[2],
             "frameWidth": frame_width_to_page,
             "frameHeight": frame_height_to_page,
-            "currentMode": server_states.options,
+            "currentMode": server_states.render_mode,
             "userTime": user_time,
             "screenshotReady": screenshot_ready_local,
             "screenshotPath": server_states.screenshot_path
@@ -911,23 +963,24 @@ def receive_settings():
     global input_data, timer_start, timer_end, writer, server_states, commands
 
     if request.method == "POST":
+        print("POST")
         timer_start = time.perf_counter()
         input_data = request.get_json()
 
-        commands.mode_reset_command = str(input_data["modeResetCommand"])
-        server_states.model_superres = str(input_data["superresResetCommand"])
-        server_states.model_esrgan = str(input_data["esrganResetCommand"])
+        if not server_states.mode_reset_lock:
+            if bool(input_data["modeResetCommand"]):
+                server_states.mode_reset_lock = True
 
         if not server_states.video_stop_lock:
-            if bool(input_data["videoStopCommand"]) == True:
+            if bool(input_data["videoStopCommand"]):
                 server_states.video_stop_lock = True
 
         if not server_states.video_reset_lock:
-            if bool(input_data["videoResetCommand"]) == True:
+            if bool(input_data["videoResetCommand"]):
                 server_states.video_reset_lock = True
 
         if not server_states.screenshot_lock:
-            if bool(input_data["screenshotCommand"]) == True:
+            if bool(input_data["screenshotCommand"]):
                 server_states.screenshot_lock = True
 
     return "", 200

@@ -76,7 +76,6 @@
 
 <body style="background-color:#1d1d1d;">
     <div style="text-align: center;">
-        <div>
             <div style="margin: 5px;">
                 <div id="grid">
                     <div>
@@ -149,8 +148,11 @@
                             <option value="f">NEURAL NETWORK COLORIZER</option>
                         </optgroup>
                         <optgroup label="X4 UPSCALE MODELS">
-                            <option value="n">EDSR / LAPSRN / FSRNN X4</option>
-                            <option value="t">ESRGAN / PSNR X4</option>
+                            <option value="n">EDSR / LAPSRN / FSRNN</option>
+                            <option value="t">ESRGAN / PSNR</option>
+                        </optgroup>
+                        <optgroup label="FPS BOOST">
+                            <option value="z">DAIN X7</option>
                         </optgroup>
                         <optgroup label="WITHOUT NEURAL NETWORKS">
                             <option value="q">ASCII PAINTER</option>
@@ -229,7 +231,7 @@
                         type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"> </div>
             </div>
 
-            <div class="renderSettings"">
+            <div class="renderSettings">
                 <div style=" display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
             <div style=" display: inline-block;font-size: 16px; color: white;" id="contrastValue"></div>
             <div><input
@@ -374,10 +376,13 @@
         var maxFrames = 0;
         var videoResetCommand = false;
         var videoStopCommand = false;
-        var modeResetCommand = "default";
-        var superresResetCommand = "LAPSRN";
-        var esrganResetCommand = "FALCOON";
+        var modeResetCommand = false;
         var screenshotCommand = false;
+
+        var mode = ""
+        var superresModel = "LAPSRN";
+        var esrganModel = "FALCOON";
+
 
         function sendStartCommand() {
             videoResetCommand = true;
@@ -388,15 +393,18 @@
         }
 
         function sendModeChangeCommand() {
-            modeResetCommand = $("#modesId").val();
+            modeResetCommand = true;
+            mode = $("#modesId").val();
         }
 
         function sendModelChangeCommand() {
-            superresResetCommand = $("#modelsSuperresId").val();
+            modeResetCommand = true;
+            superresModel = $("#modelsSuperresId").val();
         }
 
         function sendEsrganChangeCommand() {
-            esrganResetCommand = $("#modelsEsrganId").val();
+            modeResetCommand = true;
+            esrganModel = $("#modelsEsrganId").val();
         }
 
         function sendScreenshotCommand() {
@@ -771,7 +779,7 @@
                         $("#asciiIntervalIdBlock").hide()
                         $("#asciiThicknessIdBlock").hide()
                         $("#downloadObjectsId").hide()
-                        $("#resizeIdBlock").show()
+                        $("#resizeIdBlock").hide()
 
                         $("#superresIdBlock").show()
                         $("#esrganIdBlock").hide()
@@ -792,8 +800,8 @@
                         $("#asciiSizeIdBlock").hide()
                         $("#asciiIntervalIdBlock").hide()
                         $("#asciiThicknessIdBlock").hide()
+                        $("#resizeIdBlock").hide()
                         $("#downloadObjectsId").hide()
-                        $("#resizeIdBlock").show()
                         $("#superresIdBlock").hide()
                         $("#esrganIdBlock").show()
                     }
@@ -1010,9 +1018,10 @@
                     videoResetCommand,
                     videoStopCommand,
                     modeResetCommand,
-                    superresResetCommand,
-                    esrganResetCommand,
-                    screenshotCommand
+                    screenshotCommand,
+                    mode,
+                    superresModel,
+                    esrganModel
                 }),
                 dataType: "json"
             });
@@ -1021,9 +1030,12 @@
             screenshotCommand = false;
             videoResetCommand = false;
             videoStopCommand = false;
-
+            modeResetCommand = false;
+            superresResetCommand = false;
+            estranResetCommand = false;
         }, 300);
 
     </script>
+
     </div>
 </body>
