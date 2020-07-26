@@ -188,7 +188,6 @@ def initialize_dain_network(use_cuda):
     return model
 
 def boost_fps_with_dain(dain_network, f, f1, use_cuda):
-
     save_which = 1
     dtype = torch.cuda.FloatTensor
 
@@ -199,9 +198,14 @@ def boost_fps_with_dain(dain_network, f, f1, use_cuda):
     if (fpsBoost == 7):
         frame_sequence = [0, 1, 2, 0, 2, 3, 0, 3, 4, 3, 2, 5, 2, 1, 6, 2, 6, 7, 6, 1, 8]
         frame_write_sequence = [0, 8, 4, 2, 1, 3, 6, 5, 7]
+
     if (fpsBoost == 3):
         frame_sequence = [0, 1, 2, 0, 2, 3, 2, 1, 4]
         frame_write_sequence = [0, 4, 2, 1, 3]
+
+    if (fpsBoost == 2):
+        frame_sequence = [0, 1, 2]
+        frame_write_sequence = [0, 2, 1]
 
     frames = []
     frame_index = 0
@@ -212,7 +216,7 @@ def boost_fps_with_dain(dain_network, f, f1, use_cuda):
     frames.append(f)
     frames.append(f1)
 
-    for i in range(fpsBoost):
+    for i in range(fpsBoost - 1):
         X0 = torch.from_numpy(
             np.transpose(frames[frame_sequence[frame_index]], (2, 0, 1)).astype("float32") / 255.0).type(dtype)
         frame_index += 1

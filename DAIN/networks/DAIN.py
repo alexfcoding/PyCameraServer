@@ -205,7 +205,7 @@ class DAIN(torch.nn.Module):
         temp = model(input)  # this is a single direction motion results, but not a bidirectional one
 
         temps = [self.div_flow * temp * time_offset for time_offset in time_offsets]# single direction to bidirection should haven it.
-        temps = [nn.Upsample(scale_factor=4, mode='bilinear')(temp)  for temp in temps]# nearest interpolation won't be better i think
+        temps = [nn.Upsample(scale_factor=4, mode='bilinear', align_corners=True)(temp)  for temp in temps]# nearest interpolation won't be better i think
         return temps
 
     '''keep this function'''
@@ -371,7 +371,7 @@ class DAIN(torch.nn.Module):
 
         layers = nn.Sequential(*[
 
-            nn.Upsample(scale_factor=unpooling_factor, mode='bilinear'),
+            nn.Upsample(scale_factor=unpooling_factor, mode='bilinear', align_corners=True),
 
             nn.Conv2d(input_filter,output_filter,kernel_size,1, padding),
 
