@@ -9,15 +9,20 @@ from flask import request, Response
 import psutil
 import time
 from render_modes import *
+from rendering import *
 from werkzeug.utils import secure_filename
 from zipfile import ZipFile
 import pafy
 
 app = Flask(__name__, static_url_path="/static")
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+UPLOAD_FOLDER = "static/user_uploads/"
+ALLOWED_EXTENSIONS = set(
+    ["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"]
+)
 
 class RenderState:
-    """Working states and lock commands"""
+    # Working states and lock commands
     source_image = ""
     source_mode = ""
     screenshot_path = ""
@@ -64,11 +69,38 @@ render_modes_dict = {
     'boost_fps_dain': False
 }
 
+# Default rendering settings
+# Values will change with AJAX requests
+ajax_settings_dict = {
+    "cannyBlurSliderValue" : 5,
+    "saturationSliderValue" : 100,
+    "contrastSliderValue" : 100,
+    "brightnessSliderValue" : 0,
+    "positionSliderValue" : 1,
+    "confidenceSliderValue" : 20,
+    "lineThicknessSliderValue" : 2,
+    "denoiseSliderValue" : 10,
+    "denoise2SliderValue" : 10,
+    "sharpenSliderValue" : 5,
+    "sharpenSliderValue2" : 5,
+    "rcnnSizeSliderValue" : 10,
+    "rcnnBlurSliderValue" : 17,
+    "sobelSliderValue" : 3,
+    "asciiSizeSliderValue" : 8,
+    "asciiIntervalSliderValue" : 24,
+    "asciiThicknessSliderValue" : 2,
+    "resizeSliderValue" : 2,
+    "colorCountSliderValue" : 32,
+    "mode" : "a",
+    "superresModel" : "LapSRN",
+    "esrganModel" : "FALCOON",
+    "positionSliderValue" : 1
+}
+
 server_states = RenderState() # Global instance for accessing settings from requests and rendering loop
 timer_start = 0 # Start timer for stopping rendering if user closed tab
 timer_end = 0 # End timer for stopping rendering if user closed tab
 user_time = 0 # For user timer debug
-input_data = None # Dictionary for storing AJAX request settings from page
 output_frame = None # Frame to preview on page
 progress = 0 # Rendering progress 0-100%
 cap = None # VideoCapture object for user frames
@@ -111,29 +143,6 @@ def process_frame():
     """
     global cap, lock, writer, progress, fps, output_frame, file_to_render, zip_obj, youtube_url
 
-    # Default rendering settings.
-    # Values will change with AJAX requests
-    blur_canny_value = 5
-    position_value = 1
-    saturation_value = 100
-    contrast_value = 100
-    brightness_value = 0
-    confidence_value = 0
-    line_thickness_value = 1
-    denoise_value = 10
-    denoise_value2 = 10
-    sharpening_value = 9
-    rcnn_size_value = 10
-    rcnn_blur_value = 17
-    object_index = 0
-    sobel_value = 3
-    sharpening_value2 = 5
-    color_count_value = 32
-    ascii_size_value = 8
-    ascii_interval_value = 24
-    ascii_thickness_value = 3
-    resize_value = 2
-
     frame_boost_list = [] # List for Depth-Aware Video Frame Interpolation frames
     frame_boost_sequence = [] # Interpolated frame sequence for video writing
 
@@ -155,8 +164,11 @@ def process_frame():
     resized = None # Resized frame to put on page
     fps = 0 # FPS rate
     frameEdge = None # Last frame of interpolation sequence
-    file_to_render = args["source"] # User file
+
+    path_to_file, file_to_render = os.path.split(args["source"]) # Get filename from full path
+    print ("Processing file: " + file_to_render)
     youtube_url = args["source"] # Youtube URL
+
     server_states.render_mode = args["optionsList"] # Rendering mode from command line
     server_states.source_mode = args["mode"] # Source type from command line
 
@@ -169,15 +181,16 @@ def process_frame():
 
     # Set source for video file capturing
     if server_states.source_mode == "video":
-        cap = cv2.VideoCapture(file_to_render)
+        cap = cv2.VideoCapture(f"{app.config['UPLOAD_FOLDER']}{file_to_render}")
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
     # Set source for image file capturing
     if server_states.source_mode == "image":
-        server_states.source_image = args["source"]
+        path_to_image, image_file = os.path.split(args["source"])
+        server_states.source_image = image_file
 
     cap2 = cv2.VideoCapture("input_videos/snow.webm") # Secondary video for background replacement
-    zip_obj = ZipFile(f"static/objects{args['port']}.zip", "w") # Zip file with user port name
+    zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w") # Zip file with user port name
 
     # Initialize all models
     caffe_network = initialize_caffe_network()
@@ -198,29 +211,11 @@ def process_frame():
     # Main loop for processing
     while server_states.working_on:
         # Receive all HTML slider values from JSON dictionary
-        if input_data is not None:
-            mode_from_page = str(input_data["mode"])
-            superres_model_from_page = str(input_data["superresModel"])
-            esrgan_model_from_page = str(input_data["esrganModel"])
-            blur_canny_value = int(input_data["cannyBlurSliderValue"])
-            saturation_value = int(input_data["saturationSliderValue"])
-            contrast_value = int(input_data["contrastSliderValue"])
-            brightness_value = int(input_data["brightnessSliderValue"])
-            confidence_value = int(input_data["confidenceSliderValue"])
-            line_thickness_value = int(input_data["lineThicknessSliderValue"])
-            denoise_value = int(input_data["denoiseSliderValue"])
-            denoise_value2 = int(input_data["denoise2SliderValue"])
-            sharpening_value = int(input_data["sharpenSliderValue"])
-            sharpening_value2 = int(input_data["sharpenSliderValue2"])
-            rcnn_size_value = int(input_data["rcnnSizeSliderValue"])
-            rcnn_blur_value = int(input_data["rcnnBlurSliderValue"])
-            sobel_value = int(input_data["sobelSliderValue"])
-            ascii_size_value = int(input_data["asciiSizeSliderValue"])
-            ascii_interval_value = int(input_data["asciiIntervalSliderValue"])
-            ascii_thickness_value = int(input_data["asciiThicknessSliderValue"])
-            resize_value = int(input_data["resizeSliderValue"]) / 100
-            color_count_value = int(input_data["colorCountSliderValue"])
-            position_value_local = int(input_data["positionSliderValue"])
+        if ajax_settings_dict is not None:
+            mode_from_page = str(ajax_settings_dict["mode"])
+            superres_model_from_page = str(ajax_settings_dict["superresModel"])
+            esrgan_model_from_page = str(ajax_settings_dict["esrganModel"])
+            position_value_local = int(ajax_settings_dict["positionSliderValue"])
 
             # Check if mode change command was received
             if server_states.mode_reset_lock:
@@ -253,6 +248,8 @@ def process_frame():
                 print("in loop screenshot")
                 server_states.need_to_create_screenshot = True
                 server_states.screenshot_lock = False
+        else:
+            position_value = 1
 
         # If user changed rendering mode
         if need_mode_reset:
@@ -365,14 +362,14 @@ def process_frame():
                     if writer is not None:
                         writer.release()
                     if server_states.source_mode == "video":
-                        cap = cv2.VideoCapture(file_to_render)
+                        cap = cv2.VideoCapture(f"{app.config['UPLOAD_FOLDER']}{file_to_render}")
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
                         if (render_modes_dict['boost_fps_dain']):
                             # fps_out = cap.get(cv2.CAP_PROP_FRAME_COUNT) * 7
                             # Change FPS output with DAIN mode
                             writer = cv2.VideoWriter(
-                                f"static/output{args['port']}{file_to_render}.avi",
+                                f"static/user_renders/output{args['port']}{file_to_render}.avi",
                                 fourcc,
                                 90,
                                 (main_frame.shape[1], main_frame.shape[0]),
@@ -380,7 +377,7 @@ def process_frame():
                             )
                         else:
                             writer = cv2.VideoWriter(
-                                f"static/output{args['port']}{file_to_render}.avi",
+                                f"static/user_renders/output{args['port']}{file_to_render}.avi",
                                 fourcc,
                                 25,
                                 (main_frame.shape[1], main_frame.shape[0]),
@@ -391,7 +388,7 @@ def process_frame():
                         cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                         writer = cv2.VideoWriter(
-                            f"static/output{args['port']}youtube.avi",
+                            f"static/user_renders/output{args['port']}youtube.avi",
                             fourcc,
                             25,
                             (main_frame.shape[1], main_frame.shape[0]),
@@ -402,12 +399,12 @@ def process_frame():
 
                     # Prepare zip opening for YOLO objects
                     if need_to_create_new_zip:
-                        zip_obj = ZipFile(f"static/objects{args['port']}.zip", "w")
+                        zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
                         need_to_stop_new_zip = True
                         need_to_create_new_zip = False
                         zip_is_opened = True
                     if file_changed:
-                        zip_obj = ZipFile(f"static/objects{args['port']}.zip", "w")
+                        zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
                         zip_is_opened = True
                     file_changed = False
                     need_to_create_writer = False
@@ -433,268 +430,31 @@ def process_frame():
             # Prepare zip opening for YOLO objects
             if received_zip_command or file_changed:
                 zipped_images = False
-                zip_obj = ZipFile(f"static/objects{args['port']}.zip", "w")
+                zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
                 zip_is_opened = True
                 received_zip_command = False
 
             if file_changed:
-                zip_obj = ZipFile(f"static/objects{args['port']}.zip", "w")
+                zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
                 zip_is_opened = True
                 file_changed = False
                 need_to_create_writer = False
 
-            main_frame = cv2.imread(server_states.source_image)
+            main_frame = cv2.imread(f"{app.config['UPLOAD_FOLDER']}{server_states.source_image}")
             ret2, frame_background = cap2.read()
 
         classes_index = []
         start_moment = time.time()  # Timer for FPS calculation
         
-        # Process frame with render modes
+        # Process frame with render modes and settings
         if main_frame is not None:
-            # Modes that use YOLO
-            if render_modes_dict['using_yolo_network']:
-                # Find all boxes with classes
-                boxes, indexes, class_ids, confidences, classes_out = find_yolo_classes(
-                    main_frame, yolo_network, output_layers, confidence_value
-                )
-                classes_index.append(classes_out)
-
-                # Draw boxes with labels on frame
-                # Extract all image regions with objects and add them to zip
-                if render_modes_dict['extract_objects_yolo_mode']:
-                    main_frame = extract_objects_yolo(
-                        main_frame,
-                        boxes,
-                        indexes,
-                        class_ids,
-                        confidences,
-                        zip_obj,
-                        zip_is_opened,
-                        zipped_images,
-                        server_states.source_mode,
-                        started_rendering_video,
-                    )
-
-                # If it is image, close zip immediately
-                if server_states.source_mode == "image" and zip_is_opened:
-                    zip_obj.close()
-
-                # Prepare zip to reopening
-                if server_states.source_mode == "image" and zipped_images == False:
-                    zipped_images = True
-                    zip_is_opened = False
-
-                # Draw YOLO objects with ASCII effect
-                if render_modes_dict['text_render_yolo']:
-                    main_frame = objects_to_text_yolo(
-                        main_frame,
-                        boxes,
-                        indexes,
-                        class_ids,
-                        ascii_size_value,
-                        ascii_interval_value,
-                        rcnn_blur_value,
-                        ascii_thickness_value,
-                    )
-
-                # Draw YOLO objects with canny edge detection on black background
-                if render_modes_dict['canny_people_on_black']:
-                    main_frame = canny_people_on_black_yolo(
-                        main_frame, boxes, indexes, class_ids
-                    )
-
-                # Draw YOLO objects with canny edge detection on source colored background
-                if render_modes_dict['canny_people_on_background']:
-                    main_frame = canny_people_on_background_yolo(
-                        main_frame, boxes, indexes, class_ids
-                    )
-
-            # Modes that use MASK R-CNN
-            if render_modes_dict['using_mask_rcnn_network']:
-                # Find all masks with classes
-                boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
-
-                # Convert background to grayscale and add color objects
-                if render_modes_dict['color_objects_on_gray']:
-                    main_frame = colorizer_people_rcnn(
-                        main_frame, boxes, masks, confidence_value, rcnn_size_value
-                    )
-
-                # Convert background to grayscale with blur and add color objects
-                if render_modes_dict['color_objects_on_gray_blur']:
-                    main_frame = colorizer_people_with_blur_rcnn(
-                        main_frame, boxes, masks, confidence_value
-                    )
-
-                # Blur background behind RCNN objects
-                if render_modes_dict['color_objects_blur']:
-                    main_frame = people_with_blur_rcnn(
-                        main_frame,
-                        boxes,
-                        masks,
-                        labels,
-                        confidence_value,
-                        rcnn_size_value,
-                        rcnn_blur_value,
-                    )
-
-                # Draw MASK R-CNN objects with canny edge detection on black background
-                if render_modes_dict['extract_and_cut_background']:
-                    main_frame = extract_and_cut_background_rcnn(
-                        main_frame, boxes, masks, labels, confidence_value
-                    )
-
-                # Draw MASK R-CNN objects on animated background
-                if render_modes_dict['extract_and_replace_background']:
-                    main_frame = extract_and_replace_background_rcnn(
-                        main_frame,
-                        frame_background,
-                        boxes,
-                        masks,
-                        labels,
-                        colors,
-                        confidence_value,
-                    )
-
-                # Draw MASK R-CNN objects with canny edge detection on canny blurred background
-                if render_modes_dict['color_canny']:
-                    main_frame = color_canny_rcnn(
-                        main_frame,
-                        boxes,
-                        masks,
-                        labels,
-                        confidence_value,
-                        rcnn_blur_value,
-                    )
-
-                #Draw MASK R-CNN objects with canny edge detection on source background
-                if render_modes_dict['color_canny_on_background']:
-                    main_frame = color_canny_on_color_background_rcnn(
-                        main_frame, boxes, masks, labels, confidence_value
-                    )
-
-            # Grayscale frame color restoration with caffe neural network
-            if render_modes_dict['using_caffe_network']:
-                if render_modes_dict['caffe_colorization']:
-                    main_frame = colorizer_caffe(caffe_network, main_frame)
-
-            # Cartoon effect (canny, dilate, color quantization with k-means, denoise, sharpen)
-            if render_modes_dict['cartoon_effect']:
-                frame_copy = main_frame.copy()
-
-                if blur_canny_value % 2 == 0:
-                    blur_canny_value += 1
-                    main_frame = cv2.GaussianBlur(
-                        main_frame,
-                        (blur_canny_value, blur_canny_value),
-                        blur_canny_value,
-                    )
-                else:
-                    main_frame = cv2.GaussianBlur(
-                        main_frame,
-                        (blur_canny_value, blur_canny_value),
-                        blur_canny_value,
-                    )
-
-                main_frame = cv2.Canny(main_frame, 50, 50)
-                main_frame = cv2.cvtColor(main_frame, cv2.COLOR_GRAY2BGR)
-                kernel = np.ones((line_thickness_value, line_thickness_value), np.uint8)
-                main_frame = cv2.dilate(main_frame, kernel, iterations=1)
-                frame_copy[np.where((main_frame > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
-                frame_copy = limit_colors_kmeans(frame_copy, color_count_value)
-                # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
-                main_frame = frame_copy
-                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
-                main_frame = denoise(main_frame, denoise_value, denoise_value2)
-
-            # Pencil drawer (canny, k-means quantization to 2 colors, denoise)
-            if render_modes_dict['pencil_drawer']:
-                frame_copy = main_frame.copy()
-
-                if blur_canny_value % 2 == 0:
-                    blur_canny_value += 1
-                    main_frame = cv2.GaussianBlur(
-                        main_frame,
-                        (blur_canny_value, blur_canny_value),
-                        blur_canny_value,
-                    )
-                else:
-                    main_frame = cv2.GaussianBlur(
-                        main_frame,
-                        (blur_canny_value, blur_canny_value),
-                        blur_canny_value,
-                    )
-
-                # main_frame = morph_edge_detection(main_frame)
-                main_frame = cv2.Canny(main_frame, 50, 50)
-                main_frame = cv2.cvtColor(main_frame, cv2.COLOR_GRAY2BGR)
-                kernel = np.ones((line_thickness_value, line_thickness_value), np.uint8)
-                main_frame = cv2.dilate(main_frame, kernel, iterations=1)
-                frame_copy[np.where((main_frame > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
-                frame_copy = limit_colors_kmeans(frame_copy, 2)
-                # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
-                main_frame = frame_copy
-                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
-                main_frame = denoise(main_frame, denoise_value, denoise_value2)
-                # main_frame = np.bitwise_not(main_frame)
-
-            # Pencil drawer (k-means quantization to 2 colors, denoise)
-            if render_modes_dict['two_colored']:
-                frame_copy = main_frame.copy()
-                # main_frame = morph_edge_detection(main_frame)
-                kernel = np.ones((line_thickness_value, line_thickness_value), np.uint8)
-                # main_frame = cv2.dilate(main_frame,kernel,iterations = 1)
-                # frame_copy[np.where((main_frame > [0, 0, 0]).all(axis=2))] = [0,0,0]
-                frame_copy = limit_colors_kmeans(frame_copy, 2)
-                # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
-                main_frame = frame_copy
-                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
-                main_frame = denoise(main_frame, denoise_value, denoise_value2)
-
-            # Super-resolution upscaler with EDSR, LapSRN and FSRCNN
-            if render_modes_dict['upscale_opencv']:
-                main_frame = upscale_with_superres(superres_network, main_frame)
-                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
-
-            # Super-resolution upscaler with ESRGAN (FALCOON, MANGA, PSNR models)
-            if render_modes_dict['upscale_esrgan']:
-                main_frame = upscale_with_esrgan(esrgan_network, device, main_frame)
-                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
-
-            # Draw frame with ASCII chars
-            if render_modes_dict['ascii_painter']:
-                main_frame = ascii_paint(
-                    main_frame,
-                    ascii_size_value,
-                    ascii_interval_value,
-                    ascii_thickness_value,
-                    rcnn_blur_value,
-                )
-
-            # Denoise and sharpen
-            if render_modes_dict['denoise_and_sharpen']:
-                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
-                main_frame = denoise(main_frame, denoise_value, denoise_value2)
-
-            # Sobel filter
-            if render_modes_dict['sobel']:
-                main_frame = denoise(main_frame, denoise_value, denoise_value2)
-                main_frame = sharpening(main_frame, sharpening_value, sharpening_value2)
-                grad_x = cv2.Sobel(main_frame, cv2.CV_64F, 1, 0, ksize=sobel_value)
-                grad_y = cv2.Sobel(main_frame, cv2.CV_64F, 0, 1, ksize=sobel_value)
-                main_frame = cv2.addWeighted(grad_x, 0.5, grad_y, 0.5, 0)
-
-            # Boost fps with Depth-Aware Video Frame Interpolation
-            # Process interpolation only if user pressed START button
-            if render_modes_dict['boost_fps_dain'] and started_rendering_video:
-                frame_boost_sequence, frame_boost_list = boost_fps_with_dain(dain_network, f, f1, True)
-
-            # Apply brightness and contrast settings for all modes
-            main_frame = adjust_br_contrast(main_frame, contrast_value, brightness_value)
-            main_frame = adjust_saturation(main_frame, saturation_value)
+            main_frame, frame_boost_sequence, frame_boost_list = \
+                render_with_mode(render_modes_dict, ajax_settings_dict, main_frame, frame_background, f, f1, yolo_network,
+                                 rcnn_network, caffe_network, superres_network, dain_network, esrgan_network,
+                                 device, output_layers, classes_index, zip_obj, zip_is_opened, zipped_images,
+                                 server_states, started_rendering_video)
 
             with lock:
-
                 check_if_user_is_connected(timer_start, 7) # Terminate process if browser tab was closed
                 server_states.frame_processed += 1
 
@@ -707,88 +467,88 @@ def process_frame():
                 resized = cv2.resize(main_frame, (x_size, 512))
 
                 # Draw YOLO stats on frame
-                if render_modes_dict['extract_objects_yolo_mode']:
-                    # class_index_count = [
-                    #     [0 for x in range(80)] for x in range(len(stream_list))
-                    # ]
-                    class_index_count = [
-                        [0 for x in range(80)] for x in range(1)
-                    ]
-
-                    row_index = 1
-                    for m in range(80):
-                        for k in range(len(classes_index[0])):
-                            if m == classes_index[0][k]:
-                                class_index_count[0][m] += 1
-
-                        if class_index_count[0][m] != 0:
-                            row_index += 1
-
-                            if classes[m] == "person":
-                                cv2.rectangle(
-                                    resized,
-                                    (20, row_index * 40 - 25),
-                                    (270, row_index * 40 + 11),
-                                    (0, 0, 0),
-                                    -1,
-                                )
-                                cv2.putText(
-                                    resized,
-                                    classes[m] + ": " + str(class_index_count[0][m]),
-                                    (40, row_index * 40),
-                                    font,
-                                    1,
-                                    (0, 255, 0),
-                                    2,
-                                    lineType=cv2.LINE_AA,
-                                )
-
-                            if classes[m] == "car":
-                                cv2.rectangle(
-                                    resized,
-                                    (20, row_index * 40 - 25),
-                                    (270, row_index * 40 + 11),
-                                    (0, 0, 0),
-                                    -1,
-                                )
-                                cv2.putText(
-                                    resized,
-                                    classes[m] + ": " + str(class_index_count[0][m]),
-                                    (40, row_index * 40),
-                                    font,
-                                    1,
-                                    (255, 0, 255),
-                                    2,
-                                    lineType=cv2.LINE_AA,
-                                )
-
-                            if (classes[m] != "car") & (classes[m] != "person"):
-                                cv2.rectangle(
-                                    resized,
-                                    (20, row_index * 40 - 25),
-                                    (270, row_index * 40 + 11),
-                                    (0, 0, 0),
-                                    -1,
-                                )
-                                cv2.putText(
-                                    resized,
-                                    classes[m] + ": " + str(class_index_count[0][m]),
-                                    (40, row_index * 40),
-                                    font,
-                                    1,
-                                    colors_yolo[m],
-                                    2,
-                                    lineType=cv2.LINE_AA,
-                                )
-
-                            # Example of handbag detection
-                            if (classes[m] == "handbag") | (classes[m] == "backpack"):
-                                passFlag = True
-                                print("handbag detected! -> PASS")
+                # if render_modes_dict['extract_objects_yolo_mode']:
+                #     # class_index_count = [
+                #     #     [0 for x in range(80)] for x in range(len(stream_list))
+                #     # ]
+                #     class_index_count = [
+                #         [0 for x in range(80)] for x in range(1)
+                #     ]
+                #
+                #     row_index = 1
+                #     for m in range(80):
+                #         for k in range(len(classes_index[0])):
+                #             if m == classes_index[0][k]:
+                #                 class_index_count[0][m] += 1
+                #
+                #         if class_index_count[0][m] != 0:
+                #             row_index += 1
+                #
+                #             if classes[m] == "person":
+                #                 cv2.rectangle(
+                #                     resized,
+                #                     (20, row_index * 40 - 25),
+                #                     (270, row_index * 40 + 11),
+                #                     (0, 0, 0),
+                #                     -1,
+                #                 )
+                #                 cv2.putText(
+                #                     resized,
+                #                     classes[m] + ": " + str(class_index_count[0][m]),
+                #                     (40, row_index * 40),
+                #                     font,
+                #                     1,
+                #                     (0, 255, 0),
+                #                     2,
+                #                     lineType=cv2.LINE_AA,
+                #                 )
+                #
+                #             if classes[m] == "car":
+                #                 cv2.rectangle(
+                #                     resized,
+                #                     (20, row_index * 40 - 25),
+                #                     (270, row_index * 40 + 11),
+                #                     (0, 0, 0),
+                #                     -1,
+                #                 )
+                #                 cv2.putText(
+                #                     resized,
+                #                     classes[m] + ": " + str(class_index_count[0][m]),
+                #                     (40, row_index * 40),
+                #                     font,
+                #                     1,
+                #                     (255, 0, 255),
+                #                     2,
+                #                     lineType=cv2.LINE_AA,
+                #                 )
+                #
+                #             if (classes[m] != "car") & (classes[m] != "person"):
+                #                 cv2.rectangle(
+                #                     resized,
+                #                     (20, row_index * 40 - 25),
+                #                     (270, row_index * 40 + 11),
+                #                     (0, 0, 0),
+                #                     -1,
+                #                 )
+                #                 cv2.putText(
+                #                     resized,
+                #                     classes[m] + ": " + str(class_index_count[0][m]),
+                #                     (40, row_index * 40),
+                #                     font,
+                #                     1,
+                #                     colors_yolo[m],
+                #                     2,
+                #                     lineType=cv2.LINE_AA,
+                #                 )
+                #
+                #             # Example of handbag detection
+                #             if (classes[m] == "handbag") | (classes[m] == "backpack"):
+                #                 passFlag = True
+                #                 print("handbag detected! -> PASS")
 
                 if server_states.source_mode == "image":
                     cv2.imwrite(
-                        f"static/output{args['port']}{server_states.source_image}",
+                        f"static/user_renders/output{args['port']}{server_states.source_image}",
                         main_frame,
                     )
 
@@ -843,7 +603,7 @@ def process_frame():
                                 * 100
                         )
 
-                # Draw processing stats on frame
+                # Draw stats on frame
                 cv2.putText(
                     resized,
                     f"FPS: {str(round(fps, 2))} ({str(main_frame.shape[1])}x{str(main_frame.shape[0])})",
@@ -852,7 +612,7 @@ def process_frame():
                     0.8,
                     (0, 0, 255),
                     2,
-                    lineType=cv2.LINE_AA,
+                    lineType=cv2.LINE_AA
                 )
 
                 # Copy resized frame to HTML output
@@ -866,11 +626,11 @@ def process_frame():
                 if server_states.need_to_create_screenshot:
                     print("Taking screenshot...")
                     cv2.imwrite(
-                        f"static/output{args['port']}Screenshot.png", main_frame
+                        f"static/user_renders/output{args['port']}Screenshot.png", main_frame
                     )
                     time.sleep(1)
                     server_states.screenshot_path = (
-                        f"static/output{args['port']}Screenshot.png"
+                        f"static/user_renders/output{args['port']}Screenshot.png"
                     )
                     server_states.screenshot_ready = True
         # ... otherwise stop rendering
@@ -882,13 +642,7 @@ def process_frame():
             print("finished")
 
 
-UPLOAD_FOLDER = ""
-ALLOWED_EXTENSIONS = set(
-    ["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"]
-)
-
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
@@ -901,17 +655,13 @@ def generate():
         with lock:
             if output_frame is None:
                 continue
-
             (flag, encoded_image) = cv2.imencode(".jpg", output_frame)
-
             if not flag:
                 continue
-
         yield (
                 b"--frame\r\n"
                 b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encoded_image) + b"\r\n"
         )
-
     print("yield finished")
 
 
@@ -934,7 +684,7 @@ def index(device=None, action=None):
                 cap2 = cv2.VideoCapture("input_videos/snow.webm")
             else:
                 server_states.source_mode = "video"
-                cap = cv2.VideoCapture(filename)
+                cap = cv2.VideoCapture(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                 server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                 cap2 = cv2.VideoCapture("input_videos/snow.webm")
 
@@ -959,8 +709,8 @@ def index(device=None, action=None):
     return render_template(
         "index.html",
         frame_processed=server_states.frame_processed,
-        pathToRenderedFile=f"static/output{args['port']}{file_output}",
-        pathToZipFile=f"static/objects{args['port']}.zip",
+        pathToRenderedFile=f"static/user_renders/output{args['port']}{file_output}",
+        pathToZipFile=f"static/user_renders/output{args['port']}.zip",
     )
 
 
@@ -1015,27 +765,27 @@ def send_stats():
 
 @app.route("/settings", methods=["GET", "POST"])
 def receive_settings():
-    global input_data, timer_start, timer_end, writer, server_states, commands
+    global ajax_settings_dict, timer_start, timer_end, writer, server_states, commands
 
     if request.method == "POST":
         print("POST")
         timer_start = time.perf_counter()
-        input_data = request.get_json()
+        ajax_settings_dict = request.get_json()
 
         if not server_states.mode_reset_lock:
-            if bool(input_data["modeResetCommand"]):
+            if bool(ajax_settings_dict["modeResetCommand"]):
                 server_states.mode_reset_lock = True
 
         if not server_states.video_stop_lock:
-            if bool(input_data["videoStopCommand"]):
+            if bool(ajax_settings_dict["videoStopCommand"]):
                 server_states.video_stop_lock = True
 
         if not server_states.video_reset_lock:
-            if bool(input_data["videoResetCommand"]):
+            if bool(ajax_settings_dict["videoResetCommand"]):
                 server_states.video_reset_lock = True
 
         if not server_states.screenshot_lock:
-            if bool(input_data["screenshotCommand"]):
+            if bool(ajax_settings_dict["screenshotCommand"]):
                 server_states.screenshot_lock = True
 
     return "", 200

@@ -528,9 +528,9 @@ def extract_objects_yolo(
                 and zip_is_opened
                 and source_mode in ("video", "youtube")
             ):
-                cv2.imwrite(f"static/{label}{str(object_index)}.jpg", crop_img)
-                zip_archive.write(f"static/{label}{str(object_index)}.jpg")
-                os.remove(f"static/{label}{str(object_index)}.jpg")
+                cv2.imwrite(f"static/user_renders/{label}{str(object_index)}.jpg", crop_img)
+                zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
+                os.remove(f"static/user_renders/{label}{str(object_index)}.jpg")
 
             if (
                 started_rendering_mode
@@ -538,9 +538,9 @@ def extract_objects_yolo(
                 and source_mode == "image"
                 and zipped_images == False
             ):
-                cv2.imwrite(f"static/{label}{str(object_index)}.jpg", crop_img)
-                zip_archive.write(f"static/{label}{str(object_index)}.jpg")
-                os.remove(f"static/{label}{str(object_index)}.jpg")
+                cv2.imwrite(f"static/user_renders/{label}{str(object_index)}.jpg", crop_img)
+                zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
+                os.remove(f"static/user_renders/{label}{str(object_index)}.jpg")
 
             object_index += 1
 

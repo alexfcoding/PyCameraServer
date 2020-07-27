@@ -9,7 +9,7 @@ from flask import render_template
 import subprocess
 import time
 
-UPLOAD_FOLDER = ""
+UPLOAD_FOLDER = "static/user_uploads/"
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"])
 
 app = Flask(__name__, static_url_path="/static")
@@ -63,7 +63,6 @@ def upload_file():
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
-
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 
@@ -105,7 +104,7 @@ def start_analysis(port_to_render, file_to_render, options, mode):
             "-o",
             str(port_to_render),
             "-s",
-            str(file_to_render),
+            f"{UPLOAD_FOLDER}{file_to_render}",
             "-c",
             str_from_list,
             "-m",
