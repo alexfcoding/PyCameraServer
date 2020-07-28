@@ -7,9 +7,7 @@ import threading
 import argparse
 from flask import request, Response
 import psutil
-import time
-from render_modes import *
-from rendering import *
+from mode_selector import *
 from werkzeug.utils import secure_filename
 from zipfile import ZipFile
 import pafy
@@ -98,6 +96,7 @@ ajax_settings_dict = {
 }
 
 server_states = RenderState() # Global instance for accessing settings from requests and rendering loop
+
 timer_start = 0 # Start timer for stopping rendering if user closed tab
 timer_end = 0 # End timer for stopping rendering if user closed tab
 user_time = 0 # For user timer debug
@@ -115,8 +114,8 @@ writer = None # Writer for video saving
 def check_if_user_is_connected(timer_start, seconds_to_disconnect):
     """
     Stops rendering process after a few seconds if user closed browser tab
-    :param timer_start: a moment of last AJAX user ping
-    :param seconds_to_disconnect: a number of seconds to shutdown
+    :param timer_start: moment of last AJAX user ping
+    :param seconds_to_disconnect: number of seconds to shutdown
     :return:
     """
     global user_time
@@ -208,7 +207,8 @@ def process_frame():
     # main_frame = None
     f = f1 = None # Two source frames for interpolation
 
-    # Main loop for processing
+    # =============================== Main processing loop ===============================
+
     while server_states.working_on:
         # Receive all HTML slider values from JSON dictionary
         if ajax_settings_dict is not None:
@@ -232,7 +232,7 @@ def process_frame():
                 started_rendering_video = True
                 received_zip_command = True
                 server_states.video_reset_lock = False
-                print("in loop reset")
+                # print("in loop reset")
             else:
                 position_value = position_value_local # Read frame position from slider
 
@@ -241,11 +241,11 @@ def process_frame():
                 position_value = 1
                 started_rendering_video = False
                 server_states.video_stop_lock = False
-                print("in loop stop")
+                # print("in loop stop")
 
             # Check if taking screenshot command was received
             if server_states.screenshot_lock:
-                print("in loop screenshot")
+                # print("in loop screenshot")
                 server_states.need_to_create_screenshot = True
                 server_states.screenshot_lock = False
         else:
@@ -257,7 +257,7 @@ def process_frame():
             # Reset all modes
             for mode in render_modes_dict:
                 render_modes_dict[mode] = False
-            print("need mode reset")
+            # print("need mode reset")
 
             # Reinitialize upscale networks with user models from page
             superres_network = initialize_superres_network(server_states.superres_model)
@@ -348,6 +348,7 @@ def process_frame():
             # If stopped rendering
             if not started_rendering_video:
                 cap.set(1, position_value) # Set current video position from HTML slider value
+                server_states.frame_processed = 0
                 if need_to_stop_new_zip:
                     zip_obj.close()
                     zip_is_opened = False
@@ -446,9 +447,10 @@ def process_frame():
         classes_index = []
         start_moment = time.time()  # Timer for FPS calculation
         
-        # Process frame with render modes and settings
+        # =============================== Process frame with render modes and settings ===============================
+
         if main_frame is not None:
-            main_frame, frame_boost_sequence, frame_boost_list = \
+            main_frame, frame_boost_sequence, frame_boost_list, classes_index = \
                 render_with_mode(render_modes_dict, ajax_settings_dict, main_frame, frame_background, f, f1, yolo_network,
                                  rcnn_network, caffe_network, superres_network, dain_network, esrgan_network,
                                  device, output_layers, classes_index, zip_obj, zip_is_opened, zipped_images,
@@ -462,89 +464,12 @@ def process_frame():
                 fps = 1 / (elapsed_time - start_moment)
 
                 # Resize frame for HTML preview with correct aspect ratio
-                x_coeff = 512 / main_frame.shape[0]
+                x_coeff = 460 / main_frame.shape[0]
                 x_size = round(x_coeff * main_frame.shape[1])
-                resized = cv2.resize(main_frame, (x_size, 512))
+                resized = cv2.resize(main_frame, (x_size, 460))
 
-                # Draw YOLO stats on frame
-                # if render_modes_dict['extract_objects_yolo_mode']:
-                #     # class_index_count = [
-                #     #     [0 for x in range(80)] for x in range(len(stream_list))
-                #     # ]
-                #     class_index_count = [
-                #         [0 for x in range(80)] for x in range(1)
-                #     ]
-                #
-                #     row_index = 1
-                #     for m in range(80):
-                #         for k in range(len(classes_index[0])):
-                #             if m == classes_index[0][k]:
-                #                 class_index_count[0][m] += 1
-                #
-                #         if class_index_count[0][m] != 0:
-                #             row_index += 1
-                #
-                #             if classes[m] == "person":
-                #                 cv2.rectangle(
-                #                     resized,
-                #                     (20, row_index * 40 - 25),
-                #                     (270, row_index * 40 + 11),
-                #                     (0, 0, 0),
-                #                     -1,
-                #                 )
-                #                 cv2.putText(
-                #                     resized,
-                #                     classes[m] + ": " + str(class_index_count[0][m]),
-                #                     (40, row_index * 40),
-                #                     font,
-                #                     1,
-                #                     (0, 255, 0),
-                #                     2,
-                #                     lineType=cv2.LINE_AA,
-                #                 )
-                #
-                #             if classes[m] == "car":
-                #                 cv2.rectangle(
-                #                     resized,
-                #                     (20, row_index * 40 - 25),
-                #                     (270, row_index * 40 + 11),
-                #                     (0, 0, 0),
-                #                     -1,
-                #                 )
-                #                 cv2.putText(
-                #                     resized,
-                #                     classes[m] + ": " + str(class_index_count[0][m]),
-                #                     (40, row_index * 40),
-                #                     font,
-                #                     1,
-                #                     (255, 0, 255),
-                #                     2,
-                #                     lineType=cv2.LINE_AA,
-                #                 )
-                #
-                #             if (classes[m] != "car") & (classes[m] != "person"):
-                #                 cv2.rectangle(
-                #                     resized,
-                #                     (20, row_index * 40 - 25),
-                #                     (270, row_index * 40 + 11),
-                #                     (0, 0, 0),
-                #                     -1,
-                #                 )
-                #                 cv2.putText(
-                #                     resized,
-                #                     classes[m] + ": " + str(class_index_count[0][m]),
-                #                     (40, row_index * 40),
-                #                     font,
-                #                     1,
-                #                     colors_yolo[m],
-                #                     2,
-                #                     lineType=cv2.LINE_AA,
-                #                 )
-                #
-                #             # Example of handbag detection
-                #             if (classes[m] == "handbag") | (classes[m] == "backpack"):
-                #                 passFlag = True
-                #                 print("handbag detected! -> PASS")
+                if render_modes_dict['extract_objects_yolo_mode']:
+                    resized = draw_yolo_stats(resized, classes_index, font)
 
                 if server_states.source_mode == "image":
                     cv2.imwrite(
@@ -801,9 +726,9 @@ if __name__ == "__main__":
         "--port",
         type=int,
         required=True,
-        help="ephemeral port number of the server (1024 to 65535)",
+        help="port number of the server",
     )
-    ap.add_argument("-s", "--source", type=str, default=32, help="# file to render")
+    ap.add_argument("-s", "--source", type=str, default=32, help="file to render")
     ap.add_argument(
         "-c", "--optionsList", type=str, required=True, help="rendering options"
     )

@@ -70,173 +70,205 @@
             cursor: pointer;
             font-size: 10pt;
         }
+
     </style>
 
 </head>
 
 <body style="background-color:#1d1d1d;">
-    <div style="text-align: center;">
-            <div style="margin: 5px;">
-                <div id="grid">
-                    <div>
-                        <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
-                    </div>
-                    <div>
-                        <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
-                    </div>
-                    <div>
-                        <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
-                    </div>
-                    <div>
-                        <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
-                    </div>
-
-                    <div>
-                        <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
-                    </div>
-                    <div>
-                        <h1 id="freeRam" style="color: rgb(255, 255, 255);">0</h1>
-                    </div>
-
-                    <div>
-                        <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
-                    </div>
-                </div>
+<div style="text-align: center;">
+    <div style="margin: 5px;">
+        <div id="grid">
+            <div>
+                <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
             </div>
             <div>
-                <img style="max-width: 70%; border-radius: 20px; box-shadow: 6px 4px 8px #000000;"
-                    src="{{ url_for('video_feed') }}">
+                <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
             </div>
-
-            <div style="margin-bottom: 10px; margin-top: 5px;">
-
-                <div style="display: inline-block; ">
-                    <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
-                    <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
-                    <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE
-                        SCREENSHOT</button>
-
-                    <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
-
-                    <button style="border-radius: 7px; height: 30px;"
-                        onclick="window.open('{{pathToRenderedFile}}')">DOWNLOAD RENDER</button>
-                    <button id="downloadObjectsId" style="border-radius: 7px; height: 30px;"
-                        onclick="window.open('{{pathToZipFile}}')">DOWNLOAD OBJECTS</button>
-
-                    <!-- <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
-                        href="http://192.168.0.12:8000">HOME PAGE</a> -->
-                </div>
+            <div>
+                <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
             </div>
 
             <div>
-                <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">RENDER MODE:</div>
-                <div
-                    style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                    <select id="modesId"
-                        onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand(), this.form.submit()">
-                        <optgroup label="YOLO MODEL">
-                            <option value="a">OBJECTS EXTRACTOR</option>
-                            <option value="b">BLUR OBJECTS WITH ASCII</option>
-                        </optgroup>
-                        <optgroup label="MASK R-CNN MODEL">
-                            <option value="k">GRAY BACKGROUND</option>
-                            <option value="m">GAUSSIAN BLUR BACKGROUND</option>
-                            <option value="j">CANNY AND GAUSSIAN BLUR</option>
-                            <option value="i">CANNY + ANIMATE BACKGROUND</option>
-                        </optgroup>
-                        <optgroup label="CAFFE MODEL">
-                            <option value="f">NEURAL NETWORK COLORIZER</option>
-                        </optgroup>
-                        <optgroup label="X4 UPSCALE MODELS">
-                            <option value="n">EDSR / LAPSRN / FSRNN</option>
-                            <option value="t">ESRGAN / PSNR</option>
-                        </optgroup>
-                        <optgroup label="FPS BOOST">
-                            <option value="z">DAIN X7</option>
-                        </optgroup>
-                        <optgroup label="WITHOUT NEURAL NETWORKS">
-                            <option value="q">ASCII PAINTER</option>
-                            <option value="e">CARTOON STYLE</option>
-                            <option value="r">PENCIL DRAWER</option>
-                            <option value="s">TWO-COLORED</option>
-                            <option value="o">DENOISE + SHARPEN</option>
-                            <option value="p">SOBEL FILTER</option>
-                        </optgroup>
-                    </select>
-                </div>
-                
-                <div
-                    style="display: inline-block; text-align: center; margin-top: 10px; margin-left: 20px; box-shadow: 6px 4px 8px #000000;">
-                    <form action="" method=post enctype=multipart/form-data>
-                        <label class="getFileLabel"
-                            style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255);"
-                            for="sendFileId">UPLOAD NEW...</label>
-                        <input style="display:none" id="sendFileId" name="file" type="file"
-                            onchange="sendStopCommand(), form.submit()" />
-
-                        <!-- <label></label>
-                        <input type="file" name="file" multiple class="choose"
-                            onchange="sendStopCommand(), form.submit()"> -->
-                    </form>
-                </div>
-
-                <div id="superresIdBlock">
-                    <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER MODEL:</div>
-                    <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                        <select id="modelsSuperresId"
-                            onchange="sendStopCommand(), resetSettings(), sendModelChangeCommand(), this.form.submit()">
-                            <optgroup label="UPSCALE MODELS">
-                                <option value="LAPSRN">LapSRN (SLOW)</option>
-                                <option value="EDSR">EDSR (VERY SLOW)</option>
-                                <option value="FSRCNN">FSRCNN (FAST)</option>
-                                <option value="FSRCNN_SMALL">FSRCNN-SMALL (VERY FAST)</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="esrganIdBlock">
-                    <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER MODEL:</div>
-                    <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                        <select id="modelsEsrganId"
-                            onchange="sendStopCommand(), resetSettings(), sendEsrganChangeCommand(), this.form.submit()">
-                            <optgroup label="ESRGAN MODELS">
-                                <option value="FALCOON">FALCOON</option>
-                                <option value="MANGA">MANGA109</option>
-                                <option value="RRDB_ESRGAN">RRDB_ESRGAN</option>
-                                <option value="RRDB_PSNR">RRDB_PSNR</option>
-                                <option value="RRDB_INTERP_0.2">ESRGAN-PSNR INTERPOLATION_0.2</option>
-                                <option value="RRDB_INTERP_0.4">ESRGAN-PSNR INTERPOLATION_0.4</option>
-                                <option value="RRDB_INTERP_0.6">ESRGAN-PSNR INTERPOLATION_0.6</option>
-                                <option value="RRDB_INTERP_0.8">ESRGAN-PSNR INTERPOLATION_0.8</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
+                <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
+            <div>
+                <h1 id="freeRam" style="color: rgb(255, 255, 255);">0</h1>
             </div>
 
-        <div class="positionSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">POSITION:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="positionValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 5px; height: 20px; background-color: #c5c5c5; width: 810px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId"> </div>
+            <div>
+                <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
+            </div>
         </div>
-        <div style="display: inline-block; max-width: 1000px; text-align: center; ">
-            <div style="display: inline-block; margin-bottom: 10px;">
-                <div style="display: inline-block; font-size: 16px; color: white;">SATURATION:</div>
-                <div style=" display: inline-block;font-size: 16px; color: white;" id="saturationValue"></div>
-                <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
-                        type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"> </div>
-            </div>
+    </div>
 
-            <div class="renderSettings">
-                <div style=" display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
+    <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">RENDER MODE:</div>
+    <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+        <select id="modesId" onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand(), this.form.submit()">
+            <optgroup label="YOLO MODEL">
+                <option value="a">OBJECTS EXTRACTOR</option>
+                <option value="b">BLUR OBJECTS WITH ASCII</option>
+            </optgroup>
+            <optgroup label="MASK R-CNN MODEL">
+                <option value="k">GRAY BACKGROUND</option>
+                <option value="m">GAUSSIAN BLUR BACKGROUND</option>
+                <option value="j">CANNY AND GAUSSIAN BLUR</option>
+                <option value="i">CANNY + ANIMATE BACKGROUND</option>
+            </optgroup>
+            <optgroup label="CAFFE MODEL">
+                <option value="f">NEURAL NETWORK COLORIZER</option>
+            </optgroup>
+            <optgroup label="X4 UPSCALE MODELS">
+                <option value="n">EDSR / LAPSRN / FSRNN</option>
+                <option value="t">ESRGAN / PSNR</option>
+            </optgroup>
+            <optgroup label="FPS BOOST">
+                <option value="z">DAIN X7</option>
+            </optgroup>
+            <optgroup label="WITHOUT NEURAL NETWORKS">
+                <option value="q">ASCII PAINTER</option>
+                <option value="e">CARTOON STYLE</option>
+                <option value="r">PENCIL DRAWER</option>
+                <option value="s">TWO-COLORED</option>
+                <option value="o">DENOISE + SHARPEN</option>
+                <option value="p">SOBEL FILTER</option>
+            </optgroup>
+        </select>
+    </div>
+
+    <div
+            style="display: inline-block; text-align: center; margin-top: 10px; margin-left: 20px; box-shadow: 6px 4px 8px #000000;">
+        <form action="" method=post enctype=multipart/form-data>
+            <label class="getFileLabel"
+                   style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255);"
+                   for="sendFileId">UPLOAD NEW FILE</label>
+            <input style="display:none" id="sendFileId" name="file" type="file"
+                   onchange="sendStopCommand(), form.submit()"/>
+
+            <!-- <label></label>
+            <input type="file" name="file" multiple class="choose"
+                onchange="sendStopCommand(), form.submit()"> -->
+        </form>
+    </div>
+
+
+    <div style="margin-top: 15px; ">
+        <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">YOUTUBE LINK:</div>
+        <input type="text" name="textbox" size="20">
+        <div style="margin-left: 20px; display: inline-block;">
+            <label class="getFileLabel"
+                   style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255); box-shadow: 6px 4px 8px #000000;"
+                   for="setModeAYVideo">CONNECT</label>
+            <input style="display: none;" type="submit" id="setModeAYVideo"
+                   onclick="callVideoOrImage('youtube'), callYoutube('a')"/>
+        </div>
+        <div style="display:inline-block;">
+            <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">IP CAMERA:</div>
+            <input type="text" name="textbox" size="20">
+            <div style="margin-left: 20px; display: inline-block;">
+                <label class="getFileLabel"
+                       style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255); box-shadow: 6px 4px 8px #000000;"
+                       for="setModeAYVideo">CONNECT</label>
+                <input style="display: none;" type="submit" id="setModeAYVideo"
+                       onclick="callVideoOrImage('youtube'), callYoutube('a')"/>
+            </div>
+        </div>
+    </div>
+
+
+    <div>
+        <img style="max-width: 60%; border-radius: 20px; box-shadow: 6px 4px 8px #000000; margin-top: 10px; margin-bottom: 5px;"
+             src="{{ url_for('video_feed') }}">
+    </div>
+
+    <div style="margin-bottom: 10px; margin-top: 5px;">
+
+        <div style="display: inline-block; ">
+            <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
+            <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
+            <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE
+                SCREENSHOT
+            </button>
+
+            <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
+
+            <button style="border-radius: 7px; height: 30px;"
+                    onclick="window.open('{{pathToRenderedFile}}')">DOWNLOAD RENDER
+            </button>
+            <button id="downloadObjectsId" style="border-radius: 7px; height: 30px;"
+                    onclick="window.open('{{pathToZipFile}}')">DOWNLOAD OBJECTS
+            </button>
+
+            <!-- <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
+                href="http://192.168.0.12:8000">HOME PAGE</a> -->
+        </div>
+    </div>
+
+    <div>
+        <div id="superresIdBlock">
+            <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER
+                MODEL:
+            </div>
+            <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                <select id="modelsSuperresId"
+                        onchange="sendStopCommand(), resetSettings(), sendModelChangeCommand(), this.form.submit()">
+                    <optgroup label="UPSCALE MODELS">
+                        <option value="LAPSRN">LapSRN (SLOW)</option>
+                        <option value="EDSR">EDSR (VERY SLOW)</option>
+                        <option value="FSRCNN">FSRCNN (FAST)</option>
+                        <option value="FSRCNN_SMALL">FSRCNN-SMALL (VERY FAST)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+
+        <div id="esrganIdBlock">
+            <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER
+                MODEL:
+            </div>
+            <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                <select id="modelsEsrganId"
+                        onchange="sendStopCommand(), resetSettings(), sendEsrganChangeCommand(), this.form.submit()">
+                    <optgroup label="ESRGAN MODELS">
+                        <option value="FALCOON">FALCOON</option>
+                        <option value="MANGA">MANGA109</option>
+                        <option value="RRDB_ESRGAN">RRDB_ESRGAN</option>
+                        <option value="RRDB_PSNR">RRDB_PSNR</option>
+                        <option value="RRDB_INTERP_0.2">ESRGAN-PSNR INTERPOLATION_0.2</option>
+                        <option value="RRDB_INTERP_0.4">ESRGAN-PSNR INTERPOLATION_0.4</option>
+                        <option value="RRDB_INTERP_0.6">ESRGAN-PSNR INTERPOLATION_0.6</option>
+                        <option value="RRDB_INTERP_0.8">ESRGAN-PSNR INTERPOLATION_0.8</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="positionSettings">
+        <div style="display: inline-block; font-size: 16px; color: white;">POSITION:</div>
+        <div style=" display: inline-block;font-size: 16px; color: white;" id="positionValue"></div>
+        <div><input
+                style="-webkit-appearance: none; appearance: none; border-radius: 5px; height: 20px; background-color: #c5c5c5; width: 810px; box-shadow: 6px 4px 8px #000000;"
+                type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId"></div>
+    </div>
+    <div style="display: inline-block; max-width: 1000px; text-align: center; ">
+        <div style="display: inline-block; margin-bottom: 10px;">
+            <div style="display: inline-block; font-size: 16px; color: white;">SATURATION:</div>
+            <div style=" display: inline-block;font-size: 16px; color: white;" id="saturationValue"></div>
+            <div><input
+                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
+                    type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"></div>
+        </div>
+
+        <div class="renderSettings">
+            <div style=" display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
             <div style=" display: inline-block;font-size: 16px; color: white;" id="contrastValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId"> </div>
+                    type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId"></div>
         </div>
 
         <div class="renderSettings">
@@ -244,7 +276,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="brightnessValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId"> </div>
+                    type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId"></div>
         </div>
 
         <div id="confidenceIdBlock" class="renderSettings">
@@ -252,7 +284,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="confidenceValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId"> </div>
+                    type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId"></div>
         </div>
 
         <div id="rcnnSizeIdBlock" class="renderSettings">
@@ -260,7 +292,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnSizeValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="150" step="1" value="10" class="slider" id="rcnnSizeId"> </div>
+                    type="range" min="0" max="150" step="1" value="10" class="slider" id="rcnnSizeId"></div>
         </div>
 
         <div id="rcnnBlurIdBlock" class="renderSettings">
@@ -268,7 +300,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnBlurValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="2" value="9" class="slider" id="rcnnBlurId"> </div>
+                    type="range" min="1" max="100" step="2" value="9" class="slider" id="rcnnBlurId"></div>
         </div>
 
         <div id="cannyBlurIdBlock" class="renderSettings">
@@ -276,7 +308,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyBlurValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId"> </div>
+                    type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId"></div>
         </div>
 
         <div id="lineThicknessIdBlock" class="renderSettings">
@@ -284,7 +316,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="lineThicknessValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId"> </div>
+                    type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId"></div>
         </div>
 
         <div id="colorCountIdBlock" class="renderSettings">
@@ -292,7 +324,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="colorCountValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="256" step="1" value="0" class="slider" id="colorCountId"> </div>
+                    type="range" min="0" max="256" step="1" value="0" class="slider" id="colorCountId"></div>
         </div>
 
         <div id="denoiseIdBlock" class="renderSettings">
@@ -300,7 +332,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="denoiseValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="21" step="1" value="7" class="slider" id="denoiseId"> </div>
+                    type="range" min="0" max="21" step="1" value="7" class="slider" id="denoiseId"></div>
         </div>
 
         <div id="denoise2IdBlock" class="renderSettings">
@@ -308,7 +340,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="denoise2Value"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="10" class="slider" id="denoise2Id"> </div>
+                    type="range" min="0" max="100" step="1" value="10" class="slider" id="denoise2Id"></div>
         </div>
 
         <div id="sharpenIdBlock" class="renderSettings">
@@ -316,7 +348,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"> </div>
+                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"></div>
         </div>
 
         <div id="sharpenIdBlock2" class="renderSettings">
@@ -324,7 +356,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue2"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId2"> </div>
+                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId2"></div>
         </div>
 
         <div id="sobelIdBlock" class="renderSettings">
@@ -332,7 +364,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="sobelValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="21" step="2" value="3" class="slider" id="sobelId"> </div>
+                    type="range" min="1" max="21" step="2" value="3" class="slider" id="sobelId"></div>
         </div>
 
         <div id="asciiSizeIdBlock" class="renderSettings">
@@ -340,7 +372,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiSizeValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="1" value="8" class="slider" id="asciiSizeId"> </div>
+                    type="range" min="1" max="100" step="1" value="8" class="slider" id="asciiSizeId"></div>
         </div>
 
         <div id="asciiIntervalIdBlock" class="renderSettings">
@@ -348,7 +380,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiIntervalValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="1" value="24" class="slider" id="asciiIntervalId"> </div>
+                    type="range" min="1" max="100" step="1" value="24" class="slider" id="asciiIntervalId"></div>
         </div>
 
         <div id="asciiThicknessIdBlock" class="renderSettings">
@@ -356,7 +388,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiThicknessValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="20" step="1" value="3" class="slider" id="asciiThicknessId"> </div>
+                    type="range" min="1" max="20" step="1" value="3" class="slider" id="asciiThicknessId"></div>
         </div>
 
         <div id="resizeIdBlock" class="renderSettings">
@@ -364,7 +396,7 @@
             <div style=" display: inline-block;font-size: 16px; color: white;" id="resizeValue"></div>
             <div><input
                     style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="20" max="400" step="1" value="100" class="slider" id="resizeId"> </div>
+                    type="range" min="20" max="400" step="1" value="100" class="slider" id="resizeId"></div>
         </div>
 
     </div>
@@ -1035,7 +1067,8 @@
             estranResetCommand = false;
         }, 300);
 
+
     </script>
 
-    </div>
+</div>
 </body>

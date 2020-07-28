@@ -1,5 +1,88 @@
 from render_modes import *
 
+def draw_yolo_stats(input_frame, classes_index, font):
+# Draw YOLO stats on frame
+
+    # class_index_count = [
+    #     [0 for x in range(80)] for x in range(len(stream_list))
+    # ]
+    class_index_count = [
+        [0 for x in range(80)] for x in range(1)
+    ]
+
+    row_index = 1
+    for m in range(80):
+        for k in range(len(classes_index[0])):
+            if m == classes_index[0][k]:
+                class_index_count[0][m] += 1
+
+        if class_index_count[0][m] != 0:
+            row_index += 1
+
+            if classes[m] == "person":
+                cv2.rectangle(
+                    input_frame,
+                    (20, row_index * 40 - 25),
+                    (270, row_index * 40 + 11),
+                    (0, 0, 0),
+                    -1,
+                )
+                cv2.putText(
+                    input_frame,
+                    classes[m] + ": " + str(class_index_count[0][m]),
+                    (40, row_index * 40),
+                    font,
+                    1,
+                    (0, 255, 0),
+                    2,
+                    lineType=cv2.LINE_AA,
+                )
+
+            if classes[m] == "car":
+                cv2.rectangle(
+                    input_frame,
+                    (20, row_index * 40 - 25),
+                    (270, row_index * 40 + 11),
+                    (0, 0, 0),
+                    -1,
+                )
+                cv2.putText(
+                    input_frame,
+                    classes[m] + ": " + str(class_index_count[0][m]),
+                    (40, row_index * 40),
+                    font,
+                    1,
+                    (255, 0, 255),
+                    2,
+                    lineType=cv2.LINE_AA,
+                )
+
+            if (classes[m] != "car") & (classes[m] != "person"):
+                cv2.rectangle(
+                    input_frame,
+                    (20, row_index * 40 - 25),
+                    (270, row_index * 40 + 11),
+                    (0, 0, 0),
+                    -1,
+                )
+                cv2.putText(
+                    input_frame,
+                    classes[m] + ": " + str(class_index_count[0][m]),
+                    (40, row_index * 40),
+                    font,
+                    1,
+                    colors_yolo[m],
+                    2,
+                    lineType=cv2.LINE_AA,
+                )
+
+            # Example of handbag detection
+            if (classes[m] == "handbag") | (classes[m] == "backpack"):
+                passFlag = True
+                print("handbag detected! -> PASS")
+
+    return input_frame
+
 def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, main_frame, frame_background,
                      f, f1, yolo_network, rcnn_network, caffe_network, superres_network,
                      dain_network, esrgan_network, device, output_layers, classes_index, zip_obj, zip_is_opened,
@@ -238,4 +321,4 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
     main_frame = adjust_br_contrast(main_frame, int(slider_settings_dictionary["contrastSliderValue"]), int(slider_settings_dictionary["brightnessSliderValue"]))
     main_frame = adjust_saturation(main_frame, int(slider_settings_dictionary["saturationSliderValue"]))
 
-    return main_frame, frame_boost_sequence, frame_boost_list
+    return main_frame, frame_boost_sequence, frame_boost_list, classes_index

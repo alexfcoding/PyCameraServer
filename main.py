@@ -74,26 +74,6 @@ def start_analysis(port_to_render, file_to_render, options, mode):
     for item in options:
         str_from_list += item
 
-    # process = subprocess.Popen(
-    #     [
-    #         f"python",
-    #         "-u",
-    #         "processing.py",
-    #         "-i",
-    #         "192.168.0.12",
-    #         "-o",
-    #         str(port_to_render),
-    #         "-s",
-    #         str(file_to_render),
-    #         "-c",
-    #         str_from_list,
-    #         "-m",
-    #         mode,
-    #     ],
-    #     bufsize=0,
-    #     stdout=subprocess.PIPE,
-    # )
-
     process = subprocess.Popen(
         [
             f"python",
@@ -104,29 +84,49 @@ def start_analysis(port_to_render, file_to_render, options, mode):
             "-o",
             str(port_to_render),
             "-s",
-            f"{UPLOAD_FOLDER}{file_to_render}",
+            str(file_to_render),
             "-c",
             str_from_list,
             "-m",
             mode,
         ],
-        bufsize=0
+        bufsize=0,
+        stdout=subprocess.PIPE,
     )
 
-    # while process.poll() is None and not process_started:
-    #     output = process.stdout.readline()
-    #     # output = process.communicate()[0]
-    #     out = str(output.decode("utf-8"))
-    #     print(out)
-    #
-    #     if out == "started\n":
-    #         process_started = True
-    #         # process.stdout.close()
-    #         time.sleep(1)
-    #         return redirect(f"http://192.168.0.12:{port_to_render}")
+    # process = subprocess.Popen(
+    #     [
+    #         f"python",
+    #         "-u",
+    #         "processing.py",
+    #         "-i",
+    #         "192.168.0.12",
+    #         "-o",
+    #         str(port_to_render),
+    #         "-s",
+    #         f"{UPLOAD_FOLDER}{file_to_render}",
+    #         "-c",
+    #         str_from_list,
+    #         "-m",
+    #         mode,
+    #     ],
+    #     bufsize=0
+    # )
 
-    time.sleep(6)
-    return redirect(f"http://192.168.0.12:{port_to_render}")
+    while process.poll() is None and not process_started:
+        output = process.stdout.readline()
+        # output = process.communicate()[0]
+        out = str(output.decode("utf-8"))
+        print(out)
+
+        if out == "started\n":
+            process_started = True
+            # process.stdout.close()
+            time.sleep(1)
+            return redirect(f"http://192.168.0.12:{port_to_render}")
+
+    # time.sleep(6)
+    # return redirect(f"http://192.168.0.12:{port_to_render}")
 
 
 if __name__ == "__main__":

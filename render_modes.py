@@ -1,22 +1,15 @@
-import cv2
 import numpy as np
 import numpy
 from random import randint
 from sklearn.cluster import MiniBatchKMeans
-import os
-import torch
 import ESRGAN.architecture as arch
-
 import time
 import os
 from torch.autograd import Variable
-import math
 import torch
 import cv2
 import random
 import DAIN.networks
-# from my_args import  args
-from DAIN.AverageMeter import  *
 
 classes = []
 
@@ -146,6 +139,7 @@ def initialize_esrgan_network(model_type, use_cuda):
 
     return model, device
 
+
 def initialize_dain_network(use_cuda):
     torch.backends.cudnn.benchmark = True
     model = DAIN.networks.__dict__['DAIN'](channel=3,
@@ -186,6 +180,7 @@ def initialize_dain_network(use_cuda):
     print("The unique id for current testing is: " + str(unique_id))
 
     return model
+
 
 def boost_fps_with_dain(dain_network, f, f1, use_cuda):
     save_which = 1
@@ -340,6 +335,7 @@ def boost_fps_with_dain(dain_network, f, f1, use_cuda):
 
     return frame_write_sequence, frames
 
+
 def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value):
     classes_out = []
     height, width, channels = input_frame.shape
@@ -391,60 +387,6 @@ def find_rcnn_classes(input_frame, rcnn_network):
     (boxes, masks) = rcnn_network.forward(["detection_out_final", "detection_masks"])
 
     return boxes, masks, labels, colors
-
-
-def objects_to_text_yolo(
-    input_frame,
-    boxes,
-    indexes,
-    class_ids,
-    font_size,
-    ascii_distance_value,
-    blur_value,
-    ascii_thickness_value,
-):
-    global object_index
-
-    font_size /= 10
-
-    for i in range(len(boxes)):
-        if i in indexes:
-            x, y, w, h = boxes[i]
-            label = classes[class_ids[i]]
-            color = colors_yolo[class_ids[i]]
-
-            if x < 0:
-                x = 0
-            if y < 0:
-                y = 0
-
-            crop_img = input_frame[y : y + h, x : x + w]
-            crop_img = cv2.GaussianBlur(crop_img, (blur_value, blur_value), blur_value)
-            render_str = "abcdefghijklmnopqrstuvwxyz0123456789"
-
-            if (x >= 0) & (y >= 0):
-                for xx in range(0, crop_img.shape[1], ascii_distance_value):
-                    for yy in range(0, crop_img.shape[0], ascii_distance_value):
-                        # char = randint(0, 1)
-                        pixel_b, pixel_g, pixel_r = crop_img[yy, xx]
-                        char = render_str[randint(0, len(render_str)) - 1]
-                        cv2.putText(
-                            crop_img,
-                            str(char),
-                            (xx, yy),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            font_size,
-                            (int(pixel_b), int(pixel_g), int(pixel_r)),
-                            ascii_thickness_value,
-                        )
-            blk = np.zeros(input_frame.shape, np.uint8)
-
-            cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
-            input_frame[y : y + h, x : x + w] = crop_img
-
-            object_index += 1
-
-    return input_frame
 
 
 def extract_objects_yolo(
@@ -541,6 +483,60 @@ def extract_objects_yolo(
                 cv2.imwrite(f"static/user_renders/{label}{str(object_index)}.jpg", crop_img)
                 zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
                 os.remove(f"static/user_renders/{label}{str(object_index)}.jpg")
+
+            object_index += 1
+
+    return input_frame
+
+
+def objects_to_text_yolo(
+    input_frame,
+    boxes,
+    indexes,
+    class_ids,
+    font_size,
+    ascii_distance_value,
+    blur_value,
+    ascii_thickness_value,
+):
+    global object_index
+
+    font_size /= 10
+
+    for i in range(len(boxes)):
+        if i in indexes:
+            x, y, w, h = boxes[i]
+            label = classes[class_ids[i]]
+            color = colors_yolo[class_ids[i]]
+
+            if x < 0:
+                x = 0
+            if y < 0:
+                y = 0
+
+            crop_img = input_frame[y : y + h, x : x + w]
+            crop_img = cv2.GaussianBlur(crop_img, (blur_value, blur_value), blur_value)
+            render_str = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+            if (x >= 0) & (y >= 0):
+                for xx in range(0, crop_img.shape[1], ascii_distance_value):
+                    for yy in range(0, crop_img.shape[0], ascii_distance_value):
+                        # char = randint(0, 1)
+                        pixel_b, pixel_g, pixel_r = crop_img[yy, xx]
+                        char = render_str[randint(0, len(render_str)) - 1]
+                        cv2.putText(
+                            crop_img,
+                            str(char),
+                            (xx, yy),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            font_size,
+                            (int(pixel_b), int(pixel_g), int(pixel_r)),
+                            ascii_thickness_value, lineType=cv2.LINE_AA
+                        )
+            blk = np.zeros(input_frame.shape, np.uint8)
+
+            cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
+            input_frame[y : y + h, x : x + w] = crop_img
 
             object_index += 1
 
