@@ -105,6 +105,51 @@
         </div>
     </div>
 
+    
+    <div style="margin-top: 15px; ">
+        <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">YOUTUBE URL OR IP CAMERA:</div>
+        <input type="text" name="textbox" id="sourceInputId" size="20">
+        <div style="margin-left: 20px; display: inline-block;">
+            
+                <label class="getFileLabel"
+                    style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255); box-shadow: 6px 4px 8px #000000;"
+                    for="setUrlLinkId">CONNECT</label>
+                <input style="display: none;" type="submit" id="setUrlLinkId"
+                    onclick="sendStopCommand(), resetSettings(), sendSourceChangeCommand()"/>
+            
+        </div>
+        
+    </div>
+    
+
+    <div>
+        <img style="max-width: 60%; border-radius: 20px; box-shadow: 6px 4px 8px #000000; margin-top: 10px; margin-bottom: 5px;"
+             src="{{ url_for('video_feed') }}">
+    </div>
+
+    <div style="margin-bottom: 10px; margin-top: 5px;">
+
+        <div style="display: inline-block; ">
+            <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
+            <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
+            <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE
+                SCREENSHOT
+            </button>
+
+            <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
+
+            <button style="border-radius: 7px; height: 30px;"
+                    onclick="window.open('{{pathToRenderedFile}}')">DOWNLOAD RENDER
+            </button>
+            <button id="downloadObjectsId" style="border-radius: 7px; height: 30px;"
+                    onclick="window.open('{{pathToZipFile}}')">DOWNLOAD OBJECTS
+            </button>
+
+            <!-- <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
+                href="http://192.168.0.12:8000">HOME PAGE</a> -->
+        </div>
+    </div>
+
     <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">RENDER MODE:</div>
     <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
         <select id="modesId" onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand(), this.form.submit()">
@@ -152,59 +197,6 @@
             <input type="file" name="file" multiple class="choose"
                 onchange="sendStopCommand(), form.submit()"> -->
         </form>
-    </div>
-
-
-    <div style="margin-top: 15px; ">
-        <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">YOUTUBE LINK:</div>
-        <input type="text" name="textbox" size="20">
-        <div style="margin-left: 20px; display: inline-block;">
-            <label class="getFileLabel"
-                   style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255); box-shadow: 6px 4px 8px #000000;"
-                   for="setModeAYVideo">CONNECT</label>
-            <input style="display: none;" type="submit" id="setModeAYVideo"
-                   onclick="callVideoOrImage('youtube'), callYoutube('a')"/>
-        </div>
-        <div style="display:inline-block;">
-            <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">IP CAMERA:</div>
-            <input type="text" name="textbox" size="20">
-            <div style="margin-left: 20px; display: inline-block;">
-                <label class="getFileLabel"
-                       style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255); box-shadow: 6px 4px 8px #000000;"
-                       for="setModeAYVideo">CONNECT</label>
-                <input style="display: none;" type="submit" id="setModeAYVideo"
-                       onclick="callVideoOrImage('youtube'), callYoutube('a')"/>
-            </div>
-        </div>
-    </div>
-
-
-    <div>
-        <img style="max-width: 60%; border-radius: 20px; box-shadow: 6px 4px 8px #000000; margin-top: 10px; margin-bottom: 5px;"
-             src="{{ url_for('video_feed') }}">
-    </div>
-
-    <div style="margin-bottom: 10px; margin-top: 5px;">
-
-        <div style="display: inline-block; ">
-            <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
-            <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
-            <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE
-                SCREENSHOT
-            </button>
-
-            <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
-
-            <button style="border-radius: 7px; height: 30px;"
-                    onclick="window.open('{{pathToRenderedFile}}')">DOWNLOAD RENDER
-            </button>
-            <button id="downloadObjectsId" style="border-radius: 7px; height: 30px;"
-                    onclick="window.open('{{pathToZipFile}}')">DOWNLOAD OBJECTS
-            </button>
-
-            <!-- <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
-                href="http://192.168.0.12:8000">HOME PAGE</a> -->
-        </div>
     </div>
 
     <div>
@@ -409,12 +401,19 @@
         var videoResetCommand = false;
         var videoStopCommand = false;
         var modeResetCommand = false;
+        var urlSourceResetCommand = false;
         var screenshotCommand = false;
-
-        var mode = ""
+        var urlSource = "";
+        var mode = "";
         var superresModel = "LAPSRN";
         var esrganModel = "FALCOON";
 
+
+        function sendSourceChangeCommand() {
+            urlSource = $("#sourceInputId").val();
+            console.log(urlSource)
+            urlSourceResetCommand = true;
+        }
 
         function sendStartCommand() {
             videoResetCommand = true;
@@ -1051,6 +1050,8 @@
                     videoStopCommand,
                     modeResetCommand,
                     screenshotCommand,
+                    urlSourceResetCommand,
+                    urlSource,
                     mode,
                     superresModel,
                     esrganModel
@@ -1065,6 +1066,8 @@
             modeResetCommand = false;
             superresResetCommand = false;
             estranResetCommand = false;
+            urlSourceResetCommand = false;
+
         }, 300);
 
 

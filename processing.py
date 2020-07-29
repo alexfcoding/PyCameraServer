@@ -22,6 +22,7 @@ ALLOWED_EXTENSIONS = set(
 class RenderState:
     # Working states and lock commands
     source_image = ""
+    source_url = ""
     source_mode = ""
     screenshot_path = ""
     need_to_create_screenshot = False
@@ -34,6 +35,7 @@ class RenderState:
     video_reset_lock = False
     video_stop_lock = False
     mode_reset_lock = False
+    source_lock = False
     render_mode = ""
     superres_model = "LAPSRN"
     esrgan_model = "FALCOON"
@@ -92,7 +94,8 @@ ajax_settings_dict = {
     "mode" : "a",
     "superresModel" : "LapSRN",
     "esrganModel" : "FALCOON",
-    "positionSliderValue" : 1
+    "positionSliderValue" : 1,
+    "urlSource": "default"
 }
 
 server_states = RenderState() # Global instance for accessing settings from requests and rendering loop
@@ -110,6 +113,8 @@ frame_background = None # Frame for secondary video
 
 fourcc = cv2.VideoWriter_fourcc(*"MJPG") # Format for video saving
 writer = None # Writer for video saving
+
+youtube_url = ""
 
 def check_if_user_is_connected(timer_start, seconds_to_disconnect):
     """
@@ -216,6 +221,19 @@ def process_frame():
             superres_model_from_page = str(ajax_settings_dict["superresModel"])
             esrgan_model_from_page = str(ajax_settings_dict["esrganModel"])
             position_value_local = int(ajax_settings_dict["positionSliderValue"])
+
+            # Check if source change command was received
+            if server_states.source_lock:
+                server_states.render_mode = mode_from_page 
+                server_states.source_mode = "youtube"
+                source_url = str(ajax_settings_dict["urlSource"])
+                vPafy = pafy.new(source_url)
+                play = vPafy.streams[0]
+                cap = cv2.VideoCapture(play.url)
+                server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)               
+                server_states.source_lock = False
+                need_mode_reset = True
+                #file_changed = True
 
             # Check if mode change command was received
             if server_states.mode_reset_lock:
@@ -347,6 +365,7 @@ def process_frame():
         if server_states.source_mode in ("video", "youtube"):
             # If stopped rendering
             if not started_rendering_video:
+                print("in stop loop")
                 cap.set(1, position_value) # Set current video position from HTML slider value
                 server_states.frame_processed = 0
                 if need_to_stop_new_zip:
@@ -354,6 +373,7 @@ def process_frame():
                     zip_is_opened = False
                     need_to_stop_new_zip = False
                     need_to_create_new_zip = True
+
             else:
                 # If started rendering
                 if need_to_create_writer or file_changed:
@@ -592,10 +612,12 @@ def generate():
 
 @app.route("/", methods=["GET", "POST"])
 def index(device=None, action=None):
-    global cap, cap2, file_to_render, file_changed, server_states
+    global cap, cap2, file_to_render, file_changed, server_states, youtube_url
 
     if request.method == "POST":
         file = request.files["file"]
+        
+        print("LINK LINK =====================================================")
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -607,12 +629,12 @@ def index(device=None, action=None):
                 server_states.source_mode = "image"
                 server_states.source_image = filename
                 cap2 = cv2.VideoCapture("input_videos/snow.webm")
-            else:
+            if file_extension in ("gif", "mp4", "avi", "m4v", "webm", "mkv"):
                 server_states.source_mode = "video"
                 cap = cv2.VideoCapture(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                 server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                 cap2 = cv2.VideoCapture("input_videos/snow.webm")
-
+            
             CRED = "\033[91m"
             CEND = "\033[0m"
             print(
@@ -623,6 +645,8 @@ def index(device=None, action=None):
 
             file_to_render = filename
             file_changed = True
+
+        
 
     file_output = file_to_render
 
@@ -660,8 +684,9 @@ def send_stats():
         server_states.need_to_create_screenshot = False
 
     if server_states.source_mode in ("video", "youtube"):
-        frame_width_to_page = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        frame_height_to_page = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        if (cap != None):
+            frame_width_to_page = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+            frame_height_to_page = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     if server_states.source_mode == "image":
         frame_width_to_page = 0
@@ -690,7 +715,7 @@ def send_stats():
 
 @app.route("/settings", methods=["GET", "POST"])
 def receive_settings():
-    global ajax_settings_dict, timer_start, timer_end, writer, server_states, commands
+    global ajax_settings_dict, timer_start, timer_end, writer, server_states, commands, youtube_url
 
     if request.method == "POST":
         print("POST")
@@ -712,6 +737,28 @@ def receive_settings():
         if not server_states.screenshot_lock:
             if bool(ajax_settings_dict["screenshotCommand"]):
                 server_states.screenshot_lock = True
+
+        if not server_states.source_lock:
+            if bool(ajax_settings_dict["urlSourceResetCommand"]):
+                server_states.source_lock = True
+
+         
+                # server_states.source_mode = "youtube"
+                # youtube_url = str(ajax_settings_dict["urlSource"])
+                # file_changed = True    
+                
+                # vPafy = pafy.new(youtube_url)
+                # play = vPafy.streams[0]
+                # cap = cv2.VideoCapture(play.url)
+                # server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+                # writer = cv2.VideoWriter(
+                #     f"static/user_renders/output{args['port']}youtube.avi",
+                #     fourcc,
+                #     25,
+                #     (main_frame.shape[1], main_frame.shape[0]),
+                #     True,
+                # )
 
     return "", 200
 
