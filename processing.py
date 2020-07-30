@@ -24,6 +24,7 @@ class RenderState:
     source_image = ""
     source_url = ""
     source_mode = ""
+    output_file_page = ""
     screenshot_path = ""
     need_to_create_screenshot = False
     screenshot_ready = False
@@ -114,7 +115,7 @@ frame_background = None # Frame for secondary video
 fourcc = cv2.VideoWriter_fourcc(*"MJPG") # Format for video saving
 writer = None # Writer for video saving
 
-youtube_url = ""
+url = ""
 
 def check_if_user_is_connected(timer_start, seconds_to_disconnect):
     """
@@ -145,7 +146,7 @@ def process_frame():
     Main rendering function
     :return:
     """
-    global cap, lock, writer, progress, fps, output_frame, file_to_render, zip_obj, youtube_url
+    global cap, lock, writer, progress, fps, output_frame, file_to_render, zip_obj
 
     frame_boost_list = [] # List for Depth-Aware Video Frame Interpolation frames
     frame_boost_sequence = [] # Interpolated frame sequence for video writing
@@ -171,17 +172,22 @@ def process_frame():
 
     path_to_file, file_to_render = os.path.split(args["source"]) # Get filename from full path
     print ("Processing file: " + file_to_render)
-    youtube_url = args["source"] # Youtube URL
+    url = args["source"] # Youtube URL
 
     server_states.render_mode = args["optionsList"] # Rendering mode from command line
     server_states.source_mode = args["mode"] # Source type from command line
 
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
-        vPafy = pafy.new(youtube_url)
+        vPafy = pafy.new(url)
         play = vPafy.streams[0]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    if server_states.source_mode == "ipcam":
+        cap = cv2.VideoCapture()
+        cap.open(server_states.url)
+        server_states.total_frames = 1
 
     # Set source for video file capturing
     if server_states.source_mode == "video":
@@ -221,19 +227,6 @@ def process_frame():
             superres_model_from_page = str(ajax_settings_dict["superresModel"])
             esrgan_model_from_page = str(ajax_settings_dict["esrganModel"])
             position_value_local = int(ajax_settings_dict["positionSliderValue"])
-
-            # Check if source change command was received
-            if server_states.source_lock:
-                server_states.render_mode = mode_from_page 
-                server_states.source_mode = "youtube"
-                source_url = str(ajax_settings_dict["urlSource"])
-                vPafy = pafy.new(source_url)
-                play = vPafy.streams[0]
-                cap = cv2.VideoCapture(play.url)
-                server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)               
-                server_states.source_lock = False
-                need_mode_reset = True
-                #file_changed = True
 
             # Check if mode change command was received
             if server_states.mode_reset_lock:
@@ -362,12 +355,14 @@ def process_frame():
                 need_mode_reset = False
         
         # Prepare settings if source is a video file or youtube url
-        if server_states.source_mode in ("video", "youtube"):
+        if server_states.source_mode in ("video", "youtube", "ipcam"):
             # If stopped rendering
             if not started_rendering_video:
                 print("in stop loop")
-                cap.set(1, position_value) # Set current video position from HTML slider value
-                server_states.frame_processed = 0
+                if (cap is not None):
+                    cap.set(1, position_value) # Set current video position from HTML slider value
+                    server_states.frame_processed = 0
+
                 if need_to_stop_new_zip:
                     zip_obj.close()
                     zip_is_opened = False
@@ -406,6 +401,8 @@ def process_frame():
                             )
 
                     if server_states.source_mode == "youtube":
+                        vPafy = pafy.new(server_states.source_url)
+                        play = vPafy.streams[0]
                         cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                         writer = cv2.VideoWriter(
@@ -416,6 +413,19 @@ def process_frame():
                             True,
                         )
 
+                    if server_states.source_mode == "ipcam":
+                        # source_url = str(ajax_settings_dict["urlSource"])
+                        cap = cv2.VideoCapture()
+                        cap.open(server_states.source_url)
+                        server_states.total_frames = 1
+                        # server_states.source_lock = False
+                        writer = cv2.VideoWriter(
+                            f"static/user_renders/output{args['port']}ipcam.avi",
+                            fourcc,
+                            25,
+                            (main_frame.shape[1], main_frame.shape[0]),
+                            True,
+                        )
                     # print("CREATING WRITER 1 WITH SIZE:" + str(round(main_frame.shape[1])))
 
                     # Prepare zip opening for YOLO objects
@@ -443,10 +453,11 @@ def process_frame():
                     main_frame = f1.copy()
             # ... otherwise read by one frame
             else:
-                ret, main_frame = cap.read()
-                ret2, frame_background = cap2.read()
+                if (cap is not None):
+                    ret, main_frame = cap.read()
+                    ret2, frame_background = cap2.read()
 
-        # If input is image
+        # Prepare settings for image file
         if server_states.source_mode == "image":
             # Prepare zip opening for YOLO objects
             if received_zip_command or file_changed:
@@ -454,6 +465,7 @@ def process_frame():
                 zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
                 zip_is_opened = True
                 received_zip_command = False
+                print("CREATED ZIP =========================")
 
             if file_changed:
                 zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
@@ -467,10 +479,10 @@ def process_frame():
         classes_index = []
         start_moment = time.time()  # Timer for FPS calculation
         
-        # =============================== Process frame with render modes and settings ===============================
+        # =============================== Draw frame with render modes and settings ===============================
 
         if main_frame is not None:
-            main_frame, frame_boost_sequence, frame_boost_list, classes_index = \
+            main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened = \
                 render_with_mode(render_modes_dict, ajax_settings_dict, main_frame, frame_background, f, f1, yolo_network,
                                  rcnn_network, caffe_network, superres_network, dain_network, esrgan_network,
                                  device, output_layers, classes_index, zip_obj, zip_is_opened, zipped_images,
@@ -512,7 +524,7 @@ def process_frame():
 
                 # Write DAIN interpolated frames to file
                 if (
-                        server_states.source_mode in ("video", "youtube")
+                        server_states.source_mode in ("video", "youtube", "ipcam")
                         and writer is not None
                         and started_rendering_video
                 ):
@@ -612,12 +624,43 @@ def generate():
 
 @app.route("/", methods=["GET", "POST"])
 def index(device=None, action=None):
-    global cap, cap2, file_to_render, file_changed, server_states, youtube_url
+    global cap, cap2, file_to_render, file_changed, server_states
 
     if request.method == "POST":
-        file = request.files["file"]
-        
-        print("LINK LINK =====================================================")
+        file = None
+        textbox_string = ""
+
+        if 'file' in request.files:
+            file = request.files["file"]
+            print("in file")
+
+        if 'textbox' in request.form:
+            textbox_string = request.form.get("textbox")
+
+        print(textbox_string.find("you"))
+
+        if textbox_string.find("you") != -1:
+            server_states.source_mode = "youtube"
+            # source_url = str(ajax_settings_dict["urlSource"])
+            server_states.source_url = textbox_string
+            vPafy = pafy.new(textbox_string)
+            play = vPafy.streams[0]
+            cap = cv2.VideoCapture(play.url)
+            server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+            # server_states.source_lock = False
+            need_mode_reset = True
+            file_changed = True
+
+        if textbox_string.find("mjpg") != -1:
+            server_states.source_mode = "ipcam"
+            server_states.source_url = textbox_string
+            # source_url = str(ajax_settings_dict["urlSource"])
+            cap = cv2.VideoCapture()
+            cap.open(textbox_string)
+            server_states.total_frames = 1
+            # server_states.source_lock = False
+            need_mode_reset = True
+            file_changed = True
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -646,19 +689,19 @@ def index(device=None, action=None):
             file_to_render = filename
             file_changed = True
 
-        
-
-    file_output = file_to_render
-
     if server_states.source_mode == "video":
-        file_output = file_to_render + ".avi"
+        server_states.output_file_page = file_to_render + ".avi"
     if server_states.source_mode == "youtube":
-        file_output = "youtube.avi"
+        server_states.output_file_page = "youtube.avi"
+    if server_states.source_mode == "ipcam":
+        server_states.output_file_page = "ipcam.avi"
+
+    print("server_states.source_mode")
 
     return render_template(
         "index.html",
         frame_processed=server_states.frame_processed,
-        pathToRenderedFile=f"static/user_renders/output{args['port']}{file_output}",
+        pathToRenderedFile=f"static/user_renders/output{args['port']}{server_states.output_file_page}",
         pathToZipFile=f"static/user_renders/output{args['port']}.zip",
     )
 
@@ -683,7 +726,7 @@ def send_stats():
         server_states.screenshot_ready = False
         server_states.need_to_create_screenshot = False
 
-    if server_states.source_mode in ("video", "youtube"):
+    if server_states.source_mode in ("video", "youtube", "ipcam"):
         if (cap != None):
             frame_width_to_page = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
             frame_height_to_page = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -715,7 +758,7 @@ def send_stats():
 
 @app.route("/settings", methods=["GET", "POST"])
 def receive_settings():
-    global ajax_settings_dict, timer_start, timer_end, writer, server_states, commands, youtube_url
+    global ajax_settings_dict, timer_start, timer_end, writer, server_states, commands
 
     if request.method == "POST":
         print("POST")
@@ -737,28 +780,6 @@ def receive_settings():
         if not server_states.screenshot_lock:
             if bool(ajax_settings_dict["screenshotCommand"]):
                 server_states.screenshot_lock = True
-
-        if not server_states.source_lock:
-            if bool(ajax_settings_dict["urlSourceResetCommand"]):
-                server_states.source_lock = True
-
-         
-                # server_states.source_mode = "youtube"
-                # youtube_url = str(ajax_settings_dict["urlSource"])
-                # file_changed = True    
-                
-                # vPafy = pafy.new(youtube_url)
-                # play = vPafy.streams[0]
-                # cap = cv2.VideoCapture(play.url)
-                # server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-
-                # writer = cv2.VideoWriter(
-                #     f"static/user_renders/output{args['port']}youtube.avi",
-                #     fourcc,
-                #     25,
-                #     (main_frame.shape[1], main_frame.shape[0]),
-                #     True,
-                # )
 
     return "", 200
 

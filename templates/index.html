@@ -26,6 +26,19 @@
             margin-bottom: 15px;
         }
 
+        .getFileLabel {
+            border-radius: 5px; 
+            background-color:#383838;   
+            padding: 5px; 
+            color: rgb(255, 255, 255); 
+            box-shadow: 6px 4px 8px #000000;
+            margin: 10px;
+        }
+
+        .getFileLabel:hover {
+            color: #ffa600;
+        }
+
         button {
             box-shadow: 6px 4px 8px #000000;
             background-color: #333333;
@@ -34,7 +47,7 @@
 
         button:hover {
             background-color: rgb(116, 116, 116);
-        }
+        }        
 
         button:focus {
             background-color: red;
@@ -70,1008 +83,988 @@
             cursor: pointer;
             font-size: 10pt;
         }
-
     </style>
-
 </head>
 
 <body style="background-color:#1d1d1d;">
-<div style="text-align: center;">
-    <div style="margin: 5px;">
-        <div id="grid">
-            <div>
-                <h1 id="num" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h1 id="framesCount" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h1 id="progress" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h1 id="fps" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
+    <div style="text-align: center;">
+        <div style="margin: 5px;">
+            <div id="grid">
+                <div>
+                    <h1 id="num" >0</h1>
+                </div>
+                <div>
+                    <h1 id="framesCount" >0</h1>
+                </div>
+                <div>
+                    <h1 id="progress">0</h1>
+                </div>
+                <div>
+                    <h1 id="fps">0</h1>
+                </div>
 
-            <div>
-                <h1 id="cpu" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
-            <div>
-                <h1 id="freeRam" style="color: rgb(255, 255, 255);">0</h1>
-            </div>
+                <div>
+                    <h1 id="cpu">0</h1>
+                </div>
+                <div>
+                    <h1 id="freeRam">0</h1>
+                </div>
 
-            <div>
-                <h1 id="frameSize" style="color: rgb(255, 255, 255);">0</h1>
+                <div>
+                    <h1 id="frameSize">0</h1>
+                </div>
             </div>
         </div>
-    </div>
 
-    
-    <div style="margin-top: 15px; ">
-        <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">YOUTUBE URL OR IP CAMERA:</div>
-        <input type="text" name="textbox" id="sourceInputId" size="20">
-        <div style="margin-left: 20px; display: inline-block;">
-            
-                <label class="getFileLabel"
-                    style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255); box-shadow: 6px 4px 8px #000000;"
-                    for="setUrlLinkId">CONNECT</label>
-                <input style="display: none;" type="submit" id="setUrlLinkId"
-                    onclick="sendStopCommand(), resetSettings(), sendSourceChangeCommand()"/>
-            
-        </div>
-        
-    </div>
-    
+        <input style="display: none;" id="selectedVideoOrImageId" type="checkbox" name="checkMode" value="video" />
 
-    <div>
-        <img style="max-width: 60%; border-radius: 20px; box-shadow: 6px 4px 8px #000000; margin-top: 10px; margin-bottom: 5px;"
-             src="{{ url_for('video_feed') }}">
-    </div>
+        <div style="margin-top: 15px; ">
+            <div style="display:inline-block; margin: 5px; font-size: 14px; color: #ffa600;">YOUTUBE URL /
+                IP CAMERA:</div>
 
-    <div style="margin-bottom: 10px; margin-top: 5px;">
-
-        <div style="display: inline-block; ">
-            <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
-            <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
-            <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE
-                SCREENSHOT
-            </button>
-
-            <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
-
-            <button style="border-radius: 7px; height: 30px;"
-                    onclick="window.open('{{pathToRenderedFile}}')">DOWNLOAD RENDER
-            </button>
-            <button id="downloadObjectsId" style="border-radius: 7px; height: 30px;"
-                    onclick="window.open('{{pathToZipFile}}')">DOWNLOAD OBJECTS
-            </button>
-
-            <!-- <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
-                href="http://192.168.0.12:8000">HOME PAGE</a> -->
-        </div>
-    </div>
-
-    <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">RENDER MODE:</div>
-    <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-        <select id="modesId" onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand(), this.form.submit()">
-            <optgroup label="YOLO MODEL">
-                <option value="a">OBJECTS EXTRACTOR</option>
-                <option value="b">BLUR OBJECTS WITH ASCII</option>
-            </optgroup>
-            <optgroup label="MASK R-CNN MODEL">
-                <option value="k">GRAY BACKGROUND</option>
-                <option value="m">GAUSSIAN BLUR BACKGROUND</option>
-                <option value="j">CANNY AND GAUSSIAN BLUR</option>
-                <option value="i">CANNY + ANIMATE BACKGROUND</option>
-            </optgroup>
-            <optgroup label="CAFFE MODEL">
-                <option value="f">NEURAL NETWORK COLORIZER</option>
-            </optgroup>
-            <optgroup label="X4 UPSCALE MODELS">
-                <option value="n">EDSR / LAPSRN / FSRNN</option>
-                <option value="t">ESRGAN / PSNR</option>
-            </optgroup>
-            <optgroup label="FPS BOOST">
-                <option value="z">DAIN X7</option>
-            </optgroup>
-            <optgroup label="WITHOUT NEURAL NETWORKS">
-                <option value="q">ASCII PAINTER</option>
-                <option value="e">CARTOON STYLE</option>
-                <option value="r">PENCIL DRAWER</option>
-                <option value="s">TWO-COLORED</option>
-                <option value="o">DENOISE + SHARPEN</option>
-                <option value="p">SOBEL FILTER</option>
-            </optgroup>
-        </select>
-    </div>
-
-    <div
-            style="display: inline-block; text-align: center; margin-top: 10px; margin-left: 20px; box-shadow: 6px 4px 8px #000000;">
-        <form action="" method=post enctype=multipart/form-data>
-            <label class="getFileLabel"
-                   style="border-radius: 5px; background-color:#383838;   padding: 5px; color: rgb(255, 255, 255);"
-                   for="sendFileId">UPLOAD NEW FILE</label>
-            <input style="display:none" id="sendFileId" name="file" type="file"
-                   onchange="sendStopCommand(), form.submit()"/>
-
-            <!-- <label></label>
-            <input type="file" name="file" multiple class="choose"
-                onchange="sendStopCommand(), form.submit()"> -->
-        </form>
-    </div>
-
-    <div>
-        <div id="superresIdBlock">
-            <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER
-                MODEL:
+            <div style="margin-left: 5px; display: inline-block;">
+                <form method="post" enctype=multipart/form-data action="">
+                    <input type="text" name="textbox" id="sourceInputId" size="20">
+                    <label class="getFileLabel"                       
+                        for="setUrlLinkId">CONNECT</label>
+                    <input style="display: none;" name="ttt" type="submit" id="setUrlLinkId" value="changeUrl"
+                        onclick="sendStopCommand(), resetSettings(), form.submit()" />
+                </form>
             </div>
-            <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                <select id="modelsSuperresId"
+            <div style="display: inline-block; color:#ffa600; margin-left: 10px;">OR</div>
+            <div style="margin-left: 5px; display: inline-block;">
+                <form action="" method=post enctype=multipart/form-data>
+                    <label class="getFileLabel"                    
+                        for="sendFileId">UPLOAD NEW FILE</label>
+                    <input style="display:none" id="sendFileId" name="file" type="file"
+                        onchange="sendStopCommand(), form.submit()" />
+                </form>
+            </div>
+
+        </div>
+
+         
+
+        <div>
+            <img style="max-width: 60%; border-radius: 20px; box-shadow: 6px 4px 8px #000000; margin-top: 10px; margin-bottom: 5px;"
+                src="{{ url_for('video_feed') }}">
+        </div>
+
+        <div style="margin-bottom: 10px; margin-top: 5px;">
+
+            <div style="display: inline-block; ">
+                <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
+                <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
+                <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE SCREENSHOT</button>
+                <button style="border-radius: 7px; height: 30px;" onclick="resetSettings()">RESET SETTINGS</button>
+                <button style="border-radius: 7px; height: 30px;" onclick="window.open('{{pathToRenderedFile}}')">DOWNLOAD RENDER</button>
+                <button id="downloadObjectsId" style="border-radius: 7px; height: 30px;" onclick="window.open('{{pathToZipFile}}')">DOWNLOAD OBJECTS</button>
+                <!-- <a style="border-radius: 5px; background-color:#383838;  padding: 10px; box-shadow: 6px 4px 8px #000000;"
+                    href="http://192.168.0.12:8000">HOME PAGE</a> -->
+            </div>
+        </div>
+
+        <div style="display:inline-block; margin: 5px; font-size: 14px; color: #ffa600;">RENDER MODE:</div>
+        <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+            <select id="modesId" onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand()">
+                <optgroup label="YOLO MODEL">
+                    <option value="a">OBJECTS EXTRACTOR</option>
+                    <option value="b">BLUR OBJECTS WITH ASCII</option>
+                </optgroup>
+                <optgroup label="MASK R-CNN MODEL">
+                    <option value="k">GRAY BACKGROUND</option>
+                    <option value="m">GAUSSIAN BLUR BACKGROUND</option>
+                    <option value="j">CANNY AND GAUSSIAN BLUR</option>
+                    <option value="i">CANNY + ANIMATE BACKGROUND</option>
+                </optgroup>
+                <optgroup label="CAFFE MODEL">
+                    <option value="f">NEURAL NETWORK COLORIZER</option>
+                </optgroup>
+                <optgroup label="UPSCALE MODELS (X4 RESOLUTION)">
+                    <option value="n">(CPU) EDSR / LAPSRN / FSRNN</option>
+                    <option value="t">(GPU 360p max) ESRGAN / PSNR</option>
+                </optgroup>
+                <optgroup label="FPS BOOST (X7 FPS)">
+                    <option value="z">(GPU 360p max) Depth-Aware Interpolation</option>
+                </optgroup>
+                <optgroup label="WITHOUT NEURAL NETWORKS">
+                    <option value="q">ASCII PAINTER</option>
+                    <option value="e">CARTOON STYLE</option>
+                    <option value="r">PENCIL DRAWER</option>
+                    <option value="s">TWO-COLORED</option>
+                    <option value="o">DENOISE + SHARPEN</option>
+                    <option value="p">SOBEL FILTER</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div>
+            <div id="superresIdBlock">
+                <div style="display:inline-block; margin: 5px; font-size: 14px; color: #ffa600;">UPSCALER
+                    MODEL:
+                </div>
+                <div
+                    style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                    <select id="modelsSuperresId"
                         onchange="sendStopCommand(), resetSettings(), sendModelChangeCommand(), this.form.submit()">
-                    <optgroup label="UPSCALE MODELS">
-                        <option value="LAPSRN">LapSRN (SLOW)</option>
-                        <option value="EDSR">EDSR (VERY SLOW)</option>
-                        <option value="FSRCNN">FSRCNN (FAST)</option>
-                        <option value="FSRCNN_SMALL">FSRCNN-SMALL (VERY FAST)</option>
-                    </optgroup>
-                </select>
+                        <optgroup label="UPSCALE MODELS">
+                            <option value="LAPSRN">LapSRN (SLOW)</option>
+                            <option value="EDSR">EDSR (VERY SLOW)</option>
+                            <option value="FSRCNN">FSRCNN (FAST)</option>
+                            <option value="FSRCNN_SMALL">FSRCNN-SMALL (VERY FAST)</option>
+                        </optgroup>
+                    </select>
+                </div>
             </div>
-        </div>
 
-        <div id="esrganIdBlock">
-            <div style="display:inline-block; margin: 5px; font-size: 14px; color: rgb(255, 255, 255);">UPSCALER
-                MODEL:
-            </div>
-            <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-                <select id="modelsEsrganId"
+            <div id="esrganIdBlock">
+                <div style="display:inline-block; margin: 5px; font-size: 14px; color: #ffa600;">UPSCALER MODEL:</div>
+                <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
+                    <select id="modelsEsrganId"
                         onchange="sendStopCommand(), resetSettings(), sendEsrganChangeCommand(), this.form.submit()">
-                    <optgroup label="ESRGAN MODELS">
-                        <option value="FALCOON">FALCOON</option>
-                        <option value="MANGA">MANGA109</option>
-                        <option value="RRDB_ESRGAN">RRDB_ESRGAN</option>
-                        <option value="RRDB_PSNR">RRDB_PSNR</option>
-                        <option value="RRDB_INTERP_0.2">ESRGAN-PSNR INTERPOLATION_0.2</option>
-                        <option value="RRDB_INTERP_0.4">ESRGAN-PSNR INTERPOLATION_0.4</option>
-                        <option value="RRDB_INTERP_0.6">ESRGAN-PSNR INTERPOLATION_0.6</option>
-                        <option value="RRDB_INTERP_0.8">ESRGAN-PSNR INTERPOLATION_0.8</option>
-                    </optgroup>
-                </select>
+                        <optgroup label="ESRGAN MODELS">
+                            <option value="FALCOON">FALCOON</option>
+                            <option value="MANGA">MANGA109</option>
+                            <option value="RRDB_ESRGAN">RRDB_ESRGAN</option>
+                            <option value="RRDB_PSNR">RRDB_PSNR</option>
+                            <option value="RRDB_INTERP_0.2">ESRGAN-PSNR INTERPOLATION_0.2</option>
+                            <option value="RRDB_INTERP_0.4">ESRGAN-PSNR INTERPOLATION_0.4</option>
+                            <option value="RRDB_INTERP_0.6">ESRGAN-PSNR INTERPOLATION_0.6</option>
+                            <option value="RRDB_INTERP_0.8">ESRGAN-PSNR INTERPOLATION_0.8</option>
+                        </optgroup>
+                    </select>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="positionSettings">
-        <div style="display: inline-block; font-size: 16px; color: white;">POSITION:</div>
-        <div style=" display: inline-block;font-size: 16px; color: white;" id="positionValue"></div>
-        <div><input
-                style="-webkit-appearance: none; appearance: none; border-radius: 5px; height: 20px; background-color: #c5c5c5; width: 810px; box-shadow: 6px 4px 8px #000000;"
-                type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId"></div>
-    </div>
-    <div style="display: inline-block; max-width: 1000px; text-align: center; ">
-        <div style="display: inline-block; margin-bottom: 10px;">
-            <div style="display: inline-block; font-size: 16px; color: white;">SATURATION:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="saturationValue"></div>
+        <div class="positionSettings">
+            <div style="display: inline-block; font-size: 16px; color: white;">POSITION:</div>
+            <div style=" display: inline-block;font-size: 16px; color: white;" id="positionValue"></div>
             <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"></div>
+                    style="-webkit-appearance: none; appearance: none; border-radius: 5px; height: 20px; background-color: #ffffff; width: 810px; box-shadow: 6px 4px 8px #000000;"
+                    type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId"></div>
+        </div>
+        <div style="display: inline-block; max-width: 1000px; text-align: center; ">
+            <div style="display: inline-block; margin-bottom: 10px;">
+                <div style="display: inline-block; font-size: 16px; color: white;">SATURATION:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="saturationValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"></div>
+            </div>
+
+            <div class="renderSettings">
+                <div style=" display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="contrastValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId"></div>
+            </div>
+
+            <div class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">BRIGHTNESS:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="brightnessValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId"></div>
+            </div>
+
+            <div id="confidenceIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">CONFIDENCE THRESHOLD:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="confidenceValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId"></div>
+            </div>
+
+            <div id="rcnnSizeIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">RCNN OBJECT SIZE:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnSizeValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="150" step="1" value="10" class="slider" id="rcnnSizeId"></div>
+            </div>
+
+            <div id="rcnnBlurIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">BLUR STRENGTH:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnBlurValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="2" value="9" class="slider" id="rcnnBlurId"></div>
+            </div>
+
+            <div id="cannyBlurIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">EDGE FILTER:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyBlurValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId"></div>
+            </div>
+
+            <div id="lineThicknessIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">LINE THICKNESS:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="lineThicknessValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId"></div>
+            </div>
+
+            <div id="colorCountIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">COLOR COUNT:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="colorCountValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="256" step="1" value="0" class="slider" id="colorCountId"></div>
+            </div>
+
+            <div id="denoiseIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">COLOR NOISE FILTER:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="denoiseValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="21" step="1" value="7" class="slider" id="denoiseId"></div>
+            </div>
+
+            <div id="denoise2IdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">DENOISE STRENGTH:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="denoise2Value"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="100" step="1" value="10" class="slider" id="denoise2Id"></div>
+            </div>
+
+            <div id="sharpenIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">SHARPEN STRENGTH:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"></div>
+            </div>
+
+            <div id="sharpenIdBlock2" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">SHARPEN DETAILS:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue2"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId2"></div>
+            </div>
+
+            <div id="sobelIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">SOBEL FILTER:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="sobelValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="21" step="2" value="3" class="slider" id="sobelId"></div>
+            </div>
+
+            <div id="asciiSizeIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">FONT SIZE:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiSizeValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="1" value="8" class="slider" id="asciiSizeId"></div>
+            </div>
+
+            <div id="asciiIntervalIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">FONT INTERVAL:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiIntervalValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="1" value="24" class="slider" id="asciiIntervalId"></div>
+            </div>
+
+            <div id="asciiThicknessIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">FONT THICKNESS:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiThicknessValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="20" step="1" value="3" class="slider" id="asciiThicknessId"></div>
+            </div>
+
+            <div id="resizeIdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">RESIZE MULTIPLIER:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="resizeValue"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="20" max="400" step="1" value="100" class="slider" id="resizeId"></div>
+            </div>
         </div>
 
-        <div class="renderSettings">
-            <div style=" display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="contrastValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId"></div>
-        </div>
+        <script>
+            let working = 0;
+            let frameWidth = 0;
+            let frameHeight = 0;
+            let maxFrames = 0;
+            let videoResetCommand = false;
+            let videoStopCommand = false;
+            let modeResetCommand = false;
+            let urlSourceResetCommand = false;
+            let screenshotCommand = false;
+            let urlSource = "";
+            let mode = "";
+            let superresModel = "LAPSRN";
+            let esrganModel = "FALCOON";
 
-        <div class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">BRIGHTNESS:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="brightnessValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId"></div>
-        </div>
-
-        <div id="confidenceIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">CONFIDENCE THRESHOLD:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="confidenceValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId"></div>
-        </div>
-
-        <div id="rcnnSizeIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">RCNN OBJECT SIZE:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnSizeValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="150" step="1" value="10" class="slider" id="rcnnSizeId"></div>
-        </div>
-
-        <div id="rcnnBlurIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">BLUR STRENGTH:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnBlurValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="2" value="9" class="slider" id="rcnnBlurId"></div>
-        </div>
-
-        <div id="cannyBlurIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">EDGE FILTER:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyBlurValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId"></div>
-        </div>
-
-        <div id="lineThicknessIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">LINE THICKNESS:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="lineThicknessValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId"></div>
-        </div>
-
-        <div id="colorCountIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">COLOR COUNT:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="colorCountValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="256" step="1" value="0" class="slider" id="colorCountId"></div>
-        </div>
-
-        <div id="denoiseIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">COLOR NOISE FILTER:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="denoiseValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="21" step="1" value="7" class="slider" id="denoiseId"></div>
-        </div>
-
-        <div id="denoise2IdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">DENOISE STRENGTH:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="denoise2Value"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="10" class="slider" id="denoise2Id"></div>
-        </div>
-
-        <div id="sharpenIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">SHARPEN STRENGTH:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"></div>
-        </div>
-
-        <div id="sharpenIdBlock2" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">SHARPEN DETAILS:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue2"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId2"></div>
-        </div>
-
-        <div id="sobelIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">SOBEL FILTER:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="sobelValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="21" step="2" value="3" class="slider" id="sobelId"></div>
-        </div>
-
-        <div id="asciiSizeIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">FONT SIZE:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiSizeValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="1" value="8" class="slider" id="asciiSizeId"></div>
-        </div>
-
-        <div id="asciiIntervalIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">FONT INTERVAL:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiIntervalValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="100" step="1" value="24" class="slider" id="asciiIntervalId"></div>
-        </div>
-
-        <div id="asciiThicknessIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">FONT THICKNESS:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiThicknessValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="1" max="20" step="1" value="3" class="slider" id="asciiThicknessId"></div>
-        </div>
-
-        <div id="resizeIdBlock" class="renderSettings">
-            <div style="display: inline-block; font-size: 16px; color: white;">RESIZE MULTIPLIER:</div>
-            <div style=" display: inline-block;font-size: 16px; color: white;" id="resizeValue"></div>
-            <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                    type="range" min="20" max="400" step="1" value="100" class="slider" id="resizeId"></div>
-        </div>
-
-    </div>
-
-    <script>
-        var working = 0;
-        var frameWidth = 0;
-        var frameHeight = 0;
-        var maxFrames = 0;
-        var videoResetCommand = false;
-        var videoStopCommand = false;
-        var modeResetCommand = false;
-        var urlSourceResetCommand = false;
-        var screenshotCommand = false;
-        var urlSource = "";
-        var mode = "";
-        var superresModel = "LAPSRN";
-        var esrganModel = "FALCOON";
-
-
-        function sendSourceChangeCommand() {
-            urlSource = $("#sourceInputId").val();
-            console.log(urlSource)
-            urlSourceResetCommand = true;
-        }
-
-        function sendStartCommand() {
-            videoResetCommand = true;
-        }
-
-        function sendStopCommand() {
-            videoStopCommand = true;
-        }
-
-        function sendModeChangeCommand() {
-            modeResetCommand = true;
-            mode = $("#modesId").val();
-        }
-
-        function sendModelChangeCommand() {
-            modeResetCommand = true;
-            superresModel = $("#modelsSuperresId").val();
-        }
-
-        function sendEsrganChangeCommand() {
-            modeResetCommand = true;
-            esrganModel = $("#modelsEsrganId").val();
-        }
-
-        function sendScreenshotCommand() {
-            screenshotCommand = true;
-        }
-
-        function resetSettings() {
-            // document.getElementById("positionId").value = 1                        
-            document.getElementById("saturationId").value = 100;
-            document.getElementById("cannyBlurId").value = 3;
-            document.getElementById("contrastId").value = 100;
-            document.getElementById("confidenceId").value = 20;
-            document.getElementById("brightnessId").value = 0;
-            document.getElementById("lineThicknessId").value = 2;
-            document.getElementById("denoiseId").value = 7;
-            document.getElementById("denoise2Id").value = 10;
-            document.getElementById("rcnnSizeId").value = 10;
-            document.getElementById("rcnnBlurId").value = 9;
-            document.getElementById("sobelId").value = 3;
-            document.getElementById("asciiSizeId").value = 8;
-            document.getElementById("asciiIntervalId").value = 24;
-            document.getElementById("asciiThicknessId").value = 3;
-            document.getElementById("colorCountId").value = 0;
-            document.getElementById("resizeId").value = 1;
-            document.getElementById("saturationId").value = 100;
-            document.getElementById("sharpenId").value = 0;
-            document.getElementById("sharpenId2").value = 0;
-
-            if (document.getElementById("modesId").value == "e") {
-                document.getElementById("denoise2Id").value = 50;
-                document.getElementById("saturationId").value = 200;
+            function callVideoOrImage(value) {
+                document.getElementById("selectedVideoOrImageId").value = value;
+                document.getElementById("selectedVideoOrImageId").checked = true;
             }
-            if (document.getElementById("modesId").value == "o") {
-                document.getElementById("denoise2Id").value = 10;
-                document.getElementById("sharpenId").value = 3;
-                document.getElementById("sharpenId2").value = 0;
+
+            function sendStartCommand() {
+                videoResetCommand = true;
             }
-            if (document.getElementById("modesId").value == "k") {
-                document.getElementById("rcnnSizeId").value = 150;
+
+            function sendStopCommand() {
+                videoStopCommand = true;
             }
-            if (document.getElementById("modesId").value == "r") {
-                document.getElementById("denoise2Id").value = 30;
+
+            function sendModeChangeCommand() {
+                modeResetCommand = true;
+                mode = $("#modesId").val();
+            }
+
+            function sendModelChangeCommand() {
+                modeResetCommand = true;
+                superresModel = $("#modelsSuperresId").val();
+            }
+
+            function sendEsrganChangeCommand() {
+                modeResetCommand = true;
+                esrganModel = $("#modelsEsrganId").val();
+            }
+
+            function sendScreenshotCommand() {
+                screenshotCommand = true;
+            }
+
+            function resetSettings() {
+                // document.getElementById("positionId").value = 1                        
+                document.getElementById("saturationId").value = 100;
                 document.getElementById("cannyBlurId").value = 5;
-            }
-        }
+                document.getElementById("contrastId").value = 100;
+                document.getElementById("confidenceId").value = 20;
+                document.getElementById("brightnessId").value = 0;
+                document.getElementById("lineThicknessId").value = 2;
+                document.getElementById("denoiseId").value = 7;
+                document.getElementById("denoise2Id").value = 10;
+                document.getElementById("rcnnSizeId").value = 10;
+                document.getElementById("rcnnBlurId").value = 9;
+                document.getElementById("sobelId").value = 3;
+                document.getElementById("asciiSizeId").value = 8;
+                document.getElementById("asciiIntervalId").value = 24;
+                document.getElementById("asciiThicknessId").value = 3;
+                document.getElementById("colorCountId").value = 0;
+                document.getElementById("resizeId").value = 1;
+                document.getElementById("saturationId").value = 100;
+                document.getElementById("sharpenId").value = 0;
+                document.getElementById("sharpenId2").value = 0;
 
-        var myTimer = setInterval(function () {
-            $.ajax({
-                url: '/stats',
-                type: 'POST',
-                success: function (response) {
-                    console.log(response);
-                    //$("#num").html(response["value"]);
-                    $("#num").html("FRAME: " + response["value"]);
-                    $("#framesCount").html("TOTAL: " + response["totalFrames"]);
-                    $("#progress").html("POS: " + response["progress"] + "%");
-                    $("#fps").html("FPS: " + response["fps"]);
-                    $("#cpu").html("CPU: " + response["cpuUsage"] + "%");
-                    $("#freeRam").html("RAM: " + response["freeRam"] + "GB");
-                    frameWidth = response["frameWidth"]
-                    frameHeight = response["frameHeight"]
-                    maxFrames = response["totalFrames"]
-                    currentMode = response["currentMode"]
-
-                    if (response["screenshotReady"] == true) {
-                        window.open(response["screenshotPath"], '_blank');
-                    }
-
-                    document.getElementById("modesId").value = currentMode;
-
-                    // userTime = response["userTime"]
-                    // $("#frameSize").html(userTime);
-
-                    $("#frameSize").html(frameWidth + "x" + frameHeight);
-                    $("#positionId")
-                        .prop({
-                            min: 1,
-                            max: maxFrames - 1
-                        })
-
-                    working = response["workingOn"];
-
-                    // SHOW ALL YOLO OBJECTS
-                    if (currentMode == "a") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                        $("#confidenceIdBlock").show()
-
-                        $("#downloadObjectsId").show()
-                    }
-                    // BLUR OBJECTS WITH ASCII
-                    if (currentMode == "b") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").show()
-                        $("#sobelIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                        $("#confidenceIdBlock").show()
-                        $("#asciiSizeIdBlock").show()
-                        $("#asciiIntervalIdBlock").show()
-                        $("#asciiThicknessIdBlock").show()
-                    }
-                    // CANNY AND GAUSSIAN BLUR COLOR
-                    if (currentMode == "j") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#confidenceIdBlock").show()
-                        $("#rcnnBlurIdBlock").show()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                    }
-                    // CANNY + ANIMATE BACKGROUND
-                    if (currentMode == "i") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#confidenceIdBlock").show()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // GAUSSIAN BLUR BACKGROUND
-                    if (currentMode == "m") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#confidenceIdBlock").show()
-                        $("#rcnnSizeIdBlock").show()
-                        $("#rcnnBlurIdBlock").show()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // FAKE COLORIZER
-                    if (currentMode == "k") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#rcnnSizeIdBlock").show()
-                        $("#confidenceIdBlock").show()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // CAFFE NEURAL NETWORK COLORIZER
-                    if (currentMode == "f") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#confidenceIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // CARTOON STYLE
-                    if (currentMode == "e") {
-                        $("#cannyBlurIdBlock").show()
-                        $("#lineThicknessIdBlock").show()
-                        $("#colorCountIdBlock").show()
-                        $("#sharpenIdBlock").show()
-                        $("#sharpenIdBlock2").show()
-                        $("#denoiseIdBlock").show()
-                        $("#denoise2IdBlock").show()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // PENSIL DRAWER
-                    if (currentMode == "r") {
-                        $("#cannyBlurIdBlock").show()
-                        $("#lineThicknessIdBlock").show()
-                        $("#colorCountIdBlock").hide()
-                        $("#sharpenIdBlock").show()
-                        $("#sharpenIdBlock2").show()
-                        $("#denoiseIdBlock").show()
-                        $("#denoise2IdBlock").show()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // TWO-COLORED
-                    if (currentMode == "s") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").show()
-                        $("#colorCountIdBlock").hide()
-                        $("#sharpenIdBlock").show()
-                        $("#sharpenIdBlock2").show()
-                        $("#denoiseIdBlock").show()
-                        $("#denoise2IdBlock").show()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // DENOISE + SHARPEN
-                    if (currentMode == "o") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                        $("#sharpenIdBlock").show()
-                        $("#sharpenIdBlock2").show()
-                        $("#denoiseIdBlock").show()
-                        $("#denoise2IdBlock").show()
-
-                    }
-                    // SOBEL OPERATOR
-                    if (currentMode == "p") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                        $("#sharpenIdBlock").show()
-                        $("#sharpenIdBlock2").show()
-                        $("#denoiseIdBlock").show()
-                        $("#denoise2IdBlock").show()
-                        $("#sobelIdBlock").show()
-                    }
-                    // ASCII FULL SCREEN
-                    if (currentMode == "q") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").show()
-                        $("#sharpenIdBlock").hide()
-                        $("#sharpenIdBlock2").hide()
-                        $("#denoiseIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").hide()
-                        $("#asciiSizeIdBlock").show()
-                        $("#asciiIntervalIdBlock").show()
-                        $("#asciiThicknessIdBlock").show()
-                    }
-                    // UPSCALER   
-                    if (currentMode == "n") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sharpenIdBlock").show()
-                        $("#sharpenIdBlock2").show()
-                        $("#denoiseIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#resizeIdBlock").hide()
-
-                        $("#superresIdBlock").show()
-                        $("#esrganIdBlock").hide()
-                    }
-                    // ESRGAN UPSCALER
-                    if (currentMode == "t") {
-                        $("#cannyBlurIdBlock").hide()
-                        $("#lineThicknessIdBlock").hide()
-                        $("#confidenceIdBlock").hide()
-                        $("#rcnnSizeIdBlock").hide()
-                        $("#rcnnBlurIdBlock").hide()
-                        $("#sharpenIdBlock").show()
-                        $("#sharpenIdBlock2").show()
-                        $("#denoiseIdBlock").hide()
-                        $("#colorCountIdBlock").hide()
-                        $("#denoise2IdBlock").hide()
-                        $("#sobelIdBlock").hide()
-                        $("#asciiSizeIdBlock").hide()
-                        $("#asciiIntervalIdBlock").hide()
-                        $("#asciiThicknessIdBlock").hide()
-                        $("#resizeIdBlock").hide()
-                        $("#downloadObjectsId").hide()
-                        $("#superresIdBlock").hide()
-                        $("#esrganIdBlock").show()
-                    }
-
-                    //if (working == false) {
-                    //clearInterval(myTimer);
-                    //}
-
-                },
-                error: function (error) {
-                    console.log(error);
+                if (document.getElementById("modesId").value == "e") {
+                    document.getElementById("denoise2Id").value = 50;
+                    document.getElementById("saturationId").value = 200;
                 }
-            })
-        }, 1000);
-
-        var myTimer2 = setInterval(function () {
-            var positionSlider = document.getElementById("positionId");
-            var outputPosition = document.getElementById("positionValue");
-            var positionSliderValue = positionSlider.value;
-
-            var saturationSlider = document.getElementById("saturationId");
-            var saturationOutput = document.getElementById("saturationValue");
-            var saturationSliderValue = saturationSlider.value;
-
-            var cannyBlurSlider = document.getElementById("cannyBlurId");
-            var cannyBlurOutput = document.getElementById("cannyBlurValue");
-            var cannyBlurSliderValue = cannyBlurSlider.value;
-
-            var contrastSlider = document.getElementById("contrastId");
-            var contrastOutput = document.getElementById("contrastValue");
-            var contrastSliderValue = contrastSlider.value;
-
-            var confidenceSlider = document.getElementById("confidenceId");
-            var confidenceOutput = document.getElementById("confidenceValue");
-            var confidenceSliderValue = confidenceSlider.value;
-
-            var brightnessSlider = document.getElementById("brightnessId");
-            var brightnessOutput = document.getElementById("brightnessValue");
-            var brightnessSliderValue = brightnessSlider.value;
-
-            var lineThicknessSlider = document.getElementById("lineThicknessId");
-            var lineThicknessOutput = document.getElementById("lineThicknessValue");
-            var lineThicknessSliderValue = lineThicknessSlider.value;
-
-            var denoiseSlider = document.getElementById("denoiseId");
-            var denoiseOutput = document.getElementById("denoiseValue");
-            var denoiseSliderValue = denoiseSlider.value;
-
-            var denoise2Slider = document.getElementById("denoise2Id");
-            var denoise2Output = document.getElementById("denoise2Value");
-            var denoise2SliderValue = denoise2Slider.value;
-
-            var sharpenSlider = document.getElementById("sharpenId");
-            var sharpenOutput = document.getElementById("sharpenValue");
-            var sharpenSliderValue = sharpenSlider.value;
-
-            var sharpenSlider2 = document.getElementById("sharpenId2");
-            var sharpenOutput2 = document.getElementById("sharpenValue2");
-            var sharpenSliderValue2 = sharpenSlider2.value;
-
-            var rcnnSizeSlider = document.getElementById("rcnnSizeId");
-            var rcnnSizeOutput = document.getElementById("rcnnSizeValue");
-            var rcnnSizeSliderValue = rcnnSizeSlider.value;
-
-            var rcnnBlurSlider = document.getElementById("rcnnBlurId");
-            var rcnnBlurOutput = document.getElementById("rcnnBlurValue");
-            var rcnnBlurSliderValue = rcnnBlurSlider.value;
-
-            var sobelSlider = document.getElementById("sobelId");
-            var sobelOutput = document.getElementById("sobelValue");
-            var sobelSliderValue = sobelSlider.value;
-
-            var asciiSizeSlider = document.getElementById("asciiSizeId");
-            var asciiSizeOutput = document.getElementById("asciiSizeValue");
-            var asciiSizeSliderValue = asciiSizeSlider.value;
-
-            var asciiIntervalSlider = document.getElementById("asciiIntervalId");
-            var asciiIntervalOutput = document.getElementById("asciiIntervalValue");
-            var asciiIntervalSliderValue = asciiIntervalSlider.value;
-
-            var asciiThicknessSlider = document.getElementById("asciiThicknessId");
-            var asciiThicknessOutput = document.getElementById("asciiThicknessValue");
-            var asciiThicknessSliderValue = asciiThicknessSlider.value;
-
-            var resizeSlider = document.getElementById("resizeId");
-            var resizeOutput = document.getElementById("resizeValue");
-            var resizeSliderValue = resizeSlider.value;
-
-            var colorCountSlider = document.getElementById("colorCountId");
-            var colorCountOutput = document.getElementById("colorCountValue");
-            var colorCountSliderValue = colorCountSlider.value;
-
-            outputPosition.innerHTML = positionSlider.value;
-            saturationOutput.innerHTML = saturationSlider.value;
-            cannyBlurOutput.innerHTML = cannyBlurSlider.value;
-            contrastOutput.innerHTML = contrastSlider.value;
-            brightnessOutput.innerHTML = brightnessSlider.value;
-            confidenceOutput.innerHTML = confidenceSlider.value;
-            lineThicknessOutput.innerHTML = lineThicknessSlider.value;
-            denoiseOutput.innerHTML = denoiseSlider.value;
-            denoise2Output.innerHTML = denoise2Slider.value;
-            sharpenOutput.innerHTML = sharpenSlider.value;
-            sharpenOutput2.innerHTML = sharpenSlider2.value;
-            rcnnSizeOutput.innerHTML = rcnnSizeSlider.value;
-            rcnnBlurOutput.innerHTML = rcnnBlurSlider.value;
-            sobelOutput.innerHTML = sobelSlider.value;
-            asciiSizeOutput.innerHTML = asciiSizeSlider.value;
-            asciiIntervalOutput.innerHTML = asciiIntervalSlider.value;
-            asciiThicknessOutput.innerHTML = asciiThicknessSlider.value;
-            resizeOutput.innerHTML = resizeSlider.value;
-            colorCountOutput.innerHTML = colorCountSlider.value;
-
-            positionSlider.oninput = function () {
-                outputPosition.innerHTML = this.value;
+                if (document.getElementById("modesId").value == "o") {
+                    document.getElementById("denoise2Id").value = 10;
+                    document.getElementById("sharpenId").value = 3;
+                    document.getElementById("sharpenId2").value = 0;
+                }
+                if (document.getElementById("modesId").value == "k") {
+                    document.getElementById("rcnnSizeId").value = 150;
+                }
+                if (document.getElementById("modesId").value == "r") {
+                    document.getElementById("denoise2Id").value = 30;
+                    document.getElementById("cannyBlurId").value = 5;
+                }
             }
 
-            saturationSlider.oninput = function () {
-                saturationOutput.innerHTML = this.value;
-            }
+            var myTimer = setInterval(function () {
+                $.ajax({
+                    url: '/stats',
+                    type: 'POST',
+                    success: function (response) {
+                        console.log(response);
+                        //$("#num").html(response["value"]);
+                        $("#num").html("FRAME: " + response["value"]);
+                        $("#framesCount").html("TOTAL: " + response["totalFrames"]);
+                        $("#progress").html("POS: " + response["progress"] + "%");
+                        $("#fps").html("FPS: " + response["fps"]);
+                        $("#cpu").html("CPU: " + response["cpuUsage"] + "%");
+                        $("#freeRam").html("RAM: " + response["freeRam"] + "GB");
+                        frameWidth = response["frameWidth"]
+                        frameHeight = response["frameHeight"]
+                        maxFrames = response["totalFrames"]
+                        currentMode = response["currentMode"]
 
-            cannyBlurSlider.oninput = function () {
-                cannyBlurOutput.innerHTML = this.value;
-            }
+                        if (response["screenshotReady"] == true) {
+                            window.open(response["screenshotPath"], '_blank');
+                        }
 
-            contrastSlider.oninput = function () {
-                contrastOutput.innerHTML = this.value;
-            }
+                        document.getElementById("modesId").value = currentMode;
 
-            brightnessSlider.oninput = function () {
-                brightnessOutput.innerHTML = this.value;
-            }
+                        // userTime = response["userTime"]
+                        // $("#frameSize").html(userTime);
 
-            confidenceSlider.oninput = function () {
-                confidenceOutput.innerHTML = this.value;
-            }
+                        $("#frameSize").html(frameWidth + "x" + frameHeight);
+                        $("#positionId")
+                            .prop({
+                                min: 1,
+                                max: maxFrames - 1
+                            })
 
-            lineThicknessSlider.oninput = function () {
-                lineThicknessOutput.innerHTML = this.value;
-            }
+                        working = response["workingOn"];
 
-            denoiseSlider.oninput = function () {
-                denoiseOutput.innerHTML = this.value;
-            }
+                        // SHOW ALL YOLO OBJECTS
+                        if (currentMode == "a") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                            $("#confidenceIdBlock").show()
 
-            denoise2Slider.oninput = function () {
-                denoise2Output.innerHTML = this.value;
-            }
+                            $("#downloadObjectsId").show()
+                        }
+                        // BLUR OBJECTS WITH ASCII
+                        if (currentMode == "b") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").show()
+                            $("#sobelIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                            $("#asciiSizeIdBlock").show()
+                            $("#asciiIntervalIdBlock").show()
+                            $("#asciiThicknessIdBlock").show()
+                        }
+                        // CANNY AND GAUSSIAN BLUR COLOR
+                        if (currentMode == "j") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                            $("#rcnnBlurIdBlock").show()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                        }
+                        // CANNY + ANIMATE BACKGROUND
+                        if (currentMode == "i") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // GAUSSIAN BLUR BACKGROUND
+                        if (currentMode == "m") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#confidenceIdBlock").show()
+                            $("#rcnnSizeIdBlock").show()
+                            $("#rcnnBlurIdBlock").show()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // FAKE COLORIZER
+                        if (currentMode == "k") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#rcnnSizeIdBlock").show()
+                            $("#confidenceIdBlock").show()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // CAFFE NEURAL NETWORK COLORIZER
+                        if (currentMode == "f") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // CARTOON STYLE
+                        if (currentMode == "e") {
+                            $("#cannyBlurIdBlock").show()
+                            $("#lineThicknessIdBlock").show()
+                            $("#colorCountIdBlock").show()
+                            $("#sharpenIdBlock").show()
+                            $("#sharpenIdBlock2").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // PENSIL DRAWER
+                        if (currentMode == "r") {
+                            $("#cannyBlurIdBlock").show()
+                            $("#lineThicknessIdBlock").show()
+                            $("#colorCountIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#sharpenIdBlock2").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // TWO-COLORED
+                        if (currentMode == "s") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").show()
+                            $("#colorCountIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#sharpenIdBlock2").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // DENOISE + SHARPEN
+                        if (currentMode == "o") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#sharpenIdBlock2").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()
 
-            sharpenSlider.oninput = function () {
-                sharpenOutput.innerHTML = this.value;
-            }
+                        }
+                        // SOBEL OPERATOR
+                        if (currentMode == "p") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#sharpenIdBlock2").show()
+                            $("#denoiseIdBlock").show()
+                            $("#denoise2IdBlock").show()
+                            $("#sobelIdBlock").show()
+                        }
+                        // ASCII FULL SCREEN
+                        if (currentMode == "q") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").show()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
+                            $("#asciiSizeIdBlock").show()
+                            $("#asciiIntervalIdBlock").show()
+                            $("#asciiThicknessIdBlock").show()
+                        }
+                        // UPSCALER   
+                        if (currentMode == "n") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#sharpenIdBlock2").show()
+                            $("#denoiseIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#resizeIdBlock").hide()
 
-            sharpenSlider2.oninput = function () {
-                sharpenOutput2.innerHTML = this.value;
-            }
+                            $("#superresIdBlock").show()
+                            $("#esrganIdBlock").hide()
+                        }
+                        // ESRGAN UPSCALER
+                        if (currentMode == "t") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sharpenIdBlock").show()
+                            $("#sharpenIdBlock2").show()
+                            $("#denoiseIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").show()
+                        }
 
-            rcnnSizeSlider.oninput = function () {
-                rcnnSizeOutput.innerHTML = this.value;
-            }
+                        //if (working == false) {
+                        //clearInterval(myTimer);
+                        //}
 
-            rcnnBlurSlider.oninput = function () {
-                rcnnBlurOutput.innerHTML = this.value;
-            }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                })
+            }, 1000);
 
-            sobelSlider.oninput = function () {
-                sobelOutput.innerHTML = this.value;
-            }
+            var myTimer2 = setInterval(function () {
+                var positionSlider = document.getElementById("positionId");
+                var outputPosition = document.getElementById("positionValue");
+                var positionSliderValue = positionSlider.value;
 
-            asciiSizeSlider.oninput = function () {
-                asciiSizeOutput.innerHTML = this.value;
-            }
+                var saturationSlider = document.getElementById("saturationId");
+                var saturationOutput = document.getElementById("saturationValue");
+                var saturationSliderValue = saturationSlider.value;
 
-            asciiIntervalSlider.oninput = function () {
-                asciiIntervalOutput.innerHTML = this.value;
-            }
+                var cannyBlurSlider = document.getElementById("cannyBlurId");
+                var cannyBlurOutput = document.getElementById("cannyBlurValue");
+                var cannyBlurSliderValue = cannyBlurSlider.value;
 
-            asciiThicknessSlider.oninput = function () {
-                asciiThicknessOutput.innerHTML = this.value;
-            }
+                var contrastSlider = document.getElementById("contrastId");
+                var contrastOutput = document.getElementById("contrastValue");
+                var contrastSliderValue = contrastSlider.value;
 
-            resizeSlider.oninput = function () {
-                resizeOutput.innerHTML = this.value;
-            }
+                var confidenceSlider = document.getElementById("confidenceId");
+                var confidenceOutput = document.getElementById("confidenceValue");
+                var confidenceSliderValue = confidenceSlider.value;
 
-            colorCountSlider.oninput = function () {
-                colorCountOutput.innerHTML = this.value;
-            }
+                var brightnessSlider = document.getElementById("brightnessId");
+                var brightnessOutput = document.getElementById("brightnessValue");
+                var brightnessSliderValue = brightnessSlider.value;
 
-            $.ajax({
-                type: "POST",
-                contentType: "application/json;charset=utf-8",
-                url: "/settings",
-                traditional: "true",
-                data: JSON.stringify({
-                    cannyBlurSliderValue,
-                    saturationSliderValue,
-                    contrastSliderValue,
-                    brightnessSliderValue,
-                    positionSliderValue,
-                    confidenceSliderValue,
-                    lineThicknessSliderValue,
-                    denoiseSliderValue,
-                    denoise2SliderValue,
-                    sharpenSliderValue,
-                    sharpenSliderValue2,
-                    rcnnSizeSliderValue,
-                    rcnnBlurSliderValue,
-                    sobelSliderValue,
-                    asciiSizeSliderValue,
-                    asciiIntervalSliderValue,
-                    asciiThicknessSliderValue,
-                    resizeSliderValue,
-                    colorCountSliderValue,
-                    videoResetCommand,
-                    videoStopCommand,
-                    modeResetCommand,
-                    screenshotCommand,
-                    urlSourceResetCommand,
-                    urlSource,
-                    mode,
-                    superresModel,
-                    esrganModel
-                }),
-                dataType: "json"
-            });
-            console.log(screenshotCommand);
+                var lineThicknessSlider = document.getElementById("lineThicknessId");
+                var lineThicknessOutput = document.getElementById("lineThicknessValue");
+                var lineThicknessSliderValue = lineThicknessSlider.value;
 
-            screenshotCommand = false;
-            videoResetCommand = false;
-            videoStopCommand = false;
-            modeResetCommand = false;
-            superresResetCommand = false;
-            estranResetCommand = false;
-            urlSourceResetCommand = false;
+                var denoiseSlider = document.getElementById("denoiseId");
+                var denoiseOutput = document.getElementById("denoiseValue");
+                var denoiseSliderValue = denoiseSlider.value;
 
-        }, 300);
+                var denoise2Slider = document.getElementById("denoise2Id");
+                var denoise2Output = document.getElementById("denoise2Value");
+                var denoise2SliderValue = denoise2Slider.value;
 
+                var sharpenSlider = document.getElementById("sharpenId");
+                var sharpenOutput = document.getElementById("sharpenValue");
+                var sharpenSliderValue = sharpenSlider.value;
 
-    </script>
+                var sharpenSlider2 = document.getElementById("sharpenId2");
+                var sharpenOutput2 = document.getElementById("sharpenValue2");
+                var sharpenSliderValue2 = sharpenSlider2.value;
 
-</div>
+                var rcnnSizeSlider = document.getElementById("rcnnSizeId");
+                var rcnnSizeOutput = document.getElementById("rcnnSizeValue");
+                var rcnnSizeSliderValue = rcnnSizeSlider.value;
+
+                var rcnnBlurSlider = document.getElementById("rcnnBlurId");
+                var rcnnBlurOutput = document.getElementById("rcnnBlurValue");
+                var rcnnBlurSliderValue = rcnnBlurSlider.value;
+
+                var sobelSlider = document.getElementById("sobelId");
+                var sobelOutput = document.getElementById("sobelValue");
+                var sobelSliderValue = sobelSlider.value;
+
+                var asciiSizeSlider = document.getElementById("asciiSizeId");
+                var asciiSizeOutput = document.getElementById("asciiSizeValue");
+                var asciiSizeSliderValue = asciiSizeSlider.value;
+
+                var asciiIntervalSlider = document.getElementById("asciiIntervalId");
+                var asciiIntervalOutput = document.getElementById("asciiIntervalValue");
+                var asciiIntervalSliderValue = asciiIntervalSlider.value;
+
+                var asciiThicknessSlider = document.getElementById("asciiThicknessId");
+                var asciiThicknessOutput = document.getElementById("asciiThicknessValue");
+                var asciiThicknessSliderValue = asciiThicknessSlider.value;
+
+                var resizeSlider = document.getElementById("resizeId");
+                var resizeOutput = document.getElementById("resizeValue");
+                var resizeSliderValue = resizeSlider.value;
+
+                var colorCountSlider = document.getElementById("colorCountId");
+                var colorCountOutput = document.getElementById("colorCountValue");
+                var colorCountSliderValue = colorCountSlider.value;
+
+                outputPosition.innerHTML = positionSlider.value;
+                saturationOutput.innerHTML = saturationSlider.value;
+                cannyBlurOutput.innerHTML = cannyBlurSlider.value;
+                contrastOutput.innerHTML = contrastSlider.value;
+                brightnessOutput.innerHTML = brightnessSlider.value;
+                confidenceOutput.innerHTML = confidenceSlider.value;
+                lineThicknessOutput.innerHTML = lineThicknessSlider.value;
+                denoiseOutput.innerHTML = denoiseSlider.value;
+                denoise2Output.innerHTML = denoise2Slider.value;
+                sharpenOutput.innerHTML = sharpenSlider.value;
+                sharpenOutput2.innerHTML = sharpenSlider2.value;
+                rcnnSizeOutput.innerHTML = rcnnSizeSlider.value;
+                rcnnBlurOutput.innerHTML = rcnnBlurSlider.value;
+                sobelOutput.innerHTML = sobelSlider.value;
+                asciiSizeOutput.innerHTML = asciiSizeSlider.value;
+                asciiIntervalOutput.innerHTML = asciiIntervalSlider.value;
+                asciiThicknessOutput.innerHTML = asciiThicknessSlider.value;
+                resizeOutput.innerHTML = resizeSlider.value;
+                colorCountOutput.innerHTML = colorCountSlider.value;
+
+                positionSlider.oninput = function () {
+                    outputPosition.innerHTML = this.value;
+                }
+
+                saturationSlider.oninput = function () {
+                    saturationOutput.innerHTML = this.value;
+                }
+
+                cannyBlurSlider.oninput = function () {
+                    cannyBlurOutput.innerHTML = this.value;
+                }
+
+                contrastSlider.oninput = function () {
+                    contrastOutput.innerHTML = this.value;
+                }
+
+                brightnessSlider.oninput = function () {
+                    brightnessOutput.innerHTML = this.value;
+                }
+
+                confidenceSlider.oninput = function () {
+                    confidenceOutput.innerHTML = this.value;
+                }
+
+                lineThicknessSlider.oninput = function () {
+                    lineThicknessOutput.innerHTML = this.value;
+                }
+
+                denoiseSlider.oninput = function () {
+                    denoiseOutput.innerHTML = this.value;
+                }
+
+                denoise2Slider.oninput = function () {
+                    denoise2Output.innerHTML = this.value;
+                }
+
+                sharpenSlider.oninput = function () {
+                    sharpenOutput.innerHTML = this.value;
+                }
+
+                sharpenSlider2.oninput = function () {
+                    sharpenOutput2.innerHTML = this.value;
+                }
+
+                rcnnSizeSlider.oninput = function () {
+                    rcnnSizeOutput.innerHTML = this.value;
+                }
+
+                rcnnBlurSlider.oninput = function () {
+                    rcnnBlurOutput.innerHTML = this.value;
+                }
+
+                sobelSlider.oninput = function () {
+                    sobelOutput.innerHTML = this.value;
+                }
+
+                asciiSizeSlider.oninput = function () {
+                    asciiSizeOutput.innerHTML = this.value;
+                }
+
+                asciiIntervalSlider.oninput = function () {
+                    asciiIntervalOutput.innerHTML = this.value;
+                }
+
+                asciiThicknessSlider.oninput = function () {
+                    asciiThicknessOutput.innerHTML = this.value;
+                }
+
+                resizeSlider.oninput = function () {
+                    resizeOutput.innerHTML = this.value;
+                }
+
+                colorCountSlider.oninput = function () {
+                    colorCountOutput.innerHTML = this.value;
+                }
+
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json;charset=utf-8",
+                    url: "/settings",
+                    traditional: "true",
+                    data: JSON.stringify({
+                        cannyBlurSliderValue,
+                        saturationSliderValue,
+                        contrastSliderValue,
+                        brightnessSliderValue,
+                        positionSliderValue,
+                        confidenceSliderValue,
+                        lineThicknessSliderValue,
+                        denoiseSliderValue,
+                        denoise2SliderValue,
+                        sharpenSliderValue,
+                        sharpenSliderValue2,
+                        rcnnSizeSliderValue,
+                        rcnnBlurSliderValue,
+                        sobelSliderValue,
+                        asciiSizeSliderValue,
+                        asciiIntervalSliderValue,
+                        asciiThicknessSliderValue,
+                        resizeSliderValue,
+                        colorCountSliderValue,
+                        videoResetCommand,
+                        videoStopCommand,
+                        modeResetCommand,
+                        screenshotCommand,
+                        urlSourceResetCommand,
+                        urlSource,
+                        mode,
+                        superresModel,
+                        esrganModel
+                    }),
+                    dataType: "json"
+                });
+                console.log(screenshotCommand);
+
+                screenshotCommand = false;
+                videoResetCommand = false;
+                videoStopCommand = false;
+                modeResetCommand = false;
+                superresResetCommand = false;
+                estranResetCommand = false;
+                urlSourceResetCommand = false;
+
+            }, 300);
+
+        </script>
+    </div>
 </body>

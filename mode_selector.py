@@ -99,7 +99,7 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
         # Draw boxes with labels on frame
         # Extract all image regions with objects and add them to zip
         if requested_modes_dictionary["extract_objects_yolo_mode"]:
-            main_frame = extract_objects_yolo(
+            main_frame, zipped_images, zip_obj, zip_is_opened = extract_objects_yolo(
                 main_frame,
                 boxes,
                 indexes,
@@ -321,4 +321,4 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
     main_frame = adjust_br_contrast(main_frame, int(slider_settings_dictionary["contrastSliderValue"]), int(slider_settings_dictionary["brightnessSliderValue"]))
     main_frame = adjust_saturation(main_frame, int(slider_settings_dictionary["saturationSliderValue"]))
 
-    return main_frame, frame_boost_sequence, frame_boost_list, classes_index
+    return main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened

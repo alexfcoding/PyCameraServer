@@ -17,7 +17,6 @@ with open("models/yolo/coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
 colors_yolo = np.random.uniform(0, 255, size=(len(classes), 3))
-
 object_index = 0
 
 
@@ -67,6 +66,7 @@ def initialize_caffe_network():
 
 def initialize_superres_network(model_type):
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
+
     if (model_type == "EDSR"):
         sr.readModel("models/upscalers/EDSR_x4.pb")
         sr.setModel("edsr", 4)
@@ -180,160 +180,6 @@ def initialize_dain_network(use_cuda):
     print("The unique id for current testing is: " + str(unique_id))
 
     return model
-
-
-def boost_fps_with_dain(dain_network, f, f1, use_cuda):
-    save_which = 1
-    dtype = torch.cuda.FloatTensor
-
-    fpsBoost = 7
-    frame_sequence = None
-    frame_write_sequence = None
-
-    if (fpsBoost == 7):
-        frame_sequence = [0, 1, 2, 0, 2, 3, 0, 3, 4, 3, 2, 5, 2, 1, 6, 2, 6, 7, 6, 1, 8]
-        frame_write_sequence = [0, 8, 4, 2, 1, 3, 6, 5, 7]
-
-    if (fpsBoost == 3):
-        frame_sequence = [0, 1, 2, 0, 2, 3, 2, 1, 4]
-        frame_write_sequence = [0, 4, 2, 1, 3]
-
-    if (fpsBoost == 2):
-        frame_sequence = [0, 1, 2]
-        frame_write_sequence = [0, 2, 1]
-
-    frames = []
-    frame_index = 0
-    frameEdge = None
-
-    bufferFrames = None
-
-    frames.append(f)
-    frames.append(f1)
-
-    for i in range(fpsBoost - 1):
-        X0 = torch.from_numpy(
-            np.transpose(frames[frame_sequence[frame_index]], (2, 0, 1)).astype("float32") / 255.0).type(dtype)
-        frame_index += 1
-        X1 = torch.from_numpy(
-            np.transpose(frames[frame_sequence[frame_index]], (2, 0, 1)).astype("float32") / 255.0).type(dtype)
-        frame_index += 1
-        y_ = torch.FloatTensor()
-
-        assert (X0.size(1) == X1.size(1))
-        assert (X0.size(2) == X1.size(2))
-
-        intWidth = X0.size(2)
-        intHeight = X0.size(1)
-        channel = X0.size(0)
-
-        if intWidth != ((intWidth >> 7) << 7):
-            intWidth_pad = (((intWidth >> 7) + 1) << 7)  # more than necessary
-            intPaddingLeft = int((intWidth_pad - intWidth) / 2)
-            intPaddingRight = intWidth_pad - intWidth - intPaddingLeft
-        else:
-            intWidth_pad = intWidth
-            intPaddingLeft = 32
-            intPaddingRight = 32
-
-        if intHeight != ((intHeight >> 7) << 7):
-            intHeight_pad = (((intHeight >> 7) + 1) << 7)  # more than necessary
-            intPaddingTop = int((intHeight_pad - intHeight) / 2)
-            intPaddingBottom = intHeight_pad - intHeight - intPaddingTop
-        else:
-            intHeight_pad = intHeight
-            intPaddingTop = 32
-            intPaddingBottom = 32
-
-        pader = torch.nn.ReplicationPad2d([intPaddingLeft, intPaddingRight, intPaddingTop, intPaddingBottom])
-
-        torch.set_grad_enabled(False)
-        X0 = Variable(torch.unsqueeze(X0, 0))
-        X1 = Variable(torch.unsqueeze(X1, 0))
-        X0 = pader(X0)
-        X1 = pader(X1)
-
-        if use_cuda:
-            X0 = X0.cuda()
-            X1 = X1.cuda()
-
-        proc_end = time.time()
-        y_s, offset, filter = dain_network(torch.stack((X0, X1), dim=0))
-        y_ = y_s[save_which]
-
-        end = time.time()
-
-        print("*****************current image process time \t " + str(
-            time.time() - proc_end) + "s ******************")
-        if use_cuda:
-            X0 = X0.data.cpu().numpy()
-            y_ = y_.data.cpu().numpy()
-            offset = [offset_i.data.cpu().numpy() for offset_i in offset]
-            filter = [filter_i.data.cpu().numpy() for filter_i in filter] if filter[0] is not None else None
-            X1 = X1.data.cpu().numpy()
-        else:
-            X0 = X0.data.numpy()
-            y_ = y_.data.numpy()
-            offset = [offset_i.data.numpy() for offset_i in offset]
-            filter = [filter_i.data.numpy() for filter_i in filter]
-            X1 = X1.data.numpy()
-
-        X0 = np.transpose(255.0 * X0.clip(0, 1.0)[0, :, intPaddingTop:intPaddingTop + intHeight,
-                                  intPaddingLeft: intPaddingLeft + intWidth], (1, 2, 0))
-        y_ = np.transpose(255.0 * y_.clip(0, 1.0)[0, :, intPaddingTop:intPaddingTop + intHeight,
-                                  intPaddingLeft: intPaddingLeft + intWidth], (1, 2, 0))
-        offset = [np.transpose(
-            offset_i[0, :, intPaddingTop:intPaddingTop + intHeight, intPaddingLeft: intPaddingLeft + intWidth],
-            (1, 2, 0)) for offset_i in offset]
-        filter = [np.transpose(
-            filter_i[0, :, intPaddingTop:intPaddingTop + intHeight, intPaddingLeft: intPaddingLeft + intWidth],
-            (1, 2, 0)) for filter_i in filter] if filter is not None else None
-        X1 = np.transpose(255.0 * X1.clip(0, 1.0)[0, :, intPaddingTop:intPaddingTop + intHeight,
-                                  intPaddingLeft: intPaddingLeft + intWidth], (1, 2, 0))
-
-        # imageio.imwrite(arguments_strOut, np.round(y_).astype(numpy.uint8))
-        f2 = np.round(y_).astype(numpy.uint8)
-
-        frames.append(f2)
-
-        frame_index += 1
-
-    # list1, list2 = zip(*sorted(zip(list1, list2)))
-    # frame_write_sequence, frames = zip(*sorted(zip(frame_write_sequence, frames)))
-
-    # # for frame_position in frame_write_sequence:
-    # #     writer.write(frames[frame_position])
-    # #     cv2.imshow("video",  frames[frame_position])
-    # #     key = cv2.waitKey(1) & 0xFF
-    #
-    # #     if key == ord("q"):
-    # #         break
-    #
-    # for frame in frames:
-    #     writer.write(frame)
-    #     cv2.imshow("video", frame)
-    #     key = cv2.waitKey(1) & 0xFF
-    #
-    #     if key == ord("q"):
-    #         break
-    #
-    #
-    # # frameEdge = frames[1]
-    # frameEdge = frames[len(frames) - 1]
-    # frames = list(frames)
-    # frames.clear()
-    # frame_write_sequence = list(frame_write_sequence)
-    #
-    # if (fpsBoost == 7):
-    #     frame_sequence = [0, 1, 2, 0, 2, 3, 0, 3, 4, 3, 2, 5, 2, 1, 6, 2, 6, 7, 6, 1, 8]
-    #     frame_write_sequence = [0, 8, 4, 2, 1, 3, 6, 5, 7]
-    # if (fpsBoost == 3):
-    #     frame_sequence = [0, 1, 2, 0, 2, 3, 2, 1, 4]
-    #     frame_write_sequence = [0, 4, 2, 1, 3]
-
-    frame_index = 0
-
-    return frame_write_sequence, frames
 
 
 def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value):
@@ -468,7 +314,7 @@ def extract_objects_yolo(
             if (
                 started_rendering_mode
                 and zip_is_opened
-                and source_mode in ("video", "youtube")
+                and source_mode in ("video", "youtube", "ipcam")
             ):
                 cv2.imwrite(f"static/user_renders/{label}{str(object_index)}.jpg", crop_img)
                 zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
@@ -484,9 +330,13 @@ def extract_objects_yolo(
                 zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
                 os.remove(f"static/user_renders/{label}{str(object_index)}.jpg")
 
+                zipped_images = True
+                zip_archive.close()
+                zip_is_opened = False
+
             object_index += 1
 
-    return input_frame
+    return input_frame, zipped_images, zip_archive, zip_is_opened
 
 
 def objects_to_text_yolo(
@@ -1432,6 +1282,124 @@ def upscale_with_esrgan(network, device, image):
     return output
 
 
+def boost_fps_with_dain(dain_network, f, f1, use_cuda):
+    save_which = 1
+    dtype = torch.cuda.FloatTensor
+
+    fpsBoost = 7
+    frame_sequence = None
+    frame_write_sequence = None
+
+    if (fpsBoost == 7):
+        frame_sequence = [0, 1, 2, 0, 2, 3, 0, 3, 4, 3, 2, 5, 2, 1, 6, 2, 6, 7, 6, 1, 8]
+        frame_write_sequence = [0, 8, 4, 2, 1, 3, 6, 5, 7]
+
+    if (fpsBoost == 3):
+        frame_sequence = [0, 1, 2, 0, 2, 3, 2, 1, 4]
+        frame_write_sequence = [0, 4, 2, 1, 3]
+
+    if (fpsBoost == 2):
+        frame_sequence = [0, 1, 2]
+        frame_write_sequence = [0, 2, 1]
+
+    frames = []
+    frame_index = 0
+
+    frames.append(f)
+    frames.append(f1)
+
+    for i in range(fpsBoost - 1):
+        X0 = torch.from_numpy(
+            np.transpose(frames[frame_sequence[frame_index]], (2, 0, 1)).astype("float32") / 255.0).type(dtype)
+        frame_index += 1
+        X1 = torch.from_numpy(
+            np.transpose(frames[frame_sequence[frame_index]], (2, 0, 1)).astype("float32") / 255.0).type(dtype)
+        frame_index += 1
+        y_ = torch.FloatTensor()
+
+        assert (X0.size(1) == X1.size(1))
+        assert (X0.size(2) == X1.size(2))
+
+        intWidth = X0.size(2)
+        intHeight = X0.size(1)
+        channel = X0.size(0)
+
+        if intWidth != ((intWidth >> 7) << 7):
+            intWidth_pad = (((intWidth >> 7) + 1) << 7)  # more than necessary
+            intPaddingLeft = int((intWidth_pad - intWidth) / 2)
+            intPaddingRight = intWidth_pad - intWidth - intPaddingLeft
+        else:
+            intWidth_pad = intWidth
+            intPaddingLeft = 32
+            intPaddingRight = 32
+
+        if intHeight != ((intHeight >> 7) << 7):
+            intHeight_pad = (((intHeight >> 7) + 1) << 7)  # more than necessary
+            intPaddingTop = int((intHeight_pad - intHeight) / 2)
+            intPaddingBottom = intHeight_pad - intHeight - intPaddingTop
+        else:
+            intHeight_pad = intHeight
+            intPaddingTop = 32
+            intPaddingBottom = 32
+
+        pader = torch.nn.ReplicationPad2d([intPaddingLeft, intPaddingRight, intPaddingTop, intPaddingBottom])
+
+        torch.set_grad_enabled(False)
+        X0 = Variable(torch.unsqueeze(X0, 0))
+        X1 = Variable(torch.unsqueeze(X1, 0))
+        X0 = pader(X0)
+        X1 = pader(X1)
+
+        if use_cuda:
+            X0 = X0.cuda()
+            X1 = X1.cuda()
+
+        proc_end = time.time()
+        y_s, offset, filter = dain_network(torch.stack((X0, X1), dim=0))
+        y_ = y_s[save_which]
+
+        end = time.time()
+
+        print("*****************current image process time \t " + str(
+            time.time() - proc_end) + "s ******************")
+        if use_cuda:
+            X0 = X0.data.cpu().numpy()
+            y_ = y_.data.cpu().numpy()
+            offset = [offset_i.data.cpu().numpy() for offset_i in offset]
+            filter = [filter_i.data.cpu().numpy() for filter_i in filter] if filter[0] is not None else None
+            X1 = X1.data.cpu().numpy()
+        else:
+            X0 = X0.data.numpy()
+            y_ = y_.data.numpy()
+            offset = [offset_i.data.numpy() for offset_i in offset]
+            filter = [filter_i.data.numpy() for filter_i in filter]
+            X1 = X1.data.numpy()
+
+        X0 = np.transpose(255.0 * X0.clip(0, 1.0)[0, :, intPaddingTop:intPaddingTop + intHeight,
+                                  intPaddingLeft: intPaddingLeft + intWidth], (1, 2, 0))
+        y_ = np.transpose(255.0 * y_.clip(0, 1.0)[0, :, intPaddingTop:intPaddingTop + intHeight,
+                                  intPaddingLeft: intPaddingLeft + intWidth], (1, 2, 0))
+        offset = [np.transpose(
+            offset_i[0, :, intPaddingTop:intPaddingTop + intHeight, intPaddingLeft: intPaddingLeft + intWidth],
+            (1, 2, 0)) for offset_i in offset]
+        filter = [np.transpose(
+            filter_i[0, :, intPaddingTop:intPaddingTop + intHeight, intPaddingLeft: intPaddingLeft + intWidth],
+            (1, 2, 0)) for filter_i in filter] if filter is not None else None
+        X1 = np.transpose(255.0 * X1.clip(0, 1.0)[0, :, intPaddingTop:intPaddingTop + intHeight,
+                                  intPaddingLeft: intPaddingLeft + intWidth], (1, 2, 0))
+
+        # imageio.imwrite(arguments_strOut, np.round(y_).astype(numpy.uint8))
+        f2 = np.round(y_).astype(numpy.uint8)
+
+        frames.append(f2)
+
+        frame_index += 1
+
+    frame_index = 0
+
+    return frame_write_sequence, frames
+
+
 def ascii_paint(
     input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value
 ):
@@ -1583,6 +1551,3 @@ def adjust_br_contrast(input_frame, contrast_value, brightness_value):
         input_frame, alpha=contrast_value, beta=brightness_value
     )
     return input_frame
-
-
-

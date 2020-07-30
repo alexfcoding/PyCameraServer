@@ -165,10 +165,10 @@
 
     </style>
 </head>
-
+<form action="" method=post enctype=multipart/form-data>
 <body style="background-color:#1d1d1d;">
     <div style="text-align: center;">
-        <form action="" method=post enctype=multipart/form-data>
+
             <div id="loaddiv" style="display: none;">
                 <div id="preloader">
                     <div id="loader" style="font-size: 34px;"></div>
@@ -209,7 +209,7 @@
                                         <input style="display: none;" type="submit" id="setModeAYVideo" onclick="callVideoOrImage('youtube'), callYoutube('a')"/>
                                     </div>
                                 </div>
-                               
+
                                 <!--<input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>-->
                             </div>
                         </div>
@@ -478,6 +478,7 @@
                     $('video', this).get(0).pause();
                 }
              </script>
-            </form>
+
     </div>
 </body>
+</form>
