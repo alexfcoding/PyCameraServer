@@ -127,11 +127,10 @@ def check_if_user_is_connected(timer_start, seconds_to_disconnect):
     global user_time
     timer_end = time.perf_counter()
     user_time = str(round(timer_end)) + ":" + str(round(timer_start))
-    print(timer_start)
+    # print(timer_start)
 
-    if timer_end - timer_start < seconds_to_disconnect and timer_start != 0:
-        print("User is connected")
-    else:
+    if not (timer_end - timer_start < seconds_to_disconnect and timer_start != 0):
+        # print("User is connected")
         if timer_start != 0:
             print(
                 "User disconnected, shutting down!"
@@ -172,21 +171,21 @@ def process_frame():
 
     path_to_file, file_to_render = os.path.split(args["source"]) # Get filename from full path
     print ("Processing file: " + file_to_render)
-    url = args["source"] # Youtube URL
+    server_states.source_url = args["source"] # Youtube URL
 
     server_states.render_mode = args["optionsList"] # Rendering mode from command line
     server_states.source_mode = args["mode"] # Source type from command line
 
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
-        vPafy = pafy.new(url)
+        vPafy = pafy.new(server_states.source_url)
         play = vPafy.streams[0]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
     if server_states.source_mode == "ipcam":
         cap = cv2.VideoCapture()
-        cap.open(server_states.url)
+        cap.open(server_states.source_url)
         server_states.total_frames = 1
 
     # Set source for video file capturing
@@ -358,7 +357,7 @@ def process_frame():
         if server_states.source_mode in ("video", "youtube", "ipcam"):
             # If stopped rendering
             if not started_rendering_video:
-                print("in stop loop")
+                # print("in stop loop")
                 if (cap is not None):
                     cap.set(1, position_value) # Set current video position from HTML slider value
                     server_states.frame_processed = 0
@@ -465,7 +464,7 @@ def process_frame():
                 zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
                 zip_is_opened = True
                 received_zip_command = False
-                print("CREATED ZIP =========================")
+                # print("CREATED ZIP =========================")
 
             if file_changed:
                 zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w")
@@ -596,7 +595,7 @@ def process_frame():
             check_if_user_is_connected(timer_start, 7)
             started_rendering_video = False
             position_value = 1
-            print("finished")
+            # print("finished")
 
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER

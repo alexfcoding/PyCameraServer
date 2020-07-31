@@ -23,16 +23,23 @@ def allowed_file(filename):
 
 @app.route("/", methods=["GET", "POST"])
 def upload_file():
+    global connection_port
+
     if request.method == "POST":
         file = request.files["file"]
-        youtube_url = request.form.get("textbox")
+        url = request.form.get("urlInput")
 
-        if youtube_url != "":
+        if url.find("you") != -1:
             mode = "youtube"
             options = request.form.getlist("check")
-            global connection_port
-            connection_port = connection_port + 1
-            return start_analysis(connection_port, youtube_url, options, mode)
+            connection_port += 1
+            return start_analysis(connection_port, url, options, mode)
+
+        if url.find("mjpg") != -1:
+            mode = "ipcam"
+            options = request.form.getlist("check")
+            connection_port += 1
+            return start_analysis(connection_port, url, options, mode)
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -41,7 +48,7 @@ def upload_file():
 
             if file_extension in ("png", "jpg", "jpeg"):
                 mode = "image"
-            else:
+            if file_extension in ("gif", ",mp4", "avi", "m4v", "webm", "mkv"):
                 mode = "video"
 
             options = request.form.getlist("check")
@@ -74,30 +81,13 @@ def start_analysis(port_to_render, file_to_render, options, mode):
     for item in options:
         str_from_list += item
 
-    # process = subprocess.Popen(
-    #     [
-    #         f"python",
-    #         "-u",
-    #         "processing.py",
-    #         "-i",
-    #         "192.168.0.12",
-    #         "-o",
-    #         str(port_to_render),
-    #         "-s",
-    #         str(file_to_render),
-    #         "-c",
-    #         str_from_list,
-    #         "-m",
-    #         mode,
-    #     ],
-    #     bufsize=0,
-    #     stdout=subprocess.PIPE,
-    # )
+
 
     source = ""
-    if mode in ("video, image"):
+
+    if mode in ("video", "image"):
         source = f"{UPLOAD_FOLDER}{file_to_render}"
-    if mode in ("youtube"):
+    if mode in ("youtube", "ipcam"):
         source = f"{file_to_render}"
 
     process = subprocess.Popen(
@@ -110,29 +100,49 @@ def start_analysis(port_to_render, file_to_render, options, mode):
             "-o",
             str(port_to_render),
             "-s",
-            source,
+            str(file_to_render),
             "-c",
             str_from_list,
             "-m",
             mode,
         ],
-        bufsize=0
+        bufsize=0,
+        stdout=subprocess.PIPE,
     )
 
-    # while process.poll() is None and not process_started:
-    #     output = process.stdout.readline()
-    #     # output = process.communicate()[0]
-    #     out = str(output.decode("utf-8"))
-    #     print(out)
+    # process = subprocess.Popen(
+    #     [
+    #         f"python",
+    #         "-u",
+    #         "processing.py",
+    #         "-i",
+    #         "192.168.0.12",
+    #         "-o",
+    #         str(port_to_render),
+    #         "-s",
+    #         source,
+    #         "-c",
+    #         str_from_list,
+    #         "-m",
+    #         mode,
+    #     ],
+    #     bufsize=0
+    # )
 
-    #     if out == "started\n":
-    #         process_started = True
-    #         # process.stdout.close()
-    #         time.sleep(1)
-    #         return redirect(f"http://192.168.0.12:{port_to_render}")
+    while process.poll() is None and not process_started:
+        output = process.stdout.readline()
+        # output = process.communicate()[0]
+        out = str(output.decode("utf-8"))
+        print(out)
 
-    time.sleep(7)
-    return redirect(f"http://192.168.0.12:{port_to_render}")
+        if out == "started\n":
+            process_started = True
+            # process.stdout.close()
+            time.sleep(1)
+            return redirect(f"http://192.168.0.12:{port_to_render}")
+
+    # time.sleep(5)
+    # return redirect(f"http://192.168.0.12:{port_to_render}")
 
 
 if __name__ == "__main__":
