@@ -1400,22 +1400,70 @@ def boost_fps_with_dain(dain_network, f, f1, use_cuda):
     return frame_write_sequence, frames
 
 
-def ascii_paint(
+def ascii_paint_zoom(
     input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value
 ):
-    font_size /= 10
+    # font_size /= 10
+    if ascii_distance_value < 20:
+        ascii_thickness_value = 1
 
+    if ascii_distance_value >= 20 and ascii_distance_value < 40:
+        ascii_thickness_value = 2
+
+    if ascii_distance_value >= 40:
+        ascii_thickness_value = 3
+
+    font_size = ascii_distance_value / font_size / 4
     input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
 
     blk = np.zeros(input_frame.shape, np.uint8)
 
-    render_str = "abcdefghijklmnopqrstuvwxyz0123456789"
+    render_str = "abcdefghkmnopqstuwxyz"
+    if (ascii_distance_value > 3):
+        for xx in range(0, input_frame.shape[1], ascii_distance_value):
+            for yy in range(0, input_frame.shape[0], ascii_distance_value):
+                char = randint(0, 1)
+                pixel_b, pixel_g, pixel_r = input_frame[yy, xx]
+                avg_brightness = sum([pixel_b, pixel_g, pixel_r]) / 3
+                position = int(avg_brightness / 255 * 20)
+
+                char = render_str[randint(0, len(render_str)) - 1]
+                char = render_str[position]
+                cv2.putText(
+                    blk,
+                    str(char),
+                    (xx, yy),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    font_size,
+                    (int(pixel_b), int(pixel_g), int(pixel_r)),
+                    ascii_thickness_value,
+                    lineType=cv2.LINE_AA,
+                )
+    else:
+        blk = input_frame
+
+
+    return blk
+
+def ascii_paint(
+    input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value
+):
+    font_size /= 10
+    input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
+
+    blk = np.zeros(input_frame.shape, np.uint8)
+
+    render_str = "abcdefghkmnopqstuwxyz"
 
     for xx in range(0, input_frame.shape[1], ascii_distance_value):
         for yy in range(0, input_frame.shape[0], ascii_distance_value):
             char = randint(0, 1)
             pixel_b, pixel_g, pixel_r = input_frame[yy, xx]
+            avg_brightness = sum([pixel_b, pixel_g, pixel_r]) / 3
+            position = int(avg_brightness / 255 * 20)
+
             char = render_str[randint(0, len(render_str)) - 1]
+            char = render_str[position]
             cv2.putText(
                 blk,
                 str(char),
@@ -1428,7 +1476,6 @@ def ascii_paint(
             )
 
     return blk
-
 
 def sharpening(input_frame, sharpening_value, sharpening_value2):
     kernel_value = sharpening_value2

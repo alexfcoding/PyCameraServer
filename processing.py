@@ -179,7 +179,7 @@ def process_frame():
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
         vPafy = pafy.new(server_states.source_url)
-        play = vPafy.streams[0]
+        play = vPafy.streams[1]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
@@ -401,7 +401,7 @@ def process_frame():
 
                     if server_states.source_mode == "youtube":
                         vPafy = pafy.new(server_states.source_url)
-                        play = vPafy.streams[0]
+                        play = vPafy.streams[1]
                         cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                         writer = cv2.VideoWriter(
@@ -560,6 +560,7 @@ def process_frame():
                         )
 
                 # Draw stats on frame
+
                 cv2.putText(
                     resized,
                     f"FPS: {str(round(fps, 2))} ({str(main_frame.shape[1])}x{str(main_frame.shape[0])})",
@@ -640,25 +641,19 @@ def index(device=None, action=None):
 
         if textbox_string.find("you") != -1:
             server_states.source_mode = "youtube"
-            # source_url = str(ajax_settings_dict["urlSource"])
             server_states.source_url = textbox_string
             vPafy = pafy.new(textbox_string)
-            play = vPafy.streams[0]
+            play = vPafy.streams[1]
             cap = cv2.VideoCapture(play.url)
             server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-            # server_states.source_lock = False
-            need_mode_reset = True
             file_changed = True
 
         if textbox_string.find("mjpg") != -1:
             server_states.source_mode = "ipcam"
             server_states.source_url = textbox_string
-            # source_url = str(ajax_settings_dict["urlSource"])
             cap = cv2.VideoCapture()
             cap.open(textbox_string)
             server_states.total_frames = 1
-            # server_states.source_lock = False
-            need_mode_reset = True
             file_changed = True
 
         if file and allowed_file(file.filename):

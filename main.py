@@ -81,8 +81,6 @@ def start_analysis(port_to_render, file_to_render, options, mode):
     for item in options:
         str_from_list += item
 
-
-
     source = ""
 
     if mode in ("video", "image"):
@@ -143,7 +141,6 @@ def start_analysis(port_to_render, file_to_render, options, mode):
 
     # time.sleep(5)
     # return redirect(f"http://192.168.0.12:{port_to_render}")
-
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
