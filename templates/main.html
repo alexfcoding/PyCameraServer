@@ -188,12 +188,12 @@
                 </div>
             </div>
 
-            <div class="progress-wrapper">
+            <div class="progress-wrapper" style="z-index: -1">
                 <div id="progress-bar-file1" class="progress"></div>
             </div>
 
             <input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>
-            <input style="display: none;" id="selectedModeId" type="radio" name="check" value="a"/>
+            <input style="display: none;" id="selectedModeId" type="radio" name="check" value=""/>
 <!--            <input style="display: none;" id="selectedVideoOrImageId" type="checkbox" name="checkMode" value="video"/>-->
             <input style="display: none" id="urlInputId" type="text" name="urlInput" size="20">
 
@@ -269,7 +269,7 @@
                     
                     <div class="opt">
                         <div class="top-header">
-                            <label>COLORIZE GRAYSCALE WITH NEURAL NETWORK</label>
+                            <label>CAFFE: GRAYSCALE COLORIZER</label>
                         </div>
 
                         <div class="video">
@@ -300,15 +300,185 @@
                             </div>
                         </div>
                     </div>
-                    
+
+                    <div class="opt">
+                        <div class="top-header">
+                            <label>ASCII PAINTER</label>
+                        </div>
+
+                        <div class="video">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/ascii.png" preload="none">
+                              <source src="static/previews/ascii_cut.mp4" type="video/webm">
+                            Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textQ" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeQYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeQYVideo" onclick="callInput('q', 'url', document.getElementById('textQ').value)"/>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeQVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeQVideo" onclick="callInput('q', 'file')"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="opt">
+                        <div class="top-header">
+                            <label>ESRGAN/PSNR X4 UPSCALER (GPU)</label>
+                        </div>
+
+                        <div class="video">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/esrgan_falcoon.png" preload="none">
+                              <source src="" type="video/webm">
+                            Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textT" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeTYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeTYVideo" onclick="callInput('t', 'url', document.getElementById('textT').value)"/>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeTVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeTVideo" onclick="callInput('t', 'file')"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="opt">
+                        <div class="top-header">
+                            <label>EDSR/LAPSRN/FSRCNN X4 UPSCALER (CPU)</label>
+                        </div>
+
+                        <div class="video">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/edsr.png" preload="none">
+                              <source src="" type="video/webm">
+                            Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textN" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeNYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeNYVideo" onclick="callInput('n', 'url', document.getElementById('textN').value)"/>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeNVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeNVideo" onclick="callInput('n', 'file')"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="opt">
+                        <div class="top-header">
+                            <label>DENOISE</label>
+                        </div>
+
+                        <div class="video">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/denoiser.png" preload="none">
+                              <source src="" type="video/webm">
+                            Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textO" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeOYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeOYVideo" onclick="callInput('o', 'url', document.getElementById('textO').value)"/>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeOVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeOVideo" onclick="callInput('o', 'file')"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="opt">
+                        <div class="top-header">
+                            <label>PENCIL DRAWER</label>
+                        </div>
+
+                        <div class="video">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/pencil_drawer.png" preload="none">
+                              <source src="" type="video/webm">
+                            Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textR" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeRYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeRYVideo" onclick="callInput('r', 'url', document.getElementById('textR').value)"/>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeRVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeRVideo" onclick="callInput('r', 'file')"/>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="opt">
                         <div class="top-header">
                             <label>CARTOON STYLE</label>
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/cartoon.png" preload="none">
-                              <source src="static/previews/cartoon.webm" type="video/webm">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/cartoon2.png" preload="none">
+                              <source src="" type="video/webm">
                             Your browser does not support the video tag.
                             </video>
                         </div>
@@ -325,7 +495,7 @@
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
                                 <label class="button-source" for="setModeEVideo">UPLOAD VIDEO OR IMAGE
-                                    
+
                                 </label>
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
@@ -334,7 +504,41 @@
                             </div>
                         </div>
                     </div>
-                    
+
+                    <div class="opt">
+                        <div class="top-header">
+                            <label>MASK R-CNN: GRAYSCALE BACKGROUND</label>
+                        </div>
+
+                        <div class="video">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/grayBackground2.png" preload="none">
+                              <source src="" type="video/webm">
+                            Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textK" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeKYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeKYVideo" onclick="callInput('k', 'url', document.getElementById('textK').value)"/>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeKVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeKVideo" onclick="callInput('k', 'file')"/>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="opt">
                         <div class="top-header">
                             <label>YOLO: BLUR OBJECTS WITH ASCII</label>
@@ -359,7 +563,7 @@
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
                                 <label class="button-source" for="setModeBVideo">UPLOAD VIDEO OR IMAGE
-                                    
+
                                 </label>
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
@@ -368,7 +572,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="opt">
                         <div class="top-header">
                             <label>MASK R-CNN: ANIMATE BACKGROUND</label>
@@ -393,7 +597,7 @@
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
                                 <label class="button-source" for="setModeIVideo">UPLOAD VIDEO OR IMAGE
-                                    
+
                                 </label>
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
@@ -402,7 +606,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="opt">
                         <div class="top-header">
                             <label>MASK R-CNN: BLUR BACKGROUND</label>
@@ -427,46 +631,12 @@
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
                                 <label class="button-source" for="setModeMVideo">UPLOAD VIDEO OR IMAGE
-                                    
+
                                 </label>
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
                                 <input style="display: none;" type="button" id="setModeMVideo" onclick="callInput('m', 'file')"/>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="opt">
-                        <div class="top-header">
-                            <label>MASK R-CNN: GRAYSCALE BACKGROUND</label>
-                        </div>
-
-                        <div class="video">
-                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/grayBackground.png" preload="none">
-                              <source src="static/previews/grayBackground.webm" type="video/webm">
-                            Your browser does not support the video tag.
-                            </video>
-                        </div>
-
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
-                        <div style="text-align: center;">
-                            <div style="margin-top: 5px;">
-                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
-                                <input type="text" id="textK" name="textbox" size="20">
-                                <div style="margin-left: 20px; display: inline-block;">
-                                    <label class="button-source" for="setModeKYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeKYVideo" onclick="callInput('k', 'url', document.getElementById('textK').value)"/>
-                                </div>
-                            </div>
-                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
-                                <label class="button-source" for="setModeKVideo">UPLOAD VIDEO OR IMAGE
-                                    
-                                </label>
-                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
-                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
-                                </div>
-                                <input style="display: none;" type="button" id="setModeKVideo" onclick="callInput('k', 'file')"/>
                             </div>
                         </div>
                     </div>
@@ -536,7 +706,7 @@
             </script>
 
             <script>
-                var figure = $(".video").hover( hoverVideo, hideVideo );
+                var figure = $(".video").hover(hoverVideo, hideVideo);
 
                 function hoverVideo(e) {
                     $('video', this).get(0).play();
@@ -544,9 +714,9 @@
 
                 function hideVideo(e) {
                     $('video', this).get(0).pause();
+                    $('video', this).get(0).currentTime = 0;
                 }
-             </script>
-
+            </script>
     </div>
 </body>
 </form>

@@ -45,10 +45,10 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             file_extension = filename.rsplit(".", 1)[1]
-
+            mode = ""
             if file_extension in ("png", "jpg", "jpeg"):
                 mode = "image"
-            if file_extension in ("gif", ",mp4", "avi", "m4v", "webm", "mkv"):
+            if file_extension in ("gif", "mp4", "avi", "m4v", "webm", "mkv"):
                 mode = "video"
 
             options = request.form.getlist("check")

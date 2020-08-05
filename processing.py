@@ -74,6 +74,9 @@ render_modes_dict = {
 # Values will change with AJAX requests
 ajax_settings_dict = {
     "cannyBlurSliderValue" : 5,
+    "cannyThres1SliderValue" : 50,
+    "cannyThres2SliderValue" : 50,
+    "cannyThres2" : 50,
     "saturationSliderValue" : 100,
     "contrastSliderValue" : 100,
     "brightnessSliderValue" : 0,
@@ -207,7 +210,7 @@ def process_frame():
     caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
-    rcnn_network = initialize_rcnn_network(False)
+    rcnn_network = initialize_rcnn_network(True)
     dain_network = initialize_dain_network(True)
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
         classes, True
@@ -572,6 +575,24 @@ def process_frame():
                     lineType=cv2.LINE_AA
                 )
 
+                if started_rendering_video:
+                    out_file = ""
+                    if server_states.source_mode == "youtube":
+                        out_file = server_states.output_file_page
+                    if server_states.source_mode in ("video", "image"):
+                        out_file = f"output{args['port']}{file_to_render}"
+
+                    cv2.putText(
+                        resized,
+                        f"Writing to '{out_file}' ({round(progress, 2)}%)",
+                        (40, resized.shape[0] - 20),
+                        font,
+                        0.8,
+                        (255, 0, 255),
+                        2,
+                        lineType=cv2.LINE_AA
+                    )
+
                 # Copy resized frame to HTML output
                 output_frame = resized
 
@@ -590,11 +611,15 @@ def process_frame():
                         f"static/user_renders/output{args['port']}Screenshot.png"
                     )
                     server_states.screenshot_ready = True
+
+                if (server_states.source_mode == "image"):
+                    started_rendering_video = False
         # ... otherwise stop rendering
         else:
             zip_obj.close()
             check_if_user_is_connected(timer_start, 7)
             started_rendering_video = False
+            writer.release()
             position_value = 1
             # print("finished")
 

@@ -83,7 +83,7 @@ def draw_yolo_stats(input_frame, classes_index, font):
 
     return input_frame
 
-def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, main_frame, frame_background,
+def render_with_mode(requested_modes_dictionary, sliders_dictionary, main_frame, frame_background,
                      f, f1, yolo_network, rcnn_network, caffe_network, superres_network,
                      dain_network, esrgan_network, device, output_layers, classes_index, zip_obj, zip_is_opened,
                      zipped_images, server_states, started_rendering_video
@@ -92,7 +92,7 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
     if requested_modes_dictionary["using_yolo_network"]:
         # Find all boxes with classes
         boxes, indexes, class_ids, confidences, classes_out = find_yolo_classes(
-            main_frame, yolo_network, output_layers, int(slider_settings_dictionary["confidenceSliderValue"])
+            main_frame, yolo_network, output_layers, int(sliders_dictionary["confidenceSliderValue"])
         )
         classes_index.append(classes_out)
 
@@ -128,10 +128,10 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
                 boxes,
                 indexes,
                 class_ids,
-                int(slider_settings_dictionary["asciiSizeSliderValue"]),
-                int(slider_settings_dictionary["asciiIntervalSliderValue"]),
-                int(slider_settings_dictionary["rcnnBlurSliderValue"]),
-                int(slider_settings_dictionary["asciiThicknessSliderValue"]),
+                int(sliders_dictionary["asciiSizeSliderValue"]),
+                int(sliders_dictionary["asciiIntervalSliderValue"]),
+                int(sliders_dictionary["rcnnBlurSliderValue"]),
+                int(sliders_dictionary["asciiThicknessSliderValue"]),
             )
 
         # Draw YOLO objects with canny edge detection on black background
@@ -154,13 +154,13 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
         # Convert background to grayscale and add color objects
         if requested_modes_dictionary["color_objects_on_gray"]:
             main_frame = colorizer_people_rcnn(
-                main_frame, boxes, masks, int(slider_settings_dictionary["confidenceSliderValue"]), int(slider_settings_dictionary["rcnnSizeSliderValue"])
+                main_frame, boxes, masks, int(sliders_dictionary["confidenceSliderValue"]), int(sliders_dictionary["rcnnSizeSliderValue"])
             )
 
         # Convert background to grayscale with blur and add color objects
         if requested_modes_dictionary["color_objects_on_gray_blur"]:
             main_frame = colorizer_people_with_blur_rcnn(
-                main_frame, boxes, masks, int(slider_settings_dictionary["confidenceSliderValue"])
+                main_frame, boxes, masks, int(sliders_dictionary["confidenceSliderValue"])
             )
 
         # Blur background behind RCNN objects
@@ -170,15 +170,15 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
                 boxes,
                 masks,
                 labels,
-                int(slider_settings_dictionary["confidenceSliderValue"]),
-                int(slider_settings_dictionary["rcnnSizeSliderValue"]),
-                int(slider_settings_dictionary["rcnnBlurSliderValue"]),
+                int(sliders_dictionary["confidenceSliderValue"]),
+                int(sliders_dictionary["rcnnSizeSliderValue"]),
+                int(sliders_dictionary["rcnnBlurSliderValue"]),
             )
 
         # Draw MASK R-CNN objects with canny edge detection on black background
         if requested_modes_dictionary["extract_and_cut_background"]:
             main_frame = extract_and_cut_background_rcnn(
-                main_frame, boxes, masks, labels, int(slider_settings_dictionary["confidenceSliderValue"])
+                main_frame, boxes, masks, labels, int(sliders_dictionary["confidenceSliderValue"])
             )
 
         # Draw MASK R-CNN objects on animated background
@@ -190,19 +190,19 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
                 masks,
                 labels,
                 colors,
-                int(slider_settings_dictionary["confidenceSliderValue"]),
+                int(sliders_dictionary["confidenceSliderValue"]),
             )
 
         # Draw MASK R-CNN objects with canny edge detection on canny blurred background
         if requested_modes_dictionary["color_canny"]:
             main_frame = color_canny_rcnn(
-                main_frame, boxes, masks, labels, int(slider_settings_dictionary["confidenceSliderValue"]), int(slider_settings_dictionary["rcnnBlurSliderValue"]),
+                main_frame, boxes, masks, labels, int(sliders_dictionary["confidenceSliderValue"]), int(sliders_dictionary["rcnnBlurSliderValue"]),
             )
 
         # Draw MASK R-CNN objects with canny edge detection on source background
         if requested_modes_dictionary["color_canny_on_background"]:
             main_frame = color_canny_on_color_background_rcnn(
-                main_frame, boxes, masks, labels, int(slider_settings_dictionary["confidenceSliderValue"])
+                main_frame, boxes, masks, labels, int(sliders_dictionary["confidenceSliderValue"])
             )
 
     # Grayscale frame color restoration with caffe neural network
@@ -214,98 +214,99 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
     if requested_modes_dictionary["cartoon_effect"]:
         frame_copy = main_frame.copy()
 
-        if int(slider_settings_dictionary["cannyBlurSliderValue"]) % 2 == 0:
-            slider_settings_dictionary["cannyBlurSliderValue"] += int(slider_settings_dictionary["cannyBlurSliderValue"]) + 1
+        if int(sliders_dictionary["cannyBlurSliderValue"]) % 2 == 0:
+            sliders_dictionary["cannyBlurSliderValue"] += int(sliders_dictionary["cannyBlurSliderValue"]) + 1
             main_frame = cv2.GaussianBlur(
-                main_frame, (int(slider_settings_dictionary["cannyBlurSliderValue"]), int(slider_settings_dictionary["cannyBlurSliderValue"])), int(slider_settings_dictionary["cannyBlurSliderValue"]),
+                main_frame, (int(sliders_dictionary["cannyBlurSliderValue"]), int(sliders_dictionary["cannyBlurSliderValue"])), int(sliders_dictionary["cannyBlurSliderValue"]),
             )
         else:
             main_frame = cv2.GaussianBlur(
-                main_frame, (int(slider_settings_dictionary["cannyBlurSliderValue"]), int(slider_settings_dictionary["cannyBlurSliderValue"])), int(slider_settings_dictionary["cannyBlurSliderValue"]),
+                main_frame, (int(sliders_dictionary["cannyBlurSliderValue"]), int(sliders_dictionary["cannyBlurSliderValue"])), int(sliders_dictionary["cannyBlurSliderValue"]),
             )
 
-        main_frame = cv2.Canny(main_frame, 50, 50)
+        main_frame = cv2.Canny(main_frame, int(sliders_dictionary["cannyThres1SliderValue"]), int(sliders_dictionary["cannyThres2SliderValue"]))
         main_frame = cv2.cvtColor(main_frame, cv2.COLOR_GRAY2BGR)
-        kernel = np.ones((int(slider_settings_dictionary["lineThicknessSliderValue"]), int(slider_settings_dictionary["lineThicknessSliderValue"])), np.uint8)
+        kernel = np.ones((int(sliders_dictionary["lineThicknessSliderValue"]), int(sliders_dictionary["lineThicknessSliderValue"])), np.uint8)
         main_frame = cv2.dilate(main_frame, kernel, iterations=1)
         frame_copy[np.where((main_frame > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
-        frame_copy = limit_colors_kmeans(frame_copy, int(slider_settings_dictionary["colorCountSliderValue"]))
+        frame_copy = limit_colors_kmeans(frame_copy, int(sliders_dictionary["colorCountSliderValue"]))
         # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
         main_frame = frame_copy
-        main_frame = sharpening(main_frame, int(slider_settings_dictionary["sharpenSliderValue"]), int(slider_settings_dictionary["sharpenSliderValue2"]))
-        main_frame = denoise(main_frame, int(slider_settings_dictionary["denoiseSliderValue"]), int(slider_settings_dictionary["denoise2SliderValue"]))
+        main_frame = sharpening(main_frame, int(sliders_dictionary["sharpenSliderValue"]), int(sliders_dictionary["sharpenSliderValue2"]))
+        main_frame = denoise(main_frame, int(sliders_dictionary["denoiseSliderValue"]), int(sliders_dictionary["denoise2SliderValue"]))
+        main_frame = cv2.GaussianBlur(main_frame, (3,3), 1)
 
     # Pencil drawer (canny, k-means quantization to 2 colors, denoise)
     if requested_modes_dictionary["pencil_drawer"]:
         frame_copy = main_frame.copy()
 
-        if int(slider_settings_dictionary["cannyBlurSliderValue"]) % 2 == 0:
-            slider_settings_dictionary["cannyBlurSliderValue"] = int(slider_settings_dictionary["cannyBlurSliderValue"]) + 1
+        if int(sliders_dictionary["cannyBlurSliderValue"]) % 2 == 0:
+            sliders_dictionary["cannyBlurSliderValue"] = int(sliders_dictionary["cannyBlurSliderValue"]) + 1
             main_frame = cv2.GaussianBlur(
-                main_frame, (int(slider_settings_dictionary["cannyBlurSliderValue"]), int(slider_settings_dictionary["cannyBlurSliderValue"])), int(slider_settings_dictionary["cannyBlurSliderValue"]),
+                main_frame, (int(sliders_dictionary["cannyBlurSliderValue"]), int(sliders_dictionary["cannyBlurSliderValue"])), int(sliders_dictionary["cannyBlurSliderValue"]),
             )
         else:
             main_frame = cv2.GaussianBlur(
-                main_frame, (int(slider_settings_dictionary["cannyBlurSliderValue"]), int(slider_settings_dictionary["cannyBlurSliderValue"])), int(slider_settings_dictionary["cannyBlurSliderValue"]),
+                main_frame, (int(sliders_dictionary["cannyBlurSliderValue"]), int(sliders_dictionary["cannyBlurSliderValue"])), int(sliders_dictionary["cannyBlurSliderValue"]),
             )
 
         # main_frame = morph_edge_detection(main_frame)
-        main_frame = cv2.Canny(main_frame, 50, 50)
+        main_frame = cv2.Canny(main_frame, int(sliders_dictionary["cannyThres1SliderValue"]), int(sliders_dictionary["cannyThres1SliderValue"]))
         main_frame = cv2.cvtColor(main_frame, cv2.COLOR_GRAY2BGR)
-        kernel = np.ones((int(slider_settings_dictionary["lineThicknessSliderValue"]), int(slider_settings_dictionary["lineThicknessSliderValue"])), np.uint8)
+        kernel = np.ones((int(sliders_dictionary["lineThicknessSliderValue"]), int(sliders_dictionary["lineThicknessSliderValue"])), np.uint8)
         main_frame = cv2.dilate(main_frame, kernel, iterations=1)
         frame_copy[np.where((main_frame > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
         frame_copy = limit_colors_kmeans(frame_copy, 2)
         # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
         main_frame = frame_copy
-        main_frame = sharpening(main_frame, int(slider_settings_dictionary["sharpenSliderValue"]), int(slider_settings_dictionary["sharpenSliderValue2"]))
-        main_frame = denoise(main_frame, int(slider_settings_dictionary["denoiseSliderValue"]), int(slider_settings_dictionary["denoise2SliderValue"]))
+        main_frame = sharpening(main_frame, int(sliders_dictionary["sharpenSliderValue"]), int(sliders_dictionary["sharpenSliderValue2"]))
+        main_frame = denoise(main_frame, int(sliders_dictionary["denoiseSliderValue"]), int(sliders_dictionary["denoise2SliderValue"]))
         # main_frame = np.bitwise_not(main_frame)
 
     # Pencil drawer (k-means quantization to 2 colors, denoise)
     if requested_modes_dictionary["two_colored"]:
         frame_copy = main_frame.copy()
         # main_frame = morph_edge_detection(main_frame)
-        kernel = np.ones((int(slider_settings_dictionary["lineThicknessSliderValue"]), int(slider_settings_dictionary["lineThicknessSliderValue"])), np.uint8)
+        kernel = np.ones((int(sliders_dictionary["lineThicknessSliderValue"]), int(sliders_dictionary["lineThicknessSliderValue"])), np.uint8)
         # main_frame = cv2.dilate(main_frame,kernel,iterations = 1)
         # frame_copy[np.where((main_frame > [0, 0, 0]).all(axis=2))] = [0,0,0]
         frame_copy = limit_colors_kmeans(frame_copy, 2)
         # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
         main_frame = frame_copy
-        main_frame = sharpening(main_frame, int(slider_settings_dictionary["sharpenSliderValue"]), int(slider_settings_dictionary["sharpenSliderValue2"]))
-        main_frame = denoise(main_frame, int(slider_settings_dictionary["denoiseSliderValue"]), int(slider_settings_dictionary["denoise2SliderValue"]))
+        main_frame = sharpening(main_frame, int(sliders_dictionary["sharpenSliderValue"]), int(sliders_dictionary["sharpenSliderValue2"]))
+        main_frame = denoise(main_frame, int(sliders_dictionary["denoiseSliderValue"]), int(sliders_dictionary["denoise2SliderValue"]))
 
     # Super-resolution upscaler with EDSR, LapSRN and FSRCNN
     if requested_modes_dictionary["upscale_opencv"]:
         main_frame = upscale_with_superres(superres_network, main_frame)
-        main_frame = sharpening(main_frame, int(slider_settings_dictionary["sharpenSliderValue"]), int(slider_settings_dictionary["sharpenSliderValue2"]))
+        main_frame = sharpening(main_frame, int(sliders_dictionary["sharpenSliderValue"]), int(sliders_dictionary["sharpenSliderValue2"]))
 
     # Super-resolution upscaler with ESRGAN (FALCOON, MANGA, PSNR models)
     if requested_modes_dictionary["upscale_esrgan"]:
         main_frame = upscale_with_esrgan(esrgan_network, device, main_frame)
-        main_frame = sharpening(main_frame, int(slider_settings_dictionary["sharpenSliderValue"]), int(slider_settings_dictionary["sharpenSliderValue2"]))
+        main_frame = sharpening(main_frame, int(sliders_dictionary["sharpenSliderValue"]), int(sliders_dictionary["sharpenSliderValue2"]))
 
     # Draw frame with ASCII chars
     if requested_modes_dictionary["ascii_painter"]:
         main_frame = ascii_paint(
             main_frame,
-            int(slider_settings_dictionary["asciiSizeSliderValue"]),
-            int(slider_settings_dictionary["asciiIntervalSliderValue"]),
-            int(slider_settings_dictionary["asciiThicknessSliderValue"]),
-            int(slider_settings_dictionary["rcnnBlurSliderValue"]),
+            int(sliders_dictionary["asciiSizeSliderValue"]),
+            int(sliders_dictionary["asciiIntervalSliderValue"]),
+            int(sliders_dictionary["asciiThicknessSliderValue"]),
+            int(sliders_dictionary["rcnnBlurSliderValue"]),
         )
 
     # Denoise and sharpen
     if requested_modes_dictionary["denoise_and_sharpen"]:
-        main_frame = sharpening(main_frame, int(slider_settings_dictionary["sharpenSliderValue"]), int(slider_settings_dictionary["sharpenSliderValue2"]))
-        main_frame = denoise(main_frame, int(slider_settings_dictionary["denoiseSliderValue"]), int(slider_settings_dictionary["denoise2SliderValue"]))
+        main_frame = sharpening(main_frame, int(sliders_dictionary["sharpenSliderValue"]), int(sliders_dictionary["sharpenSliderValue2"]))
+        main_frame = denoise(main_frame, int(sliders_dictionary["denoiseSliderValue"]), int(sliders_dictionary["denoise2SliderValue"]))
 
     # Sobel filter
     if requested_modes_dictionary["sobel"]:
-        main_frame = denoise(main_frame, int(slider_settings_dictionary["denoiseSliderValue"]), int(slider_settings_dictionary["denoise2SliderValue"]))
-        main_frame = sharpening(main_frame, int(slider_settings_dictionary["sharpenSliderValue"]), int(slider_settings_dictionary["sharpenSliderValue2"]))
-        grad_x = cv2.Sobel(main_frame, cv2.CV_64F, 1, 0, ksize=int(slider_settings_dictionary["sobelSliderValue"]))
-        grad_y = cv2.Sobel(main_frame, cv2.CV_64F, 0, 1, ksize=int(slider_settings_dictionary["sobelSliderValue"]))
+        main_frame = denoise(main_frame, int(sliders_dictionary["denoiseSliderValue"]), int(sliders_dictionary["denoise2SliderValue"]))
+        main_frame = sharpening(main_frame, int(sliders_dictionary["sharpenSliderValue"]), int(sliders_dictionary["sharpenSliderValue2"]))
+        grad_x = cv2.Sobel(main_frame, cv2.CV_64F, 1, 0, ksize=int(sliders_dictionary["sobelSliderValue"]))
+        grad_y = cv2.Sobel(main_frame, cv2.CV_64F, 0, 1, ksize=int(sliders_dictionary["sobelSliderValue"]))
         main_frame = cv2.addWeighted(grad_x, 0.5, grad_y, 0.5, 0)
 
     # Boost fps with Depth-Aware Video Frame Interpolation
@@ -318,7 +319,7 @@ def render_with_mode(requested_modes_dictionary, slider_settings_dictionary, mai
         )
 
     # Apply brightness and contrast settings for all modes
-    main_frame = adjust_br_contrast(main_frame, int(slider_settings_dictionary["contrastSliderValue"]), int(slider_settings_dictionary["brightnessSliderValue"]))
-    main_frame = adjust_saturation(main_frame, int(slider_settings_dictionary["saturationSliderValue"]))
+    main_frame = adjust_br_contrast(main_frame, int(sliders_dictionary["contrastSliderValue"]), int(sliders_dictionary["brightnessSliderValue"]))
+    main_frame = adjust_saturation(main_frame, int(sliders_dictionary["saturationSliderValue"]))
 
     return main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened

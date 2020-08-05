@@ -330,11 +330,17 @@ def extract_objects_yolo(
                 zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
                 os.remove(f"static/user_renders/{label}{str(object_index)}.jpg")
 
-                zipped_images = True
-                zip_archive.close()
-                zip_is_opened = False
-
             object_index += 1
+
+    if (
+        started_rendering_mode
+        and zip_is_opened
+        and source_mode == "image"
+        and zipped_images == False
+    ):
+        zipped_images = True
+        zip_archive.close()
+        zip_is_opened = False
 
     return input_frame, zipped_images, zip_archive, zip_is_opened
 
@@ -1159,7 +1165,7 @@ def people_with_blur_rcnn(
     classes_out = []
     need_gray_to_bgr = True
     already_bgr = False
-    frame_copy = input_frame
+    frame_copy = input_frame.copy()
     # input_frame = cv2.cvtColor(input_frame, cv2.COLOR_BGR2GRAY)
     input_frame = cv2.GaussianBlur(
         input_frame, (rcnn_blur_value, rcnn_blur_value), rcnn_blur_value
@@ -1206,7 +1212,7 @@ def people_with_blur_rcnn(
             else:
                 smaller_y = 0
 
-            mask = masks[i, class_id]
+            mask = masks[i, class_id].copy()
             mask = cv2.resize(mask, (box_w, box_h), interpolation=cv2.INTER_CUBIC)
             mask = mask > 0.1
 
@@ -1214,12 +1220,13 @@ def people_with_blur_rcnn(
             frm = frame_copy[
                 start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
                 start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
-            ][mask]
+            ][mask].copy()
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
             input_frame[
                 start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
                 start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
-            ][mask] = frm
+            ][mask] = frm.copy()
+
             # if (already_bgr == False):
             #     input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2BGR)
             #     already_bgr = True

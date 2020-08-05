@@ -17,13 +17,13 @@
         }
 
         .positionSettings {
-            margin-top: 15px;
-            margin-bottom: 10px;
+            margin-top: 5px;
+            margin-bottom: 5px;
         }
 
         .renderSettings {
             display: inline-block;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
 
         .getFileLabel {
@@ -177,7 +177,7 @@
                     <option value="f">NEURAL NETWORK COLORIZER</option>
                 </optgroup>
                 <optgroup label="UPSCALE MODELS (X4 RESOLUTION)">
-                    <option value="n">(CPU) EDSR / LAPSRN / FSRNN</option>
+                    <option value="n">(CPU) EDSR / LAPSRN / FSRCNN</option>
                     <option value="t">(GPU 360p max) ESRGAN / PSNR</option>
                 </optgroup>
                 <optgroup label="FPS BOOST (X7 FPS)">
@@ -237,7 +237,7 @@
             <div style="display: inline-block; font-size: 16px; color: white;">POSITION:</div>
             <div style=" display: inline-block;font-size: 16px; color: white;" id="positionValue"></div>
             <div><input
-                    style="-webkit-appearance: none; appearance: none; border-radius: 5px; height: 20px; background-color: #ffffff; width: 810px; box-shadow: 6px 4px 8px #000000;"
+                    style="-webkit-appearance: none; appearance: none; border-radius: 5px; height: 15px; background-color: #ffffff; width: 810px; box-shadow: 6px 4px 8px #000000;"
                     type="range" min="1" max="1000" step="1" value="1" class="slider" id="positionId"></div>
         </div>
         <div style="display: inline-block; max-width: 1000px; text-align: center; ">
@@ -245,7 +245,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">SATURATION:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="saturationValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="500" step="3" value="100" class="slider" id="saturationId"></div>
             </div>
 
@@ -253,7 +253,7 @@
                 <div style=" display: inline-block; font-size: 16px; color: white;">CONTRAST:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="contrastValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color:  #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="200" step="2" value="100" class="slider" id="contrastId"></div>
             </div>
 
@@ -261,7 +261,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">BRIGHTNESS:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="brightnessValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: #ffffff; width: 265px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="300" step="2" value="0" class="slider" id="brightnessId"></div>
             </div>
 
@@ -269,7 +269,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">CONFIDENCE THRESHOLD:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="confidenceValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="100" step="1" value="20" class="slider" id="confidenceId"></div>
             </div>
 
@@ -277,7 +277,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">RCNN OBJECT SIZE:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnSizeValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="150" step="1" value="10" class="slider" id="rcnnSizeId"></div>
             </div>
 
@@ -285,7 +285,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">BLUR STRENGTH:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="rcnnBlurValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="100" step="2" value="9" class="slider" id="rcnnBlurId"></div>
             </div>
 
@@ -293,15 +293,31 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">EDGE FILTER:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyBlurValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="100" step="2" value="5" class="slider" id="cannyBlurId"></div>
+            </div>
+
+            <div id="cannyThres1IdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">FIRST THRESHOLD:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyThres1Value"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="2" value="50" class="slider" id="cannyThres1Id"></div>
+            </div>
+
+            <div id="cannyThres2IdBlock" class="renderSettings">
+                <div style="display: inline-block; font-size: 16px; color: white;">SECOND THRESHOLD:</div>
+                <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyThres2Value"></div>
+                <div><input
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        type="range" min="1" max="100" step="2" value="50" class="slider" id="cannyThres2Id"></div>
             </div>
 
             <div id="lineThicknessIdBlock" class="renderSettings">
                 <div style="display: inline-block; font-size: 16px; color: white;">LINE THICKNESS:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="lineThicknessValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="20" step="1" value="2" class="slider" id="lineThicknessId"></div>
             </div>
 
@@ -309,7 +325,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">COLOR COUNT:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="colorCountValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="256" step="1" value="0" class="slider" id="colorCountId"></div>
             </div>
 
@@ -317,7 +333,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">COLOR NOISE FILTER:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="denoiseValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="21" step="1" value="7" class="slider" id="denoiseId"></div>
             </div>
 
@@ -325,7 +341,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">DENOISE STRENGTH:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="denoise2Value"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="100" step="1" value="10" class="slider" id="denoise2Id"></div>
             </div>
 
@@ -333,7 +349,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">SHARPEN STRENGTH:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId"></div>
             </div>
 
@@ -341,7 +357,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">SHARPEN DETAILS:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="sharpenValue2"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="0" max="100" step="1" value="0" class="slider" id="sharpenId2"></div>
             </div>
 
@@ -349,7 +365,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">SOBEL FILTER:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="sobelValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="21" step="2" value="3" class="slider" id="sobelId"></div>
             </div>
 
@@ -357,7 +373,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">FONT SIZE:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiSizeValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="100" step="1" value="8" class="slider" id="asciiSizeId"></div>
             </div>
 
@@ -365,7 +381,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">FONT INTERVAL:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiIntervalValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="100" step="1" value="24" class="slider" id="asciiIntervalId"></div>
             </div>
 
@@ -373,7 +389,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">FONT THICKNESS:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="asciiThicknessValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="1" max="20" step="1" value="3" class="slider" id="asciiThicknessId"></div>
             </div>
 
@@ -381,7 +397,7 @@
                 <div style="display: inline-block; font-size: 16px; color: white;">RESIZE MULTIPLIER:</div>
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="resizeValue"></div>
                 <div><input
-                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 20px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
+                        style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color: rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
                         type="range" min="20" max="400" step="1" value="100" class="slider" id="resizeId"></div>
             </div>
         </div>
@@ -437,6 +453,8 @@
                 // document.getElementById("positionId").value = 1                        
                 document.getElementById("saturationId").value = 100;
                 document.getElementById("cannyBlurId").value = 5;
+                document.getElementById("cannyThres1Id").value = 50;
+                document.getElementById("cannyThres2Id").value = 50;
                 document.getElementById("contrastId").value = 100;
                 document.getElementById("confidenceId").value = 20;
                 document.getElementById("brightnessId").value = 0;
@@ -852,6 +870,14 @@
                 var cannyBlurOutput = document.getElementById("cannyBlurValue");
                 var cannyBlurSliderValue = cannyBlurSlider.value;
 
+                var cannyThres1Slider = document.getElementById("cannyThres1Id");
+                var cannyThres1Output = document.getElementById("cannyThres1Value");
+                var cannyThres1SliderValue =cannyThres1Slider.value;
+
+                var cannyThres2Slider = document.getElementById("cannyThres2Id");
+                var cannyThres2Output = document.getElementById("cannyThres2Value");
+                var cannyThres2SliderValue =cannyThres2Slider.value;
+
                 var contrastSlider = document.getElementById("contrastId");
                 var contrastOutput = document.getElementById("contrastValue");
                 var contrastSliderValue = contrastSlider.value;
@@ -919,6 +945,8 @@
                 outputPosition.innerHTML = positionSlider.value;
                 saturationOutput.innerHTML = saturationSlider.value;
                 cannyBlurOutput.innerHTML = cannyBlurSlider.value;
+                cannyThres1Output.innerHTML =  cannyThres1Slider.value;
+                cannyThres2Output.innerHTML =  cannyThres2Slider.value;
                 contrastOutput.innerHTML = contrastSlider.value;
                 brightnessOutput.innerHTML = brightnessSlider.value;
                 confidenceOutput.innerHTML = confidenceSlider.value;
@@ -946,6 +974,14 @@
 
                 cannyBlurSlider.oninput = function () {
                     cannyBlurOutput.innerHTML = this.value;
+                }
+
+                cannyThres1Slider.oninput = function () {
+                    cannyThres1Output.innerHTML = this.value;
+                }
+
+                cannyThres2Slider.oninput = function () {
+                    cannyThres2Output.innerHTML = this.value;
                 }
 
                 contrastSlider.oninput = function () {
@@ -1019,6 +1055,8 @@
                     traditional: "true",
                     data: JSON.stringify({
                         cannyBlurSliderValue,
+                        cannyThres1SliderValue,
+                        cannyThres2SliderValue,
                         saturationSliderValue,
                         contrastSliderValue,
                         brightnessSliderValue,
