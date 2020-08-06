@@ -389,7 +389,7 @@ def process_frame():
                             writer = cv2.VideoWriter(
                                 f"static/user_renders/output{args['port']}{file_to_render}.avi",
                                 fourcc,
-                                90,
+                                175,
                                 (main_frame.shape[1], main_frame.shape[0]),
                                 True,
                             )
@@ -443,16 +443,22 @@ def process_frame():
                     need_to_create_writer = False
 
             # Fill f and f1 pair of frames for DAIN interpolation
-            if (render_modes_dict['boost_fps_dain'] and started_rendering_video):
-                if (frame_interp_num == 0):
-                    ret, f = cap.read()
-                    ret, f1 = cap.read()
-                    main_frame = f1.copy()
-                    frame_interp_num += 1
-                else:
-                    f = frameEdge
-                    ret, f1 = cap.read()
-                    main_frame = f1.copy()
+            if (render_modes_dict['boost_fps_dain']):
+                if (started_rendering_video):
+                    if (frame_interp_num == 0):
+                        ret, f = cap.read()
+                        ret, f1 = cap.read()
+                        if (f1 is not None):
+                            main_frame = f1.copy()
+                            frame_interp_num += 1
+                    else:
+                        f = frameEdge
+                        ret, f1 = cap.read()
+
+                        if (f1 is not None):
+                            main_frame = f1.copy()
+                        else:
+                            main_frame = None
             # ... otherwise read by one frame
             else:
                 if (cap is not None):
@@ -621,7 +627,7 @@ def process_frame():
             started_rendering_video = False
             writer.release()
             position_value = 1
-            # print("finished")
+            # print("==================== finished ====================")
 
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -662,7 +668,7 @@ def index(device=None, action=None):
         if 'textbox' in request.form:
             textbox_string = request.form.get("textbox")
 
-        print(textbox_string.find("you"))
+        # print(textbox_string.find("you"))
 
         if textbox_string.find("you") != -1:
             server_states.source_mode = "youtube"
@@ -780,7 +786,7 @@ def receive_settings():
     global ajax_settings_dict, timer_start, timer_end, writer, server_states, commands
 
     if request.method == "POST":
-        print("POST")
+        # print("POST")
         timer_start = time.perf_counter()
         ajax_settings_dict = request.get_json()
 

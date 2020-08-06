@@ -303,12 +303,46 @@
 
                     <div class="opt">
                         <div class="top-header">
+                            <label>DEPTH-AWARE VIDEO FRAME INTERPOLATION</label>
+                        </div>
+
+                        <div class="video">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/dain.png" preload="none">
+                              <source src="static/previews/dain.webm" type="video/webm">
+                            Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textZ" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeZYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeZYVideo" onclick="callInput('z', 'url', document.getElementById('textZ').value)"/>
+                                </div>
+                            </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeZVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeZVideo" onclick="callInput('z', 'file')"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="opt">
+                        <div class="top-header">
                             <label>ASCII PAINTER</label>
                         </div>
 
                         <div class="video">
                             <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/ascii.png" preload="none">
-                              <source src="static/previews/ascii_cut.mp4" type="video/webm">
+                              <source src="static/previews/ascii.webm" type="video/webm">
                             Your browser does not support the video tag.
                             </video>
                         </div>
@@ -477,7 +511,7 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/cartoon2.png" preload="none">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/cartoon.png" preload="none">
                               <source src="" type="video/webm">
                             Your browser does not support the video tag.
                             </video>
@@ -511,8 +545,8 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/grayBackground2.png" preload="none">
-                              <source src="" type="video/webm">
+                            <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/grayBackground.png" preload="none">
+                              <source src="static/previews/grayBackground.webm" type="video/webm">
                             Your browser does not support the video tag.
                             </video>
                         </div>
