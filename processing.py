@@ -72,7 +72,7 @@ render_modes_dict = {
 
 # Default rendering settings
 # Values will change with AJAX requests
-ajax_settings_dict = {
+settings_ajax = {
     "cannyBlurSliderValue" : 5,
     "cannyThres1SliderValue" : 50,
     "cannyThres2SliderValue" : 50,
@@ -182,7 +182,7 @@ def process_frame():
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
         vPafy = pafy.new(server_states.source_url)
-        play = vPafy.streams[1]
+        play = vPafy.streams[0]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
@@ -210,7 +210,7 @@ def process_frame():
     caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
-    rcnn_network = initialize_rcnn_network(True)
+    rcnn_network = initialize_rcnn_network(False)
     dain_network = initialize_dain_network(True)
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
         classes, True
@@ -224,11 +224,11 @@ def process_frame():
 
     while server_states.working_on:
         # Receive all HTML slider values from JSON dictionary
-        if ajax_settings_dict is not None:
-            mode_from_page = str(ajax_settings_dict["mode"])
-            superres_model_from_page = str(ajax_settings_dict["superresModel"])
-            esrgan_model_from_page = str(ajax_settings_dict["esrganModel"])
-            position_value_local = int(ajax_settings_dict["positionSliderValue"])
+        if settings_ajax is not None:
+            mode_from_page = str(settings_ajax["mode"])
+            superres_model_from_page = str(settings_ajax["superresModel"])
+            esrgan_model_from_page = str(settings_ajax["esrganModel"])
+            position_value_local = int(settings_ajax["positionSliderValue"])
 
             # Check if mode change command was received
             if server_states.mode_reset_lock:
@@ -404,7 +404,7 @@ def process_frame():
 
                     if server_states.source_mode == "youtube":
                         vPafy = pafy.new(server_states.source_url)
-                        play = vPafy.streams[1]
+                        play = vPafy.streams[0]
                         cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                         writer = cv2.VideoWriter(
@@ -416,7 +416,7 @@ def process_frame():
                         )
 
                     if server_states.source_mode == "ipcam":
-                        # source_url = str(ajax_settings_dict["urlSource"])
+                        # source_url = str(settings_ajax["urlSource"])
                         cap = cv2.VideoCapture()
                         cap.open(server_states.source_url)
                         server_states.total_frames = 1
@@ -491,7 +491,7 @@ def process_frame():
 
         if main_frame is not None:
             main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened = \
-                render_with_mode(render_modes_dict, ajax_settings_dict, main_frame, frame_background, f, f1, yolo_network,
+                render_with_mode(render_modes_dict, settings_ajax, main_frame, frame_background, f, f1, yolo_network,
                                  rcnn_network, caffe_network, superres_network, dain_network, esrgan_network,
                                  device, output_layers, classes_index, zip_obj, zip_is_opened, zipped_images,
                                  server_states, started_rendering_video)
@@ -674,7 +674,7 @@ def index(device=None, action=None):
             server_states.source_mode = "youtube"
             server_states.source_url = textbox_string
             vPafy = pafy.new(textbox_string)
-            play = vPafy.streams[1]
+            play = vPafy.streams[0]
             cap = cv2.VideoCapture(play.url)
             server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
             file_changed = True
@@ -783,27 +783,27 @@ def send_stats():
 
 @app.route("/settings", methods=["GET", "POST"])
 def receive_settings():
-    global ajax_settings_dict, timer_start, timer_end, writer, server_states, commands
+    global settings_ajax, timer_start, timer_end, writer, server_states, commands
 
     if request.method == "POST":
         # print("POST")
         timer_start = time.perf_counter()
-        ajax_settings_dict = request.get_json()
+        settings_ajax = request.get_json()
 
         if not server_states.mode_reset_lock:
-            if bool(ajax_settings_dict["modeResetCommand"]):
+            if bool(settings_ajax["modeResetCommand"]):
                 server_states.mode_reset_lock = True
 
         if not server_states.video_stop_lock:
-            if bool(ajax_settings_dict["videoStopCommand"]):
+            if bool(settings_ajax["videoStopCommand"]):
                 server_states.video_stop_lock = True
 
         if not server_states.video_reset_lock:
-            if bool(ajax_settings_dict["videoResetCommand"]):
+            if bool(settings_ajax["videoResetCommand"]):
                 server_states.video_reset_lock = True
 
         if not server_states.screenshot_lock:
-            if bool(ajax_settings_dict["screenshotCommand"]):
+            if bool(settings_ajax["screenshotCommand"]):
                 server_states.screenshot_lock = True
 
     return "", 200

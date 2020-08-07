@@ -758,7 +758,7 @@ def extract_and_cut_background_rcnn(
 
 
 def extract_and_replace_background_rcnn(
-    input_frame, frame_background, boxes, masks, labels, colors, confidence_value
+    input_frame, frame_background, boxes, masks, labels, colors, confidence_value, canny_thres1, canny_thres2
 ):
     confidence_value /= 100
     classes_out = []
@@ -770,7 +770,8 @@ def extract_and_replace_background_rcnn(
     frame_copy = cv2.resize(frame_copy, (1280, 720))
 
     input_frame = cv2.GaussianBlur(input_frame, (5, 5), 5)
-    frame_canny = auto_canny(input_frame)
+    frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
+    # frame_canny = auto_canny(input_frame)
 
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2RGB)
     frame_out = np.zeros(input_frame.shape, np.uint8)
@@ -820,15 +821,15 @@ def extract_and_replace_background_rcnn(
 
 
 def color_canny_rcnn(
-    input_frame, boxes, masks, labels, confidence_value, rcnn_blur_value
+    input_frame, boxes, masks, labels, confidence_value, rcnn_blur_value, canny_blur, canny_thres1, canny_thres2
 ):
     confidence_value /= 100
     classes_out = []
     # frame_canny = auto_canny(input_frame)
-    input_frame = cv2.GaussianBlur(input_frame, (5, 5), 5)
+    input_frame = cv2.GaussianBlur(input_frame, (canny_blur, canny_blur), canny_blur)
 
-    # frame_canny = cv2.Canny(input_frame, 50,100)
-    frame_canny = auto_canny(input_frame, 0)
+    frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
+    # frame_canny = auto_canny(input_frame, 0)
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2BGR)
     frame_out = np.zeros(input_frame.shape, np.uint8)
 
@@ -1554,6 +1555,7 @@ def morph_edge_detection(input_frame):
 def limit_colors_kmeans(input_frame, color_count):
     if color_count > 0:
         (h, w) = input_frame.shape[:2]
+        input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2BGR)
         input_frame = cv2.cvtColor(input_frame, cv2.COLOR_BGR2LAB)
         input_frame = input_frame.reshape(
             (input_frame.shape[0] * input_frame.shape[1], 3)
@@ -1579,7 +1581,7 @@ def auto_canny(image: object, sigma: object = 0.33) -> object:
     return edged
 
 
-def adjust_gamma(image, gamma=5.0):
+def adjust_gamma(image, gamma=1.0):
     inv_gamma = 1.0 / gamma
     table = np.array(
         [((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)]

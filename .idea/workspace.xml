@@ -20,11 +20,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="726d8ba5-1c85-47d1-a6af-9716e370d019" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mode_selector.py" beforeDir="false" afterPath="$PROJECT_DIR$/mode_selector.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/processing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/previews/grayBackground.png" beforeDir="false" afterPath="$PROJECT_DIR$/static/previews/grayBackground.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/main.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/render_modes.py" beforeDir="false" afterPath="$PROJECT_DIR$/render_modes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/ascii.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -213,10 +214,10 @@
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="2020" y="127" width="1670" height="853" key="com.intellij.history.integration.ui.views.RecentChangeDialog/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1596139831849" />
-    <state x="2653" y="345" width="986" height="622" key="find.popup" timestamp="1596556157913">
+    <state x="2654" y="345" width="986" height="622" key="find.popup" timestamp="1596808214745">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state x="2653" y="345" width="986" height="622" key="find.popup/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1596556157913" />
+    <state x="2654" y="345" width="986" height="622" key="find.popup/1920.0.1920.1080/0.27.1920.1053@1920.0.1920.1080" timestamp="1596808214745" />
     <state x="2504" y="269" width="700" height="530" key="recent.locations.popup" timestamp="1596139038479">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>

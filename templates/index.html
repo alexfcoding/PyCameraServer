@@ -169,9 +169,9 @@
                 </optgroup>
                 <optgroup label="MASK R-CNN MODEL">
                     <option value="k">GRAY BACKGROUND</option>
-                    <option value="m">GAUSSIAN BLUR BACKGROUND</option>
-                    <option value="j">CANNY AND GAUSSIAN BLUR</option>
-                    <option value="i">CANNY + ANIMATE BACKGROUND</option>
+                    <option value="m">BLUR BACKGROUND</option>
+                    <option value="j">CANNY WITH BLUR</option>
+                    <option value="i">CANNY WITH ANIMATED BACKGROUND</option>
                 </optgroup>
                 <optgroup label="CAFFE MODEL">
                     <option value="f">NEURAL NETWORK COLORIZER</option>
@@ -184,12 +184,12 @@
                     <option value="z">(GPU 360p max) Depth-Aware Interpolation</option>
                 </optgroup>
                 <optgroup label="WITHOUT NEURAL NETWORKS">
+                    <option value="o">DENOISE AND SHARPEN</option>
                     <option value="q">ASCII PAINTER</option>
                     <option value="e">CARTOON STYLE</option>
                     <option value="r">PENCIL DRAWER</option>
-                    <option value="s">TWO-COLORED</option>
-                    <option value="o">DENOISE + SHARPEN</option>
                     <option value="p">SOBEL FILTER</option>
+                    <option value="s">TWO-COLORED</option>
                 </optgroup>
             </select>
         </div>
@@ -302,7 +302,7 @@
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyThres1Value"></div>
                 <div><input
                         style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                        type="range" min="1" max="100" step="2" value="50" class="slider" id="cannyThres1Id"></div>
+                        type="range" min="1" max="100" step="2" value="71" class="slider" id="cannyThres1Id"></div>
             </div>
 
             <div id="cannyThres2IdBlock" class="renderSettings">
@@ -310,7 +310,7 @@
                 <div style=" display: inline-block;font-size: 16px; color: white;" id="cannyThres2Value"></div>
                 <div><input
                         style="-webkit-appearance: none; appearance: none; border-radius: 10px; height: 15px; background-color:  rgb(253, 228, 0); width: 400px; box-shadow: 6px 4px 8px #000000;"
-                        type="range" min="1" max="100" step="2" value="50" class="slider" id="cannyThres2Id"></div>
+                        type="range" min="1" max="100" step="2" value="21" class="slider" id="cannyThres2Id"></div>
             </div>
 
             <div id="lineThicknessIdBlock" class="renderSettings">
@@ -403,6 +403,8 @@
         </div>
 
         <script>
+            resetSettings();
+
             let working = 0;
             let frameWidth = 0;
             let frameHeight = 0;
@@ -453,8 +455,8 @@
                 // document.getElementById("positionId").value = 1                        
                 document.getElementById("saturationId").value = 100;
                 document.getElementById("cannyBlurId").value = 5;
-                document.getElementById("cannyThres1Id").value = 50;
-                document.getElementById("cannyThres2Id").value = 50;
+                document.getElementById("cannyThres1Id").value = 71;
+                document.getElementById("cannyThres2Id").value = 21;
                 document.getElementById("contrastId").value = 100;
                 document.getElementById("confidenceId").value = 20;
                 document.getElementById("brightnessId").value = 0;
@@ -488,6 +490,9 @@
                 if (document.getElementById("modesId").value == "r") {
                     document.getElementById("denoise2Id").value = 30;
                     document.getElementById("cannyBlurId").value = 5;
+                }
+                if (document.getElementById("modesId").value == "s") {
+                    document.getElementById("denoise2Id").value = 25;
                 }
             }
 
@@ -546,8 +551,12 @@
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
                             $("#confidenceIdBlock").show()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
 
                             $("#downloadObjectsId").show()
+
+
                         }
                         // BLUR OBJECTS WITH ASCII
                         if (currentMode == "b") {
@@ -569,10 +578,12 @@
                             $("#asciiSizeIdBlock").show()
                             $("#asciiIntervalIdBlock").show()
                             $("#asciiThicknessIdBlock").show()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // CANNY AND GAUSSIAN BLUR COLOR
                         if (currentMode == "j") {
-                            $("#cannyBlurIdBlock").hide()
+                            $("#cannyBlurIdBlock").show()
                             $("#lineThicknessIdBlock").hide()
                             $("#sharpenIdBlock").hide()
                             $("#sharpenIdBlock2").hide()
@@ -590,6 +601,8 @@
                             $("#resizeIdBlock").hide()
                             $("#colorCountIdBlock").hide()
                             $("#downloadObjectsId").hide()
+                            $("#cannyThres1IdBlock").show()
+                            $("#cannyThres2IdBlock").show()
                         }
                         // CANNY + ANIMATE BACKGROUND
                         if (currentMode == "i") {
@@ -611,6 +624,8 @@
                             $("#downloadObjectsId").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
+                            $("#cannyThres1IdBlock").show()
+                            $("#cannyThres2IdBlock").show()
                         }
                         // GAUSSIAN BLUR BACKGROUND
                         if (currentMode == "m") {
@@ -632,6 +647,8 @@
                             $("#downloadObjectsId").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // FAKE COLORIZER
                         if (currentMode == "k") {
@@ -653,6 +670,8 @@
                             $("#downloadObjectsId").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // CAFFE NEURAL NETWORK COLORIZER
                         if (currentMode == "f") {
@@ -674,6 +693,8 @@
                             $("#downloadObjectsId").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // CARTOON STYLE
                         if (currentMode == "e") {
@@ -695,6 +716,8 @@
                             $("#downloadObjectsId").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
+                            $("#cannyThres1IdBlock").show()
+                            $("#cannyThres2IdBlock").show()
                         }
                         // PENSIL DRAWER
                         if (currentMode == "r") {
@@ -716,6 +739,8 @@
                             $("#downloadObjectsId").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // TWO-COLORED
                         if (currentMode == "s") {
@@ -737,6 +762,8 @@
                             $("#downloadObjectsId").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // DENOISE + SHARPEN
                         if (currentMode == "o") {
@@ -758,7 +785,8 @@
                             $("#sharpenIdBlock2").show()
                             $("#denoiseIdBlock").show()
                             $("#denoise2IdBlock").show()
-
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // SOBEL OPERATOR
                         if (currentMode == "p") {
@@ -780,6 +808,8 @@
                             $("#denoiseIdBlock").show()
                             $("#denoise2IdBlock").show()
                             $("#sobelIdBlock").show()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // ASCII FULL SCREEN
                         if (currentMode == "q") {
@@ -801,6 +831,8 @@
                             $("#asciiSizeIdBlock").show()
                             $("#asciiIntervalIdBlock").show()
                             $("#asciiThicknessIdBlock").show()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                         }
                         // UPSCALER   
                         if (currentMode == "n") {
@@ -820,6 +852,8 @@
                             $("#asciiThicknessIdBlock").hide()
                             $("#downloadObjectsId").hide()
                             $("#resizeIdBlock").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
 
                             $("#superresIdBlock").show()
                             $("#esrganIdBlock").hide()
@@ -842,8 +876,11 @@
                             $("#asciiThicknessIdBlock").hide()
                             $("#resizeIdBlock").hide()
                             $("#downloadObjectsId").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").show()
+
                         }
 
                         //if (working == false) {
