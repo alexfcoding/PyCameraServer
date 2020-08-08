@@ -1555,7 +1555,6 @@ def morph_edge_detection(input_frame):
 def limit_colors_kmeans(input_frame, color_count):
     if color_count > 0:
         (h, w) = input_frame.shape[:2]
-        input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2BGR)
         input_frame = cv2.cvtColor(input_frame, cv2.COLOR_BGR2LAB)
         input_frame = input_frame.reshape(
             (input_frame.shape[0] * input_frame.shape[1], 3)

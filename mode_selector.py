@@ -272,7 +272,6 @@ def render_with_mode(modes_ajax, sliders_ajax, main_frame, frame_background,
         kernel = np.ones((int(sliders_ajax["lineThicknessSliderValue"]), int(sliders_ajax["lineThicknessSliderValue"])), np.uint8)
         # main_frame = cv2.dilate(main_frame,kernel,iterations = 1)
         # frame_copy[np.where((main_frame > [0, 0, 0]).all(axis=2))] = [0,0,0]
-        frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2GRAY)
         frame_copy = limit_colors_kmeans(frame_copy, 2)
         # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
         main_frame = frame_copy
