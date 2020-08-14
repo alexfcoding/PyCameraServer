@@ -1,5 +1,5 @@
 # PyCameraServer
-PyCameraServer is a Flask video/image/Youtube/IP Camera frames web-editor with live preview for applying effects, extracting objects and enhancing quality using OpenCV and neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
+PyCameraServer is a Flask video/image/Youtube/IP Camera frames web-editor with live streaming preview for applying effects, extracting objects and enhancing quality using OpenCV and neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
 
 ## Example: Depth-Aware Video Frame Interpolation and ASCII mode
 
@@ -110,9 +110,9 @@ Generate PyTorch extensions and correlation package required by PWCNet for DAIN 
 $ workon opencv_gpu
 $ cd DAIN
 $ cd my_package
-```
-```
 $ ./build.sh
+```
+```
 $ cd ../PWCNet/correlation_package_pytorch1_0
 $ ./build.sh
 ```
@@ -120,7 +120,7 @@ $ ./build.sh
 ## Examples
 ### YOLO: Real-Time Object Detection:
 - Downloading zip with detected YOLO image objects
-- Rendering and count classes
+- Rendering and classes counting
 
 ![](images/all_yolo.jpg)
 
