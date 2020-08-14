@@ -191,6 +191,7 @@ def render_with_mode(modes_ajax, sliders_ajax, main_frame, frame_background,
                 labels,
                 colors,
                 int(sliders_ajax["confidenceSliderValue"]),
+                int(sliders_ajax["cannyBlurSliderValue"]),
                 int(sliders_ajax["cannyThres1SliderValue"]),
                 int(sliders_ajax["cannyThres2SliderValue"])
             )

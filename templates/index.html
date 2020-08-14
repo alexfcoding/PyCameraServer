@@ -148,7 +148,7 @@
         </div>
 
         <div style="margin-bottom: 10px; margin-top: 5px;">
-            <div style="display: inline-block; ">
+            <div style="display: inline-block;">
                 <button style="border-radius: 7px; height: 30px;" onclick="sendStartCommand()">START</button>
                 <button style="border-radius: 7px; height: 30px;" onclick="sendStopCommand()">STOP</button>
                 <button style="border-radius: 7px; height: 30px;" onclick="sendScreenshotCommand()">TAKE SCREENSHOT</button>
@@ -178,10 +178,10 @@
                 </optgroup>
                 <optgroup label="UPSCALE MODELS (X4 RESOLUTION)">
                     <option value="n">(CPU) EDSR / LAPSRN / FSRCNN</option>
-                    <option value="t">(GPU 360p max) ESRGAN / PSNR</option>
+                    <option value="t">(GPU) ESRGAN / PSNR</option>
                 </optgroup>
                 <optgroup label="FPS BOOST (X7 FPS)">
-                    <option value="z">(GPU 360p max) Depth-Aware Interpolation</option>
+                    <option value="z">(GPU) Depth-Aware Interpolation</option>
                 </optgroup>
                 <optgroup label="WITHOUT NEURAL NETWORKS">
                     <option value="o">DENOISE AND SHARPEN</option>
@@ -192,6 +192,12 @@
                     <option value="s">TWO-COLORED</option>
                 </optgroup>
             </select>
+            
+        </div>        
+        <div style="display:inline-block;">
+            <input style=" height: 12px; width: 12px;" id="viewSourceId" type="checkbox" name="source">
+                <div style="display:inline-block; color: #ffa600;">VIEW SOURCE</div>
+            </input>
         </div>
 
         <div>
@@ -408,7 +414,7 @@
             let working = 0;
             let frameWidth = 0;
             let frameHeight = 0;
-            let maxFrames = 0;
+            let maxFrames = 0;            
             let videoResetCommand = false;
             let videoStopCommand = false;
             let modeResetCommand = false;
@@ -474,7 +480,7 @@
                 document.getElementById("saturationId").value = 100;
                 document.getElementById("sharpenId").value = 0;
                 document.getElementById("sharpenId2").value = 0;
-
+                
                 if (document.getElementById("modesId").value == "e") {
                     document.getElementById("denoise2Id").value = 50;
                     document.getElementById("saturationId").value = 200;
@@ -606,7 +612,7 @@
                         }
                         // CANNY + ANIMATE BACKGROUND
                         if (currentMode == "i") {
-                            $("#cannyBlurIdBlock").hide()
+                            $("#cannyBlurIdBlock").show()
                             $("#lineThicknessIdBlock").hide()
                             $("#sharpenIdBlock").hide()
                             $("#sharpenIdBlock2").hide()
@@ -894,7 +900,17 @@
                 })
             }, 1000);
 
-            var myTimer2 = setInterval(function () {
+            var myTimer2 = setInterval(function () {                
+                var viewSource = false;
+                if (document.getElementById("viewSourceId").checked) {
+                    viewSource = true;
+                }
+                else {
+                    viewSource = false;
+                }
+
+
+
                 var positionSlider = document.getElementById("positionId");
                 var outputPosition = document.getElementById("positionValue");
                 var positionSliderValue = positionSlider.value;
@@ -1091,6 +1107,7 @@
                     url: "/settings",
                     traditional: "true",
                     data: JSON.stringify({
+                        viewSource,
                         cannyBlurSliderValue,
                         cannyThres1SliderValue,
                         cannyThres2SliderValue,

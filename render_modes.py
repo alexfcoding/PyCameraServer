@@ -758,7 +758,7 @@ def extract_and_cut_background_rcnn(
 
 
 def extract_and_replace_background_rcnn(
-    input_frame, frame_background, boxes, masks, labels, colors, confidence_value, canny_thres1, canny_thres2
+    input_frame, frame_background, boxes, masks, labels, colors, confidence_value, canny_blur, canny_thres1, canny_thres2
 ):
     confidence_value /= 100
     classes_out = []
@@ -769,8 +769,11 @@ def extract_and_replace_background_rcnn(
     )
     frame_copy = cv2.resize(frame_copy, (1280, 720))
 
-    input_frame = cv2.GaussianBlur(input_frame, (5, 5), 5)
+    input_frame = cv2.GaussianBlur(input_frame, (canny_blur, canny_blur), canny_blur)
     frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
+    kernel = np.ones((2, 2),
+                     np.uint8)
+    frame_canny = cv2.dilate(frame_canny, kernel, iterations=1)
     # frame_canny = auto_canny(input_frame)
 
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2RGB)
@@ -858,18 +861,18 @@ def color_canny_rcnn(
             frm = frame_canny[start_y:end_y, start_x:end_x][mask]
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
             input_frame[start_y:end_y, start_x:end_x][mask] = frm
-            # if (labels[class_id] == "car"):
-            #     frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-            #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
-            #     input_frame[start_y:end_y, start_x:end_x][mask] = frm
-            # if (labels[class_id] == "truck"):
-            #     frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-            #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
-            #     input_frame[start_y:end_y, start_x:end_x][mask] = frm
-            # if (labels[class_id] == "bus"):
-            #     frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-            #     frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
-            #     input_frame[start_y:end_y, start_x:end_x][mask] = frm
+            if (labels[class_id] == "car"):
+                frm = frame_canny[start_y:end_y, start_x:end_x][mask]
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+                input_frame[start_y:end_y, start_x:end_x][mask] = frm
+            if (labels[class_id] == "truck"):
+                frm = frame_canny[start_y:end_y, start_x:end_x][mask]
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+                input_frame[start_y:end_y, start_x:end_x][mask] = frm
+            if (labels[class_id] == "bus"):
+                frm = frame_canny[start_y:end_y, start_x:end_x][mask]
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+                input_frame[start_y:end_y, start_x:end_x][mask] = frm
 
     # frame_out = cv2.addWeighted(input_frame, 1, frame_canny, 1, 0)
     frame_canny = cv2.GaussianBlur(

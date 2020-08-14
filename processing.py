@@ -21,6 +21,7 @@ ALLOWED_EXTENSIONS = set(
 
 class RenderState:
     # Working states and lock commands
+    view_source = False
     source_image = ""
     source_url = ""
     source_mode = ""
@@ -73,6 +74,7 @@ render_modes_dict = {
 # Default rendering settings
 # Values will change with AJAX requests
 settings_ajax = {
+    "viewSource" : False,
     "cannyBlurSliderValue" : 5,
     "cannyThres1SliderValue" : 50,
     "cannyThres2SliderValue" : 50,
@@ -182,7 +184,7 @@ def process_frame():
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
         vPafy = pafy.new(server_states.source_url)
-        play = vPafy.streams[0]
+        play = vPafy.streams[1]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
@@ -201,7 +203,7 @@ def process_frame():
         path_to_image, image_file = os.path.split(args["source"])
         server_states.source_image = image_file
 
-    cap2 = cv2.VideoCapture("input_videos/snow.webm") # Secondary video for background replacement
+    cap2 = cv2.VideoCapture("input_videos/space.webm") # Secondary video for background replacement
     zip_obj = ZipFile(f"static/user_renders/output{args['port']}.zip", "w") # Zip file with user port name
 
     # Initialize all models
@@ -210,14 +212,14 @@ def process_frame():
     caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
-    rcnn_network = initialize_rcnn_network(False)
+    rcnn_network = initialize_rcnn_network(True)
     dain_network = initialize_dain_network(True)
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
         classes, True
     )
 
     frame_interp_num = 0 # Interpolated frame number
-    # main_frame = None
+    main_frame = None
     f = f1 = None # Two source frames for interpolation
 
     # =============================== Main processing loop ===============================
@@ -229,6 +231,7 @@ def process_frame():
             superres_model_from_page = str(settings_ajax["superresModel"])
             esrgan_model_from_page = str(settings_ajax["esrganModel"])
             position_value_local = int(settings_ajax["positionSliderValue"])
+            server_states.view_source = bool(settings_ajax["viewSource"])
 
             # Check if mode change command was received
             if server_states.mode_reset_lock:
@@ -404,7 +407,7 @@ def process_frame():
 
                     if server_states.source_mode == "youtube":
                         vPafy = pafy.new(server_states.source_url)
-                        play = vPafy.streams[0]
+                        play = vPafy.streams[1]
                         cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
                         writer = cv2.VideoWriter(
@@ -490,11 +493,12 @@ def process_frame():
         # =============================== Draw frame with render modes and settings ===============================
 
         if main_frame is not None:
-            main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened = \
-                render_with_mode(render_modes_dict, settings_ajax, main_frame, frame_background, f, f1, yolo_network,
-                                 rcnn_network, caffe_network, superres_network, dain_network, esrgan_network,
-                                 device, output_layers, classes_index, zip_obj, zip_is_opened, zipped_images,
-                                 server_states, started_rendering_video)
+            if not server_states.view_source:
+                main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened = \
+                    render_with_mode(render_modes_dict, settings_ajax, main_frame, frame_background, f, f1, yolo_network,
+                                     rcnn_network, caffe_network, superres_network, dain_network, esrgan_network,
+                                     device, output_layers, classes_index, zip_obj, zip_is_opened, zipped_images,
+                                     server_states, started_rendering_video)
 
             with lock:
                 check_if_user_is_connected(timer_start, 7) # Terminate process if browser tab was closed
@@ -508,7 +512,7 @@ def process_frame():
                 x_size = round(x_coeff * main_frame.shape[1])
                 resized = cv2.resize(main_frame, (x_size, 460))
 
-                if render_modes_dict['extract_objects_yolo_mode']:
+                if render_modes_dict['extract_objects_yolo_mode'] and not server_states.view_source:
                     resized = draw_yolo_stats(resized, classes_index, font)
 
                 if server_states.source_mode == "image":
@@ -625,7 +629,8 @@ def process_frame():
             zip_obj.close()
             check_if_user_is_connected(timer_start, 7)
             started_rendering_video = False
-            writer.release()
+            if (writer):
+                writer.release()
             position_value = 1
             # print("==================== finished ====================")
 
@@ -674,7 +679,7 @@ def index(device=None, action=None):
             server_states.source_mode = "youtube"
             server_states.source_url = textbox_string
             vPafy = pafy.new(textbox_string)
-            play = vPafy.streams[0]
+            play = vPafy.streams[1]
             cap = cv2.VideoCapture(play.url)
             server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
             file_changed = True
@@ -696,12 +701,12 @@ def index(device=None, action=None):
             if file_extension in("png", "jpg", "jpeg"):
                 server_states.source_mode = "image"
                 server_states.source_image = filename
-                cap2 = cv2.VideoCapture("input_videos/snow.webm")
+                cap2 = cv2.VideoCapture("input_videos/space.webm")
             if file_extension in ("gif", "mp4", "avi", "m4v", "webm", "mkv"):
                 server_states.source_mode = "video"
                 cap = cv2.VideoCapture(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                 server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-                cap2 = cv2.VideoCapture("input_videos/snow.webm")
+                cap2 = cv2.VideoCapture("input_videos/space.webm")
             
             CRED = "\033[91m"
             CEND = "\033[0m"
