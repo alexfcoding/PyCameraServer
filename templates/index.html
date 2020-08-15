@@ -411,6 +411,7 @@
         <script>
             resetSettings();
 
+            var started = 0;
             let working = 0;
             let frameWidth = 0;
             let frameHeight = 0;
@@ -458,7 +459,8 @@
             }
 
             function resetSettings() {
-                // document.getElementById("positionId").value = 1                        
+                // document.getElementById("positionId").value = 1  
+                console.log("RESET");                      
                 document.getElementById("saturationId").value = 100;
                 document.getElementById("cannyBlurId").value = 5;
                 document.getElementById("cannyThres1Id").value = 71;
@@ -482,8 +484,13 @@
                 document.getElementById("sharpenId2").value = 0;
                 
                 if (document.getElementById("modesId").value == "e") {
+                    console.log("CARTOON");
                     document.getElementById("denoise2Id").value = 50;
-                    document.getElementById("saturationId").value = 200;
+                    document.getElementById("saturationId").value = 170;
+                    document.getElementById("contrastId").value = 120;
+                    document.getElementById("sharpenId").value = 4;
+                    document.getElementById("cannyThres1Id").value = 71;
+                    document.getElementById("cannyThres2Id").value = 1;
                 }
                 if (document.getElementById("modesId").value == "o") {
                     document.getElementById("denoise2Id").value = 10;
@@ -518,14 +525,17 @@
                         frameWidth = response["frameWidth"]
                         frameHeight = response["frameHeight"]
                         maxFrames = response["totalFrames"]
-                        currentMode = response["currentMode"]
+                        currentMode = response["currentMode"]                        
 
                         if (response["screenshotReady"] == true) {
                             window.open(response["screenshotPath"], '_blank');
                         }
 
                         document.getElementById("modesId").value = currentMode;
-
+                        if (started == 0){
+                            resetSettings();
+                            started = 1;
+                        }
                         // userTime = response["userTime"]
                         // $("#frameSize").html(userTime);
 
@@ -886,6 +896,30 @@
                             $("#cannyThres2IdBlock").hide()
                             $("#superresIdBlock").hide()
                             $("#esrganIdBlock").show()
+                        }
+
+                        // ESRGAN UPSCALER
+                        if (currentMode == "z") {
+                            $("#cannyBlurIdBlock").hide()
+                            $("#lineThicknessIdBlock").hide()
+                            $("#confidenceIdBlock").hide()
+                            $("#rcnnSizeIdBlock").hide()
+                            $("#rcnnBlurIdBlock").hide()
+                            $("#sharpenIdBlock").hide()
+                            $("#sharpenIdBlock2").hide()
+                            $("#denoiseIdBlock").hide()
+                            $("#colorCountIdBlock").hide()
+                            $("#denoise2IdBlock").hide()
+                            $("#sobelIdBlock").hide()
+                            $("#asciiSizeIdBlock").hide()
+                            $("#asciiIntervalIdBlock").hide()
+                            $("#asciiThicknessIdBlock").hide()
+                            $("#resizeIdBlock").hide()
+                            $("#downloadObjectsId").hide()
+                            $("#cannyThres1IdBlock").hide()
+                            $("#cannyThres2IdBlock").hide()
+                            $("#superresIdBlock").hide()
+                            $("#esrganIdBlock").hide()
 
                         }
 
@@ -908,8 +942,6 @@
                 else {
                     viewSource = false;
                 }
-
-
 
                 var positionSlider = document.getElementById("positionId");
                 var outputPosition = document.getElementById("positionValue");

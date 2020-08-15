@@ -184,7 +184,7 @@ def process_frame():
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
         vPafy = pafy.new(server_states.source_url)
-        play = vPafy.streams[1]
+        play = vPafy.streams[0]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
@@ -392,7 +392,7 @@ def process_frame():
                             writer = cv2.VideoWriter(
                                 f"static/user_renders/output{args['port']}{file_to_render}.avi",
                                 fourcc,
-                                175,
+                                90,
                                 (main_frame.shape[1], main_frame.shape[0]),
                                 True,
                             )
@@ -407,16 +407,28 @@ def process_frame():
 
                     if server_states.source_mode == "youtube":
                         vPafy = pafy.new(server_states.source_url)
-                        play = vPafy.streams[1]
+                        play = vPafy.streams[0]
                         cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-                        writer = cv2.VideoWriter(
-                            f"static/user_renders/output{args['port']}youtube.avi",
-                            fourcc,
-                            25,
-                            (main_frame.shape[1], main_frame.shape[0]),
-                            True,
-                        )
+
+                        if (render_modes_dict['boost_fps_dain']):
+                            # fps_out = cap.get(cv2.CAP_PROP_FRAME_COUNT) * 7
+                            # Change FPS output with DAIN mode
+                            writer = cv2.VideoWriter(
+                                f"static/user_renders/output{args['port']}youtube.avi",
+                                fourcc,
+                                90,
+                                (main_frame.shape[1], main_frame.shape[0]),
+                                True,
+                            )
+                        else:
+                            writer = cv2.VideoWriter(
+                                f"static/user_renders/output{args['port']}youtube.avi",
+                                fourcc,
+                                25,
+                                (main_frame.shape[1], main_frame.shape[0]),
+                                True,
+                            )
 
                     if server_states.source_mode == "ipcam":
                         # source_url = str(settings_ajax["urlSource"])
@@ -462,6 +474,9 @@ def process_frame():
                             main_frame = f1.copy()
                         else:
                             main_frame = None
+                else:
+                    ret, main_frame = cap.read()
+                    ret2, frame_background = cap2.read()
             # ... otherwise read by one frame
             else:
                 if (cap is not None):
@@ -616,7 +631,7 @@ def process_frame():
                     cv2.imwrite(
                         f"static/user_renders/output{args['port']}Screenshot.png", main_frame
                     )
-                    time.sleep(1)
+                    time.sleep(0.5)
                     server_states.screenshot_path = (
                         f"static/user_renders/output{args['port']}Screenshot.png"
                     )
@@ -679,7 +694,7 @@ def index(device=None, action=None):
             server_states.source_mode = "youtube"
             server_states.source_url = textbox_string
             vPafy = pafy.new(textbox_string)
-            play = vPafy.streams[1]
+            play = vPafy.streams[0]
             cap = cv2.VideoCapture(play.url)
             server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
             file_changed = True

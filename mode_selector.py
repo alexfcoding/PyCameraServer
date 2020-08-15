@@ -318,7 +318,7 @@ def render_with_mode(modes_ajax, sliders_ajax, main_frame, frame_background,
     frame_boost_list = None
     if modes_ajax["boost_fps_dain"] and started_rendering_video:
         frame_boost_sequence, frame_boost_list = boost_fps_with_dain(
-            dain_network, f, f1, True
+            dain_network, f, f1, 4, True
         )
 
     # Apply brightness and contrast modes_ajax for all modes

@@ -1293,23 +1293,22 @@ def upscale_with_esrgan(network, device, image):
     return output
 
 
-def boost_fps_with_dain(dain_network, f, f1, use_cuda):
+def boost_fps_with_dain(dain_network, f, f1, fps_boost, use_cuda):
     save_which = 1
     dtype = torch.cuda.FloatTensor
 
-    fpsBoost = 7
     frame_sequence = None
     frame_write_sequence = None
 
-    if (fpsBoost == 7):
+    if (fps_boost == 8):
         frame_sequence = [0, 1, 2, 0, 2, 3, 0, 3, 4, 3, 2, 5, 2, 1, 6, 2, 6, 7, 6, 1, 8]
         frame_write_sequence = [0, 8, 4, 2, 1, 3, 6, 5, 7]
 
-    if (fpsBoost == 3):
+    if (fps_boost == 4):
         frame_sequence = [0, 1, 2, 0, 2, 3, 2, 1, 4]
         frame_write_sequence = [0, 4, 2, 1, 3]
 
-    if (fpsBoost == 2):
+    if (fps_boost == 2):
         frame_sequence = [0, 1, 2]
         frame_write_sequence = [0, 2, 1]
 
@@ -1319,7 +1318,7 @@ def boost_fps_with_dain(dain_network, f, f1, use_cuda):
     frames.append(f)
     frames.append(f1)
 
-    for i in range(fpsBoost - 1):
+    for i in range(fps_boost - 1):
         X0 = torch.from_numpy(
             np.transpose(frames[frame_sequence[frame_index]], (2, 0, 1)).astype("float32") / 255.0).type(dtype)
         frame_index += 1
