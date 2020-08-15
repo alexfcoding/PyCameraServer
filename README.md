@@ -1,12 +1,15 @@
 # PyCameraServer
-PyCameraServer is a Flask video/image/Youtube/IP Camera frames web-editor with live streaming preview for applying effects, extracting objects and enhancing quality using OpenCV and neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
+PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor with live streaming preview for applying effects, extracting objects and enhancing quality using OpenCV and neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
 
 ## Example: Depth-Aware Video Frame Interpolation and ASCII mode
 
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii.gif" width="415"/>
 
+## Main page
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/main.gif" width="840"/>
+
 ## Working editor example
-![](images/cartoon.gif)  
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/cartoon.gif" width="840"/>
 
 ## Models included
 YOLO v3 object detector: [Website](https://pjreddie.com/darknet/yolo/) | [GitHub](https://github.com/pjreddie/darknet) | [Paper](https://arxiv.org/pdf/1804.02767.pdf)
@@ -28,6 +31,7 @@ Depth-Aware Video Frame Interpolation (DAIN): [GitHub](https://github.com/baowen
 - **IP Cameras**: URL for MJPEG camera without login
 
 ## Features
+16 rendering modes:
 - Detecting and extracting YOLO objects from source (downloading zip with images and labels)
 - Fast and easy testing YOLO and Mask R-CNN on different sources
 - Applying effects to detected objects and background
@@ -50,7 +54,9 @@ Depth-Aware Video Frame Interpolation (DAIN): [GitHub](https://github.com/baowen
 - Render mode and settings changing without page reload (AJAX)
 - Viewing source info, progress and server stats in real-time (RAM, CPU load, FPS, frame size) 
 
-Note: rendering process stops after a few seconds if user closed browser tab
+Note: rendering process stops after a few seconds if user closed browser tab.
+ 
+Simultaneous work on different devices / browser tabs provided by reserving unique user port generated from main page
 
 ## Rendering modes
 - (GPU/CPU) YOLO: Extract objects in frames (download zip with images), draw detected boxes and labels
@@ -62,12 +68,13 @@ Note: rendering process stops after a few seconds if user closed browser tab
 - (GPU) Caffe: colorize grayscale with neural network
 - (CPU) EDSR / LapSRN / FSRCNN: x4 resolution upscale
 - (GPU) ESRGAN / RRDB_PSNR: x4 resolution upscale (models included: FALCOON, MANGA109, ESRGAN/RRDB_PSNR interpolation 0.2, 0.4, 0.6, 0.8)
-- (GPU) Depth-Aware Video Frame Interpolation: create smooth video by creating new frames (boost x2, x3, x7 fps)
+- (GPU) Depth-Aware Video Frame Interpolation: create smooth video by creating new frames (boost x2, x4, x8 fps)
 - (CPU) OpenCV denoiser with two sharpening methods
 - (CPU) ASCII painter
 - (CPU) Cartoon style
 - (CPU) Pencil drawer
 - (CPU) Sobel filter
+- (CPU) Two-colored
  
  ## Tested on
 - OS: Ubuntu 20.04 LTS
@@ -82,11 +89,11 @@ Note: rendering process stops after a few seconds if user closed browser tab
 
 ## How to run
 
-main demo page example (redirects user to editor with specific port):
+Main demo page example (redirects user to editor with specific port):
 
 `python main.py -i 192.168.0.12 -o 8000`
 
-editor page example:
+Direct editor page launch:
 
 `python processing.py -i 192.168.0.12 -o 8001 -s my_source -c a -m video`
 
