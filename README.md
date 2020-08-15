@@ -129,7 +129,7 @@ $ ./build.sh
 - Downloading zip with detected YOLO image objects
 - Rendering and classes counting
 
-![](images/all_yolo.jpg)
+![](images/yolo.gif)
 
 ---
 
