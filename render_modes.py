@@ -1605,6 +1605,15 @@ def adjust_br_contrast(input_frame, contrast_value, brightness_value):
     alpha = 1  # Contrast control (1.0-3.0)
     beta = 0  # Brightness control (0-100)
     input_frame = cv2.convertScaleAbs(
-        input_frame, alpha=contrast_value, beta=brightness_value
+        input_frame, alpha=contrast_value, beta=0
     )
+
+    hsv = cv2.cvtColor(input_frame, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    v = cv2.add(v, brightness_value)
+    v[v > 255] = 255
+    v[v < 0] = 0
+    final_hsv = cv2.merge((h, s, v))
+    input_frame = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+
     return input_frame
