@@ -76,8 +76,8 @@ render_modes_dict = {
 settings_ajax = {
     "viewSource" : False,
     "cannyBlurSliderValue" : 5,
-    "cannyThres1SliderValue" : 50,
-    "cannyThres2SliderValue" : 50,
+    "cannyThresSliderValue" : 50,
+    "cannyThresSliderValue2" : 50,
     "cannyThres2" : 50,
     "saturationSliderValue" : 100,
     "contrastSliderValue" : 100,
@@ -86,7 +86,7 @@ settings_ajax = {
     "confidenceSliderValue" : 20,
     "lineThicknessSliderValue" : 2,
     "denoiseSliderValue" : 10,
-    "denoise2SliderValue" : 10,
+    "denoiseSliderValue2" : 10,
     "sharpenSliderValue" : 5,
     "sharpenSliderValue2" : 5,
     "rcnnSizeSliderValue" : 10,
@@ -212,7 +212,7 @@ def process_frame():
     caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
-    rcnn_network = initialize_rcnn_network(True)
+    rcnn_network = initialize_rcnn_network(False)
     dain_network = initialize_dain_network(True)
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
         classes, True

@@ -21,21 +21,101 @@ object_index = 0
 
 
 def initialize_yolo_network(classes, use_cuda):
-    yolo_network = cv2.dnn.readNet(
-        "models/yolo/yolov3.weights", "models/yolo/yolov3.cfg"
-    )
+    yolo_network = cv2.dnn.readNet("models/yolo/yolov3.weights", "models/yolo/yolov3.cfg")
 
     if use_cuda:
         yolo_network.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         yolo_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     layers_names = yolo_network.getLayerNames()
-    output_layers = [
-        layers_names[i[0] - 1] for i in yolo_network.getUnconnectedOutLayers()
-    ]
+    output_layers = [layers_names[i[0] - 1] for i in yolo_network.getUnconnectedOutLayers()]
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
     return yolo_network, layers_names, output_layers, colors
+
+
+def draw_yolo_stats(input_frame, classes_index, font):
+    # Draw YOLO stats on frame
+
+    # class_index_count = [
+    #     [0 for x in range(80)] for x in range(len(stream_list))
+    # ]
+    class_index_count = [
+        [0 for x in range(80)] for x in range(1)
+    ]
+
+    row_index = 1
+    for m in range(80):
+        for k in range(len(classes_index[0])):
+            if m == classes_index[0][k]:
+                class_index_count[0][m] += 1
+
+        if class_index_count[0][m] != 0:
+            row_index += 1
+
+            if classes[m] == "person":
+                cv2.rectangle(
+                    input_frame,
+                    (20, row_index * 40 - 25),
+                    (270, row_index * 40 + 11),
+                    (0, 0, 0),
+                    -1,
+                )
+                cv2.putText(
+                    input_frame,
+                    classes[m] + ": " + str(class_index_count[0][m]),
+                    (40, row_index * 40),
+                    font,
+                    1,
+                    (0, 255, 0),
+                    2,
+                    lineType=cv2.LINE_AA,
+                )
+
+            if classes[m] == "car":
+                cv2.rectangle(
+                    input_frame,
+                    (20, row_index * 40 - 25),
+                    (270, row_index * 40 + 11),
+                    (0, 0, 0),
+                    -1,
+                )
+                cv2.putText(
+                    input_frame,
+                    classes[m] + ": " + str(class_index_count[0][m]),
+                    (40, row_index * 40),
+                    font,
+                    1,
+                    (255, 0, 255),
+                    2,
+                    lineType=cv2.LINE_AA,
+                )
+
+            if (classes[m] != "car") & (classes[m] != "person"):
+                cv2.rectangle(
+                    input_frame,
+                    (20, row_index * 40 - 25),
+                    (270, row_index * 40 + 11),
+                    (0, 0, 0),
+                    -1,
+                )
+                cv2.putText(
+                    input_frame,
+                    classes[m] + ": " + str(class_index_count[0][m]),
+                    (40, row_index * 40),
+                    font,
+                    1,
+                    colors_yolo[m],
+                    2,
+                    lineType=cv2.LINE_AA,
+                )
+
+            # Example of handbag detection
+            if (classes[m] == "handbag") | (classes[m] == "backpack"):
+                passFlag = True
+                print("handbag detected! -> PASS")
+
+    return input_frame
 
 
 def initialize_rcnn_network(use_cuda):
@@ -142,10 +222,7 @@ def initialize_esrgan_network(model_type, use_cuda):
 
 def initialize_dain_network(use_cuda):
     torch.backends.cudnn.benchmark = True
-    model = DAIN.networks.__dict__['DAIN'](channel=3,
-                                            filter_size=4,
-                                            timestep=0.5,
-                                            training=False)
+    model = DAIN.networks.__dict__['DAIN'](channel=3, filter_size=4, timestep=0.5, training=False)
 
     if use_cuda:
         model = model.cuda()
@@ -185,9 +262,7 @@ def initialize_dain_network(use_cuda):
 def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value):
     classes_out = []
     height, width, channels = input_frame.shape
-    blob = cv2.dnn.blobFromImage(
-        input_frame, 0.003, (608, 608), (0, 0, 0), True, crop=False
-    )
+    blob = cv2.dnn.blobFromImage(input_frame, 0.003, (608, 608), (0, 0, 0), True, crop=False)
     yolo_network.setInput(blob)
     outs = yolo_network.forward(output_layers)
 
@@ -236,16 +311,16 @@ def find_rcnn_classes(input_frame, rcnn_network):
 
 
 def extract_objects_yolo(
-    input_frame,
-    boxes,
-    indexes,
-    class_ids,
-    confidences,
-    zip_archive,
-    zip_is_opened,
-    zipped_images,
-    source_mode,
-    started_rendering_mode,
+        input_frame,
+        boxes,
+        indexes,
+        class_ids,
+        confidences,
+        zip_archive,
+        zip_is_opened,
+        zipped_images,
+        source_mode,
+        started_rendering_mode,
 ):
     global object_index
 
@@ -265,7 +340,7 @@ def extract_objects_yolo(
 
             blk = np.zeros(input_frame.shape, np.uint8)
 
-            crop_img = frame_copy[y : y + h, x : x + w]
+            crop_img = frame_copy[y: y + h, x: x + w]
 
             cv2.rectangle(input_frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
 
@@ -312,19 +387,19 @@ def extract_objects_yolo(
                 input_frame = cv2.addWeighted(input_frame, 1, blk, 0.2, 0)
 
             if (
-                started_rendering_mode
-                and zip_is_opened
-                and source_mode in ("video", "youtube", "ipcam")
+                    started_rendering_mode
+                    and zip_is_opened
+                    and source_mode in ("video", "youtube", "ipcam")
             ):
                 cv2.imwrite(f"static/user_renders/{label}{str(object_index)}.jpg", crop_img)
                 zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
                 os.remove(f"static/user_renders/{label}{str(object_index)}.jpg")
 
             if (
-                started_rendering_mode
-                and zip_is_opened
-                and source_mode == "image"
-                and zipped_images == False
+                    started_rendering_mode
+                    and zip_is_opened
+                    and source_mode == "image"
+                    and zipped_images == False
             ):
                 cv2.imwrite(f"static/user_renders/{label}{str(object_index)}.jpg", crop_img)
                 zip_archive.write(f"static/user_renders/{label}{str(object_index)}.jpg")
@@ -333,10 +408,10 @@ def extract_objects_yolo(
             object_index += 1
 
     if (
-        started_rendering_mode
-        and zip_is_opened
-        and source_mode == "image"
-        and zipped_images == False
+            started_rendering_mode
+            and zip_is_opened
+            and source_mode == "image"
+            and zipped_images == False
     ):
         zipped_images = True
         zip_archive.close()
@@ -346,14 +421,14 @@ def extract_objects_yolo(
 
 
 def objects_to_text_yolo(
-    input_frame,
-    boxes,
-    indexes,
-    class_ids,
-    font_size,
-    ascii_distance_value,
-    blur_value,
-    ascii_thickness_value,
+        input_frame,
+        boxes,
+        indexes,
+        class_ids,
+        font_size,
+        ascii_distance_value,
+        blur_value,
+        ascii_thickness_value,
 ):
     global object_index
 
@@ -370,7 +445,7 @@ def objects_to_text_yolo(
             if y < 0:
                 y = 0
 
-            crop_img = input_frame[y : y + h, x : x + w]
+            crop_img = input_frame[y: y + h, x: x + w]
             crop_img = cv2.GaussianBlur(crop_img, (blur_value, blur_value), blur_value)
             render_str = "abcdefghijklmnopqrstuvwxyz0123456789"
 
@@ -392,7 +467,7 @@ def objects_to_text_yolo(
             blk = np.zeros(input_frame.shape, np.uint8)
 
             cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
-            input_frame[y : y + h, x : x + w] = crop_img
+            input_frame[y: y + h, x: x + w] = crop_img
 
             object_index += 1
 
@@ -415,7 +490,7 @@ def canny_people_on_black_yolo(input_frame, boxes, indexes, class_ids):
             if y < 0:
                 y = 0
 
-            crop_img = input_frame_copy[y : y + h, x : x + w]
+            crop_img = input_frame_copy[y: y + h, x: x + w]
 
             cv2.imshow("df", crop_img)
             crop_img = cv2.GaussianBlur(crop_img, (5, 5), 5)
@@ -458,7 +533,7 @@ def canny_people_on_black_yolo(input_frame, boxes, indexes, class_ids):
 
             mult = w * h / 15000
 
-            blk2[y : y + h, x : x + w] = result
+            blk2[y: y + h, x: x + w] = result
 
             # if (mult<1):
             # 	blk2[blk2 != 0] = 255 * mult
@@ -582,10 +657,10 @@ def canny_people_on_black_yolo(input_frame, boxes, indexes, class_ids):
                 )
 
             if (
-                label != "person"
-                and label != "car"
-                and label != "truck"
-                and label != "bus"
+                    label != "person"
+                    and label != "car"
+                    and label != "truck"
+                    and label != "bus"
             ):
                 # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
                 # cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
@@ -635,7 +710,7 @@ def canny_people_on_background_yolo(input_frame, boxes, indexes, class_ids):
             if y < 0:
                 y = 0
 
-            crop_img = input_frame[y : y + h, x : x + w]
+            crop_img = input_frame[y: y + h, x: x + w]
 
             # crop_img = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
             cv2.imshow("df", crop_img)
@@ -672,7 +747,7 @@ def canny_people_on_background_yolo(input_frame, boxes, indexes, class_ids):
             if mult < 1:
                 result[result != 0] = 255 * mult
 
-            blk2[y : y + h, x : x + w] = result
+            blk2[y: y + h, x: x + w] = result
 
             if label == "person":
                 # cv2.putText(bufferFrames[streamIndex], label + "[" + str(np.round(confidences[i], 2)) + "]", (x, y - 5), font, 0.7, (0,255,0), 2, lineType = cv2.LINE_AA)
@@ -716,7 +791,7 @@ def canny_people_on_background_yolo(input_frame, boxes, indexes, class_ids):
 
 
 def extract_and_cut_background_rcnn(
-    input_frame, boxes, masks, labels, confidence_value
+        input_frame, boxes, masks, labels, confidence_value
 ):
     confidence_value /= 100
     classes_out = []
@@ -758,15 +833,22 @@ def extract_and_cut_background_rcnn(
 
 
 def extract_and_replace_background_rcnn(
-    input_frame, frame_background, boxes, masks, labels, colors, confidence_value, canny_blur, canny_thres1, canny_thres2
+        input_frame,
+        frame_background,
+        boxes,
+        masks,
+        labels,
+        colors,
+        confidence_value,
+        canny_blur,
+        canny_thres1,
+        canny_thres2
 ):
     confidence_value /= 100
     classes_out = []
     frame_copy = input_frame
 
-    frame_background = cv2.resize(
-        frame_background, (input_frame.shape[1], input_frame.shape[0])
-    )
+    frame_background = cv2.resize(frame_background, (input_frame.shape[1], input_frame.shape[0]))
     frame_copy = cv2.resize(frame_copy, (1280, 720))
 
     input_frame = cv2.GaussianBlur(input_frame, (canny_blur, canny_blur), canny_blur)
@@ -824,7 +906,15 @@ def extract_and_replace_background_rcnn(
 
 
 def color_canny_rcnn(
-    input_frame, boxes, masks, labels, confidence_value, rcnn_blur_value, canny_blur, canny_thres1, canny_thres2
+        input_frame,
+        boxes,
+        masks,
+        labels,
+        confidence_value,
+        rcnn_blur_value,
+        canny_blur,
+        canny_thres1,
+        canny_thres2
 ):
     confidence_value /= 100
     classes_out = []
@@ -946,9 +1036,7 @@ def color_canny_rcnn(
     return frame_out
 
 
-def color_canny_on_color_background_rcnn(
-    input_frame, boxes, masks, labels, confidence_value
-):
+def color_canny_on_color_background_rcnn(input_frame, boxes, masks, labels, confidence_value):
     confidence_value /= 100
     classes_out = []
     frame_canny = auto_canny(input_frame)
@@ -1048,9 +1136,9 @@ def colorizer_people_rcnn(input_frame, boxes, masks, confidence_value, rcnn_size
             mask = mask > 0.2
 
             frm = frame_copy[
-                start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
-                start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
-            ][mask]
+                  start_y + int(smaller_y / 2): end_y - int(smaller_y / 2),
+                  start_x + int(smaller_x / 2): end_x - int(smaller_x / 2),
+                  ][mask]
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
 
             if already_bgr == False:
@@ -1058,8 +1146,8 @@ def colorizer_people_rcnn(input_frame, boxes, masks, confidence_value, rcnn_size
                 already_bgr = True
 
             input_frame[
-                start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
-                start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
+            start_y + int(smaller_y / 2): end_y - int(smaller_y / 2),
+            start_x + int(smaller_x / 2): end_x - int(smaller_x / 2),
             ][mask] = frm
 
             need_gray_to_bgr = False
@@ -1128,9 +1216,9 @@ def colorizer_people_with_blur_rcnn(input_frame, boxes, masks, confidence_value)
             mask = mask > 0.1
 
             frm = frame_copy[
-                start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
-                start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
-            ][mask]
+                  start_y + int(smaller_y / 2): end_y - int(smaller_y / 2),
+                  start_x + int(smaller_x / 2): end_x - int(smaller_x / 2),
+                  ][mask]
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
 
             if already_bgr == False:
@@ -1138,8 +1226,8 @@ def colorizer_people_with_blur_rcnn(input_frame, boxes, masks, confidence_value)
                 already_bgr = True
 
             input_frame[
-                start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
-                start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
+            start_y + int(smaller_y / 2): end_y - int(smaller_y / 2),
+            start_x + int(smaller_x / 2): end_x - int(smaller_x / 2),
             ][mask] = frm
 
             need_gray_to_bgr = False
@@ -1155,15 +1243,7 @@ def colorizer_people_with_blur_rcnn(input_frame, boxes, masks, confidence_value)
     return frame_out
 
 
-def people_with_blur_rcnn(
-    input_frame,
-    boxes,
-    masks,
-    labels,
-    confidence_value,
-    rcnn_size_value,
-    rcnn_blur_value,
-):
+def people_with_blur_rcnn(input_frame, boxes, masks, labels, confidence_value, rcnn_size_value, rcnn_blur_value):
     confidence_value /= 100
 
     classes_out = []
@@ -1171,9 +1251,7 @@ def people_with_blur_rcnn(
     already_bgr = False
     frame_copy = input_frame.copy()
     # input_frame = cv2.cvtColor(input_frame, cv2.COLOR_BGR2GRAY)
-    input_frame = cv2.GaussianBlur(
-        input_frame, (rcnn_blur_value, rcnn_blur_value), rcnn_blur_value
-    )
+    input_frame = cv2.GaussianBlur(input_frame, (rcnn_blur_value, rcnn_blur_value), rcnn_blur_value)
     frame_canny = auto_canny(input_frame)
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2RGB)
 
@@ -1222,13 +1300,13 @@ def people_with_blur_rcnn(
 
             # if (labels[class_id] == "person"):
             frm = frame_copy[
-                start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
-                start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
-            ][mask].copy()
+                  start_y + int(smaller_y / 2): end_y - int(smaller_y / 2),
+                  start_x + int(smaller_x / 2): end_x - int(smaller_x / 2),
+                  ][mask].copy()
             frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 255)
             input_frame[
-                start_y + int(smaller_y / 2) : end_y - int(smaller_y / 2),
-                start_x + int(smaller_x / 2) : end_x - int(smaller_x / 2),
+            start_y + int(smaller_y / 2): end_y - int(smaller_y / 2),
+            start_x + int(smaller_x / 2): end_x - int(smaller_x / 2),
             ][mask] = frm.copy()
 
             # if (already_bgr == False):
@@ -1410,9 +1488,7 @@ def boost_fps_with_dain(dain_network, f, f1, fps_boost, use_cuda):
     return frame_write_sequence, frames
 
 
-def ascii_paint_zoom(
-    input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value
-):
+def ascii_paint_zoom(input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value):
     # font_size /= 10
     if ascii_distance_value < 20:
         ascii_thickness_value = 1
@@ -1452,12 +1528,10 @@ def ascii_paint_zoom(
     else:
         blk = input_frame
 
-
     return blk
 
-def ascii_paint(
-    input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value
-):
+
+def ascii_paint(input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value):
     font_size /= 10
     input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
 
@@ -1486,6 +1560,90 @@ def ascii_paint(
             )
 
     return blk
+
+
+def cartoon_effect(input_frame,
+                   blur_value,
+                   canny_thres,
+                   canny_thres2,
+                   line_thickness,
+                   color_count,
+                   sharpen,
+                   sharpen2,
+                   denoise_value,
+                   denoise_value2):
+    frame_copy = input_frame.copy()
+
+    if blur_value % 2 == 0:
+        blur_value += 1
+        input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
+    else:
+        input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
+
+    input_frame = cv2.Canny(input_frame, canny_thres, canny_thres2)
+    input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2BGR)
+    kernel = np.ones((line_thickness, line_thickness), np.uint8)
+    input_frame = cv2.dilate(input_frame, kernel, iterations=1)
+    frame_copy[np.where((input_frame > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+    frame_copy = limit_colors_kmeans(frame_copy, color_count)
+    # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
+    input_frame = frame_copy
+    input_frame = sharpening(input_frame, sharpen, sharpen2)
+    input_frame = denoise(input_frame, denoise_value, denoise_value2)
+    input_frame = cv2.GaussianBlur(input_frame, (3, 3), 1)
+
+    return input_frame
+
+
+def pencil_drawer(input_frame,
+                  blur_value,
+                  canny_thres,
+                  canny_thres2,
+                  line_thickness,
+                  sharpen,
+                  sharpen2,
+                  denoise_value,
+                  denoise_value2):
+    frame_copy = input_frame.copy()
+
+    if blur_value % 2 == 0:
+        blur_value += 1
+        input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
+    else:
+        input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
+
+    # main_frame = morph_edge_detection(main_frame)
+    input_frame = cv2.Canny(input_frame, canny_thres, canny_thres2)
+    input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2BGR)
+    kernel = np.ones((line_thickness, line_thickness), np.uint8)
+    input_frame = cv2.dilate(input_frame, kernel, iterations=1)
+    frame_copy[np.where((input_frame > [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+    frame_copy = limit_colors_kmeans(frame_copy, 2)
+    # frame_copy = cv2.GaussianBlur(frame_copy, (3, 3), 2)
+    input_frame = frame_copy
+    input_frame = sharpening(input_frame, sharpen, sharpen2)
+    input_frame = denoise(input_frame, denoise_value, denoise_value2)
+    # input_frame = np.bitwise_not(input_frame)
+
+    return input_frame
+
+
+def two_colored(input_frame, sharpen, sharpen2, denoise_value, denoise_value2):
+    frame_copy = input_frame.copy()
+    frame_copy = limit_colors_kmeans(frame_copy, 2)
+    input_frame = frame_copy
+    input_frame = sharpening(input_frame, sharpen, sharpen2)
+    input_frame = denoise(input_frame, denoise_value, denoise_value2)
+    return input_frame
+
+def sobel(input_frame, denoise_value, denoise_value2, sharpen, sharpen2, sobel_value):
+    input_frame = denoise(input_frame, denoise_value, denoise_value2)
+    input_frame = sharpening(input_frame, sharpen, sharpen2)
+    grad_x = cv2.Sobel(input_frame, cv2.CV_64F, 1, 0, ksize=sobel_value)
+    grad_y = cv2.Sobel(input_frame, cv2.CV_64F, 0, 1, ksize=sobel_value)
+    input_frame = cv2.addWeighted(grad_x, 0.5, grad_y, 0.5, 0)
+    return input_frame
+
 
 def sharpening(input_frame, sharpening_value, sharpening_value2):
     kernel_value = sharpening_value2
@@ -1518,9 +1676,7 @@ def denoise(input_frame, denoise_value, denoise_value2):
     if denoise_value2 > 0:
         b, g, r = cv2.split(input_frame)  # get b,g,r
         input_frame = cv2.merge([r, g, b])  # switch it to rgb
-        dst = cv2.fastNlMeansDenoisingColored(
-            input_frame, None, denoise_value2, denoise_value, 7, 15
-        )
+        dst = cv2.fastNlMeansDenoisingColored(input_frame, None, denoise_value2, denoise_value, 7, 15)
         b, g, r = cv2.split(dst)
         input_frame = cv2.merge([r, g, b])
 

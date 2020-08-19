@@ -761,7 +761,7 @@
                         // TWO-COLORED
                         if (currentMode == "s") {
                             $("#cannyBlurIdBlock").hide()
-                            $("#lineThicknessIdBlock").show()
+                            $("#lineThicknessIdBlock").hide()
                             $("#colorCountIdBlock").hide()
                             $("#sharpenIdBlock").show()
                             $("#sharpenIdBlock2").show()
@@ -957,11 +957,11 @@
 
                 var cannyThres1Slider = document.getElementById("cannyThres1Id");
                 var cannyThres1Output = document.getElementById("cannyThres1Value");
-                var cannyThres1SliderValue =cannyThres1Slider.value;
+                var cannyThresSliderValue =cannyThres1Slider.value;
 
                 var cannyThres2Slider = document.getElementById("cannyThres2Id");
                 var cannyThres2Output = document.getElementById("cannyThres2Value");
-                var cannyThres2SliderValue =cannyThres2Slider.value;
+                var cannyThresSliderValue2 =cannyThres2Slider.value;
 
                 var contrastSlider = document.getElementById("contrastId");
                 var contrastOutput = document.getElementById("contrastValue");
@@ -985,7 +985,7 @@
 
                 var denoise2Slider = document.getElementById("denoise2Id");
                 var denoise2Output = document.getElementById("denoise2Value");
-                var denoise2SliderValue = denoise2Slider.value;
+                var denoiseSliderValue2 = denoise2Slider.value;
 
                 var sharpenSlider = document.getElementById("sharpenId");
                 var sharpenOutput = document.getElementById("sharpenValue");
@@ -1141,8 +1141,8 @@
                     data: JSON.stringify({
                         viewSource,
                         cannyBlurSliderValue,
-                        cannyThres1SliderValue,
-                        cannyThres2SliderValue,
+                        cannyThresSliderValue,
+                        cannyThresSliderValue2,
                         saturationSliderValue,
                         contrastSliderValue,
                         brightnessSliderValue,
@@ -1150,7 +1150,7 @@
                         confidenceSliderValue,
                         lineThicknessSliderValue,
                         denoiseSliderValue,
-                        denoise2SliderValue,
+                        denoiseSliderValue2,
                         sharpenSliderValue,
                         sharpenSliderValue2,
                         rcnnSizeSliderValue,
