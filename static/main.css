@@ -1,46 +1,169 @@
-
-a {
-        color: rgb(255, 255, 255);
-        text-decoration: none;
-        text-transform: uppercase;
-}
-
-a:hover {
-    color: #ffab00;
-
-}
-
-h1 {
-    margin: 5px;
-    color: #ffa600;
-}
-
-.glow:hover {
-    box-shadow: 0px 0px 8px #ffab00;
-}
-
 #grid {
-    display: inline-grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    grid-gap: 5px;
-    max-width: 70%;
-    color: #696966;
-    margin-top: 5px;
-    margin-bottom: 5px;
+  display: inline-grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 10px;
+  width: 1280px;
+  color: #272822;
+  margin-top: 10px;
+  margin-bottom: 30px;
 }
 
-#grid > div {
-    box-shadow: 6px 4px 8px #000000;
-    border-radius: 5px;
-    color: #ffab00;
-    font-size: 8px;    
-    background: #383838;
-    text-align: center;
-    position: relative;
-    float: left;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+#getFile {
+  display: none;
 }
 
+#sendFile {
+  display: none;
+}
+
+.top-header {
+  border-radius: 5px;
+  background-color: #383838;
+  margin-bottom: 15px;
+  color: #ffa600;
+  font-size: 24px;
+  text-align: center;
+}
+
+.button-source {
+  display: inline-block;
+  background: red;
+  color: #ffa600;
+  font-size: 20px;
+  box-shadow: 6px 4px 8px #000000;
+  border-radius: 5px;
+  background-color: #383838;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.button-source:hover {
+  color: #ffa600;
+  box-shadow: 0px 0px 8px #ffa600;
+}
+
+.opt {
+  display: inline-block;
+  border-radius: 16px;
+  font-size: 18px;
+  color: white;
+  background-color: #383838;
+  max-width: 740px;
+
+  padding: 20px;
+  box-shadow: 6px 4px 8px #000000;
+  text-align: left;
+  margin: 20px;
+}
+
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#loader {
+  display: block;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: #9370db;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+#loader:before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: #ba55d3;
+  -webkit-animation: spin 3s linear infinite;
+  animation: spin 3s linear infinite;
+}
+
+#loader:after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  bottom: 15px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: #ff00ff;
+  -webkit-animation: spin 1.5s linear infinite;
+  animation: spin 1.5s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+.progress-wrapper {
+  display: inline-block;
+  width: 75%;
+  height: 30px;
+  text-align: center;
+  position: absolute;
+  left: 10%;
+  top: 45%;
+}
+
+.progress {
+  display: none;
+  color: black;
+  text-align: center;
+  font-size: 24px;
+  background-color: #ffa600;
+  width: 0%;
+  height: 100%;
+  top: 45%;
+  padding: 5px 5px 5px 5px;
+  border-radius: 10px;
+}
+
+.video {
+  width: 640px;
+}
+
+/* Hide Play button + controls on iOS */
+video::-webkit-media-controls {
+  display: none !important;
+}

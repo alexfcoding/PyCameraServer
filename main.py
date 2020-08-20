@@ -21,6 +21,65 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
 
 
+def start_process(auto_start, port, source_type, source, mode, delay=5):
+    """
+    Starts processing.py with user port, source and mode
+    auto_start=False for debug mode (manual launch with delay)
+    """
+    if (auto_start):
+        process_started = False
+        process = subprocess.Popen(
+            [
+                f"python",
+                "-u",
+                "processing.py",
+                "-i",
+                "192.168.0.12",
+                "-o",
+                str(port),
+                "-s",
+                str(source),
+                "-c",
+                mode,
+                "-m",
+                source_type,
+            ],
+            bufsize=0,
+            stdout=subprocess.PIPE,
+        )
+
+        while process.poll() is None and not process_started:
+            output = process.stdout.readline()
+            # output = process.communicate()[0]
+            out = str(output.decode("utf-8"))
+            print(out)
+
+            if out == "started\n":
+                process_started = True
+                # process.stdout.close()
+                time.sleep(2)
+    else:
+        process = subprocess.Popen(
+            [
+                f"python",
+                "-u",
+                "processing.py",
+                "-i",
+                "192.168.0.12",
+                "-o",
+                str(port),
+                "-s",
+                source,
+                "-c",
+                mode,
+                "-m",
+                source_type,
+            ],
+            bufsize=0
+        )
+        time.sleep(delay)
+
+
 @app.route("/", methods=["GET", "POST"])
 def upload_file():
     global connection_port
@@ -30,29 +89,29 @@ def upload_file():
         url = request.form.get("urlInput")
 
         if url.find("you") != -1:
-            mode = "youtube"
-            options = request.form.getlist("check")
+            source_type = "youtube"
+            mode = request.form.getlist("check")
             connection_port += 1
-            return start_analysis(connection_port, url, options, mode)
+            return start_analysis(connection_port, url, mode, source_type)
 
         if url.find("mjpg") != -1:
-            mode = "ipcam"
-            options = request.form.getlist("check")
+            source_type = "ipcam"
+            mode = request.form.getlist("check")
             connection_port += 1
-            return start_analysis(connection_port, url, options, mode)
+            return start_analysis(connection_port, url, mode, source_type)
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             file_extension = filename.rsplit(".", 1)[1]
-            mode = ""
+            source_type = ""
             if file_extension in ("png", "jpg", "jpeg"):
-                mode = "image"
+                source_type = "image"
             if file_extension in ("gif", "mp4", "avi", "m4v", "webm", "mkv"):
-                mode = "video"
+                source_type = "video"
 
-            options = request.form.getlist("check")
-            # mode = request.form.getlist('checkMode')
+            mode = request.form.getlist("check")
+            # source_type = request.form.getlist('checksource_type')
 
             CRED = "\033[91m"
             CEND = "\033[0m"
@@ -63,7 +122,7 @@ def upload_file():
             )
 
             connection_port = connection_port + 1
-            return start_analysis(connection_port, filename, options, mode)
+            return start_analysis(connection_port, filename, mode, source_type)
 
     return render_template("main.html")
 
@@ -74,73 +133,22 @@ def uploaded_file(filename):
 
 
 @app.route("/")
-def start_analysis(port_to_render, file_to_render, options, mode):
-    process_started = False
-    str_from_list = ""
+def start_analysis(port_to_render, file_to_render, mode, source_type):
+    mode_str = ""
 
-    for item in options:
-        str_from_list += item
+    for item in mode:
+        mode_str += item
 
     source = ""
 
-    if mode in ("video", "image"):
+    if source_type in ("video", "image"):
         source = f"{UPLOAD_FOLDER}{file_to_render}"
-    if mode in ("youtube", "ipcam"):
+    if source_type in ("youtube", "ipcam"):
         source = f"{file_to_render}"
 
-    process = subprocess.Popen(
-        [
-            f"python",
-            "-u",
-            "processing.py",
-            "-i",
-            "192.168.0.12",
-            "-o",
-            str(port_to_render),
-            "-s",
-            str(file_to_render),
-            "-c",
-            str_from_list,
-            "-m",
-            mode,
-        ],
-        bufsize=0,
-        stdout=subprocess.PIPE,
-    )
+    start_process(True, connection_port, source_type, source, mode_str)
 
-    # process = subprocess.Popen(
-    #     [
-    #         f"python",
-    #         "-u",
-    #         "processing.py",
-    #         "-i",
-    #         "192.168.0.12",
-    #         "-o",
-    #         str(port_to_render),
-    #         "-s",
-    #         source,
-    #         "-c",
-    #         str_from_list,
-    #         "-m",
-    #         mode,
-    #     ],
-    #     bufsize=0
-    # )
-
-    while process.poll() is None and not process_started:
-        output = process.stdout.readline()
-        # output = process.communicate()[0]
-        out = str(output.decode("utf-8"))
-        print(out)
-
-        if out == "started\n":
-            process_started = True
-            # process.stdout.close()
-            time.sleep(1)
-            return redirect(f"http://192.168.0.12:{port_to_render}")
-
-    # time.sleep(5)
-    # return redirect(f"http://192.168.0.12:{port_to_render}")
+    return redirect(f"http://192.168.0.12:{connection_port}")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()

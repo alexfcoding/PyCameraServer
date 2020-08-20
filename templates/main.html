@@ -2,186 +2,15 @@
 <html lang="en">
 
 <head>
-    <title>Neural Video Editor</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <style>
-
-        #grid {
-            display: inline-grid;
-            grid-template-rows: 1fr;
-            grid-template-columns: 1fr 1fr;
-            grid-gap: 10px;
-            width: 1280px;
-            color: #272822;
-            margin-top: 10px;
-            margin-bottom: 30px;
-            }
-
-        #getFile {
-            display: none;
-        }
-        
-        #sendFile {
-            display: none;
-        }
-        
-        .top-header {
-            border-radius: 5px;
-            background-color:#383838;
-            margin-bottom: 15px;
-            color: #ffa600;
-            font-size: 24px;
-            text-align: center;
-        }
-
-        .button-source {
-            display: inline-block;
-            background: red;
-            color: #ffa600;            
-            font-size: 20px;
-            box-shadow: 6px 4px 8px #000000;
-            border-radius: 5px; 
-            background-color:#383838;   
-            padding-left: 10px; 
-            padding-right: 10px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-        
-        .button-source:hover {
-            color: #ffa600;
-            box-shadow: 0px 0px 8px #ffa600;
-        }
-        
-        .opt {
-            display: inline-block;
-            border-radius: 16px;
-            font-size: 18px;
-            color: white;
-            background-color: #383838;
-            max-width: 740px;
-
-            padding: 20px;
-            box-shadow: 6px 4px 8px #000000;
-            text-align: left;
-            margin: 20px;
-        }
-        
-        #preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        #loader {
-            display: block;
-            position: relative;
-            left: 50%;
-            top: 50%;
-            width: 150px;
-            height: 150px;
-            margin: -75px 0 0 -75px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #9370DB;
-            -webkit-animation: spin 2s linear infinite;
-            animation: spin 2s linear infinite;
-        }
-        
-        #loader:before {
-            content: "";
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #BA55D3;
-            -webkit-animation: spin 3s linear infinite;
-            animation: spin 3s linear infinite;
-        }
-        
-        #loader:after {
-            content: "";
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            bottom: 15px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #FF00FF;
-            -webkit-animation: spin 1.5s linear infinite;
-            animation: spin 1.5s linear infinite;
-        }
-        
-        @-webkit-keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-                -ms-transform: rotate(0deg);
-                transform: rotate(0deg);
-            }
-            100% {
-                -webkit-transform: rotate(360deg);
-                -ms-transform: rotate(360deg);
-                transform: rotate(360deg);
-            }
-        }
-        
-        @keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-                -ms-transform: rotate(0deg);
-                transform: rotate(0deg);
-            }
-            100% {
-                -webkit-transform: rotate(360deg);
-                -ms-transform: rotate(360deg);
-                transform: rotate(360deg);
-            }
-        }
-        
-        .progress-wrapper {
-            display: inline-block;
-            width: 75%;
-            height: 30px;
-            text-align: center;
-            position: absolute;
-            left: 10%;
-            top: 45%;
-        }
-        
-        .progress {
-            display: none;
-            color: black;
-            text-align: center;
-            font-size: 24px;
-            background-color: #ffa600;
-            width: 0%;
-            height: 100%;
-            top: 45%;
-            padding: 5px 5px 5px 5px;
-            border-radius: 10px;
-        }
-
-        .video {          
-          width: 640px;          
-        }
-
-        /* Hide Play button + controls on iOS */
-        video::-webkit-media-controls {
-            display:none !important;
-        }
-
-    </style>
+    <title>Mode Selector</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+    <link rel="stylesheet" href="static/main.css">
 </head>
-<form action="" method=post enctype=multipart/form-data>
-<body style="background-color:#1d1d1d;">
-    <div style="text-align: center;">
 
+<form action="" method=post enctype=multipart/form-data>
+
+    <body style="background-color:#1d1d1d;">
+        <div style="text-align: center;">
             <div id="loaddiv" style="display: none;">
                 <div id="preloader">
                     <div id="loader" style="font-size: 34px;"></div>
@@ -192,111 +21,120 @@
                 <div id="progress-bar-file1" class="progress"></div>
             </div>
 
-            <input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()"/>
-            <input style="display: none;" id="selectedModeId" type="radio" name="check" value=""/>
-<!--            <input style="display: none;" id="selectedVideoOrImageId" type="checkbox" name="checkMode" value="video"/>-->
+            <input style="display: none;" type="file" name="file" id="getFile" onchange="form.submit(), postFile()" />
+            <input style="display: none;" id="selectedModeId" type="radio" name="check" value="" />
+            <!--            <input style="display: none;" id="selectedVideoOrImageId" type="checkbox" name="checkMode" value="video"/>-->
             <input style="display: none" id="urlInputId" type="text" name="urlInput" size="20">
 
             <div id="content">
                 <div>
                     <div class="opt">
-                            <div class="top-header">
-                                <label >YOLO: DOWNLOAD OBJECTS FROM VIDEO</label>
-                            </div>
+                        <div class="top-header">
+                            <label>YOLO: DOWNLOAD OBJECTS FROM VIDEO</label>
+                        </div>
 
-                            <div class="video">
-                                <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/showAllYolo.png">
-                                  <source src="static/previews/showAllYolo.webm" type="video/webm">
+                        <div class="video">
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/showAllYolo.png">
+                                <source src="static/previews/showAllYolo.webm" type="video/webm">
                                 Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            <!-- MOUSE OVER EXAMPLE: <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/showAllYolo.png" preload="none"> -->
-                            
-                            <div style="text-align: center;">
-                                <div style="margin-top: 5px;">
-                                    <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
-                                    <input type="text" id="textA" name="textbox" size="20">
-                                    <div style="margin-left: 20px; display: inline-block;">
-                                        <label class="button-source" for="setModeAYVideo">CONNECT</label>
-                                        <input style="display: none;" type="submit" id="setModeAYVideo" onclick="callInput('a', 'url', document.getElementById('textA').value)"/>
-                                    </div>
-                                </div>
-                                <div style="display: inline-block; text-align: center; margin-top: 15px;">
-                                    <label class="button-source" for="setModeAVideo">UPLOAD VIDEO OR IMAGE
-                                        
-                                    </label>
-                                    <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
-                                        (png, jpg, gif, mp4, avi, m4v, webm, mkv)
-                                    </div>
-                                    <input style="display: none;" type="button" id="setModeAVideo" onclick="callInput('a', 'file')"/>
+                            </video>
+                        </div>
+                        <!-- MOUSE OVER EXAMPLE: <video width="640" height="720" loop muted style="border-radius: 16px" class="thevideo" poster="static/previews/showAllYolo.png" preload="none"> -->
+
+                        <div style="text-align: center;">
+                            <div style="margin-top: 5px;">
+                                <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
+                                <input type="text" id="textA" name="textbox" size="20">
+                                <div style="margin-left: 20px; display: inline-block;">
+                                    <label class="button-source" for="setModeAYVideo">CONNECT</label>
+                                    <input style="display: none;" type="submit" id="setModeAYVideo"
+                                        onclick="callInput('a', 'url', document.getElementById('textA').value)" />
                                 </div>
                             </div>
+                            <div style="display: inline-block; text-align: center; margin-top: 15px;">
+                                <label class="button-source" for="setModeAVideo">UPLOAD VIDEO OR IMAGE
+
+                                </label>
+                                <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
+                                    (png, jpg, gif, mp4, avi, m4v, webm, mkv)
+                                </div>
+                                <input style="display: none;" type="button" id="setModeAVideo"
+                                    onclick="callInput('a', 'file')" />
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <div class="opt">
                         <div class="top-header">
                             <label>MASK R-CNN: CANNY AND GAUSSIAN BLUR</label>
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/colorCanny.png">
-                              <source src="static/previews/colorCanny.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/colorCanny.png">
+                                <source src="static/previews/colorCanny.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textJ" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeJYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeJYVideo" onclick="callInput('j', 'url', document.getElementById('textJ').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeJYVideo"
+                                        onclick="callInput('j', 'url', document.getElementById('textJ').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
                                 <label class="button-source" for="setModeJVideo">UPLOAD VIDEO OR IMAGE
-                                    
+
                                 </label>
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeJVideo" onclick="callInput('j', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeJVideo"
+                                    onclick="callInput('j', 'file')" />
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="opt">
                         <div class="top-header">
                             <label>CAFFE: GRAYSCALE COLORIZER</label>
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/colorized.png">
-                              <source src="static/previews/colorized.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/colorized.png">
+                                <source src="static/previews/colorized.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textF" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeFYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeFYVideo" onclick="callInput('f', 'url', document.getElementById('textF').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeFYVideo"
+                                        onclick="callInput('f', 'url', document.getElementById('textF').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
                                 <label class="button-source" for="setModeFVideo">UPLOAD VIDEO OR IMAGE
-                                    
+
                                 </label>
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeFVideo" onclick="callInput('f', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeFVideo"
+                                    onclick="callInput('f', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -307,20 +145,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/dain.png">
-                              <source src="static/previews/dain.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/dain.png">
+                                <source src="static/previews/dain.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textZ" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeZYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeZYVideo" onclick="callInput('z', 'url', document.getElementById('textZ').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeZYVideo"
+                                        onclick="callInput('z', 'url', document.getElementById('textZ').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -330,7 +170,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeZVideo" onclick="callInput('z', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeZVideo"
+                                    onclick="callInput('z', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -341,20 +182,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/ascii.png">
-                              <source src="static/previews/ascii.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/ascii.png">
+                                <source src="static/previews/ascii.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textQ" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeQYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeQYVideo" onclick="callInput('q', 'url', document.getElementById('textQ').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeQYVideo"
+                                        onclick="callInput('q', 'url', document.getElementById('textQ').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -364,7 +207,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeQVideo" onclick="callInput('q', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeQVideo"
+                                    onclick="callInput('q', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -375,20 +219,23 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/esrgan_falcoon.png">
-                              <source src="" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo"
+                                poster="static/previews/esrgan_falcoon.png">
+                                <source src="" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textT" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeTYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeTYVideo" onclick="callInput('t', 'url', document.getElementById('textT').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeTYVideo"
+                                        onclick="callInput('t', 'url', document.getElementById('textT').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -398,7 +245,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeTVideo" onclick="callInput('t', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeTVideo"
+                                    onclick="callInput('t', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -409,20 +257,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/edsr.png">
-                              <source src="" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/edsr.png">
+                                <source src="" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textN" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeNYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeNYVideo" onclick="callInput('n', 'url', document.getElementById('textN').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeNYVideo"
+                                        onclick="callInput('n', 'url', document.getElementById('textN').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -432,7 +282,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeNVideo" onclick="callInput('n', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeNVideo"
+                                    onclick="callInput('n', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -443,20 +294,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/denoiser.png">
-                              <source src="" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/denoiser.png">
+                                <source src="" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textO" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeOYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeOYVideo" onclick="callInput('o', 'url', document.getElementById('textO').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeOYVideo"
+                                        onclick="callInput('o', 'url', document.getElementById('textO').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -466,7 +319,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeOVideo" onclick="callInput('o', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeOVideo"
+                                    onclick="callInput('o', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -477,20 +331,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/pencil_drawer.png">
-                              <source src="" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/pencil_drawer.png">
+                                <source src="" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textR" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeRYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeRYVideo" onclick="callInput('r', 'url', document.getElementById('textR').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeRYVideo"
+                                        onclick="callInput('r', 'url', document.getElementById('textR').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -500,7 +356,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeRVideo" onclick="callInput('r', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeRVideo"
+                                    onclick="callInput('r', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -511,20 +368,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/cartoon.png">
-                              <source src="" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/cartoon.png">
+                                <source src="" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textE" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeEYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeEYVideo" onclick="callInput('e', 'url', document.getElementById('textE').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeEYVideo"
+                                        onclick="callInput('e', 'url', document.getElementById('textE').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -534,7 +393,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeEVideo" onclick="callInput('e', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeEVideo"
+                                    onclick="callInput('e', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -545,20 +405,23 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/grayBackground.png">
-                              <source src="static/previews/grayBackground.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo"
+                                poster="static/previews/grayBackground.png">
+                                <source src="static/previews/grayBackground.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textK" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeKYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeKYVideo" onclick="callInput('k', 'url', document.getElementById('textK').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeKYVideo"
+                                        onclick="callInput('k', 'url', document.getElementById('textK').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -568,7 +431,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeKVideo" onclick="callInput('k', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeKVideo"
+                                    onclick="callInput('k', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -579,20 +443,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/textYolo.png">
-                              <source src="static/previews/textYolo.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/textYolo.png">
+                                <source src="static/previews/textYolo.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textB" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeBYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeBYVideo" onclick="callInput('b', 'url', document.getElementById('textB').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeBYVideo"
+                                        onclick="callInput('b', 'url', document.getElementById('textB').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -602,7 +468,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeBVideo" onclick="callInput('b', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeBVideo"
+                                    onclick="callInput('b', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -613,20 +480,23 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/cannyReplaceBack.png">
-                              <source src="static/previews/cannyReplaceBack.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo"
+                                poster="static/previews/cannyReplaceBack.png">
+                                <source src="static/previews/cannyReplaceBack.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textI" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeIYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeIYVideo" onclick="callInput('i', 'url', document.getElementById('textI').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeIYVideo"
+                                        onclick="callInput('i', 'url', document.getElementById('textI').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -636,7 +506,8 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeIVideo" onclick="callInput('i', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeIVideo"
+                                    onclick="callInput('i', 'file')" />
                             </div>
                         </div>
                     </div>
@@ -647,20 +518,22 @@
                         </div>
 
                         <div class="video">
-                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted" style="border-radius: 16px" class="thevideo" poster="static/previews/cannyBlur.png">
-                              <source src="static/previews/cannyBlur.webm" type="video/webm">
-                            Your browser does not support the video tag.
+                            <video width="640" height="720" preload="auto" autoplay="true" loop="true" muted="muted"
+                                style="border-radius: 16px" class="thevideo" poster="static/previews/cannyBlur.png">
+                                <source src="static/previews/cannyBlur.webm" type="video/webm">
+                                Your browser does not support the video tag.
                             </video>
                         </div>
 
-                         <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
+                        <!--<img style="width: 660; height: 750; border-radius: 16px; box-shadow: 6px 4px 8px #000000;" src="static/1.png">-->
                         <div style="text-align: center;">
                             <div style="margin-top: 5px;">
                                 <label style="margin-right: 10px;">YOUTUBE URL / IP CAMERA:</label>
                                 <input type="text" id="textM" name="textbox" size="20">
                                 <div style="margin-left: 20px; display: inline-block;">
                                     <label class="button-source" for="setModeMYVideo">CONNECT</label>
-                                    <input style="display: none;" type="submit" id="setModeMYVideo" onclick="callInput('m', 'url', document.getElementById('textM').value)"/>
+                                    <input style="display: none;" type="submit" id="setModeMYVideo"
+                                        onclick="callInput('m', 'url', document.getElementById('textM').value)" />
                                 </div>
                             </div>
                             <div style="display: inline-block; text-align: center; margin-top: 15px;">
@@ -670,87 +543,15 @@
                                 <div style="color: rgb(156, 156, 156); font-size: 16px; margin-top: 10px;">
                                     (png, jpg, gif, mp4, avi, m4v, webm, mkv)
                                 </div>
-                                <input style="display: none;" type="button" id="setModeMVideo" onclick="callInput('m', 'file')"/>
+                                <input style="display: none;" type="button" id="setModeMVideo"
+                                    onclick="callInput('m', 'file')" />
                             </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="opt" style="display: none;">
-                            <p><input id="allYolo" type="radio" name="check" value="a">Show all YOLO objects (YOLO)</p>
-                            <p><input type="radio" name="check" value="b">Render with text (YOLO)</p>
-                            <p><input type="checkbox" name="check" value="c">Edge detection on black (YOLO)</p>
-                            <p><input type="checkbox" name="check" value="d">Edge detection on background (YOLO)</p>
-                            <p><input type="checkbox" name="check" value="e">Full screen edge detection</p>
-                            <p><input type="checkbox" name="check" value="f">Grayscale colorization (Caffe)</p>
-                            <p><input type="checkbox" name="check" value="g">Canny on black background (MASK R-CNN)</p>
-                            <p><input type="checkbox" name="check" value="h">Canny blacked on background (MASK R-CNN)</p>
-                            <p><input type="checkbox" name="check" value="i">Canny + replace background (MASK R-CNN)</p>
-                            <p><input type="checkbox" name="check" value="j">Canny on canny background (MASK R-CNN)</p>
-                            <p><input type="checkbox" name="check" value="k">Convert background to grayscale (MASK R-CNN)</p>
-                            <p><input type="checkbox" name="check" value="l">Convert background to grayscale + blur (MASK R-CNN)</p>
-                            <p><input type="checkbox" name="check" value="m">Super resolution x4 image upscaler (EDSR)</p>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <script>
-                function callInput(mode, source, textId) {
-                    if (source == "file") {
-                        document.getElementById("getFile").click();
-                    }          
-                    if (source == "url"){
-                        $("#loaddiv").show();
-                        $("#content").hide();
-                        document.getElementById("urlInputId").value = textId;
-                    }        
-                    document.getElementById("selectedModeId").value = mode;
-                    document.getElementById("selectedModeId").checked = true;
-                }
-
-                function postFile() {
-                    $("#content ").hide();
-                    $("#progress-bar-file1 ").show();
-
-                    var formdata = new FormData();
-                    formdata.append('getFile', $('#getFile')[0].files[0]);
-                    var request = new XMLHttpRequest();
-
-                    request.upload.addEventListener('progress', function(e) {
-                        var file1Size = $('#getFile')[0].files[0].size;
-
-                        if (e.loaded <= file1Size) {
-                            var percent = Math.round(e.loaded / file1Size * 100);
-                            $('#progress-bar-file1').width(percent + '%').html(percent + '%');
-                        }
-
-                        if (e.loaded == e.total) {
-                            $('#progress-bar-file1').width(100 + '%').html(100 + '%Show all YOLO objects ');
-                            $("#loaddiv").show();
-                            $("#content").hide();
-                             $("#progress-bar-file1").hide();
-                        }
-                    });
-
-                    request.open('post', '/');
-                    request.timeout = 45000;
-                    request.send(formdata);
-                }
-            </script>
-
-            <!-- <script>
-                var figure = $(".video").hover(hoverVideo, hideVideo);
-
-                function hoverVideo(e) {
-                    $('video', this).get(0).play();
-                }
-
-                function hideVideo(e) {
-                    $('video', this).get(0).pause();
-                    $('video', this).get(0).currentTime = 0;
-                }
-            </script> -->
-    </div>
-</body>
+        </div>
+    </body>
 </form>
+
+<script src="static/main.js"></script>

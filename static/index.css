@@ -1,0 +1,114 @@
+.visible {
+  display: inline-block;
+}
+
+.invisible {
+  display: none;
+}
+
+.positionSettings {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.renderSettings {
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+.getFileLabel {
+  border-radius: 5px;
+  background-color: #383838;
+  padding: 5px;
+  color: rgb(255, 255, 255);
+  box-shadow: 6px 4px 8px #000000;
+  margin: 10px;
+}
+
+.getFileLabel:hover {
+  color: #ffa600;
+}
+
+a {
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+a:hover {
+  color: #ffab00;
+}
+
+h1 {
+  margin: 5px;
+  color: #ffa600;
+}
+
+#grid {
+  display: inline-grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-gap: 5px;
+  max-width: 70%;
+  color: #696966;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+#grid > div {
+  box-shadow: 6px 4px 8px #000000;
+  border-radius: 5px;
+  color: #ffab00;
+  font-size: 8px;
+  background: #383838;
+  text-align: center;
+  position: relative;
+  float: left;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+button {
+  box-shadow: 6px 4px 8px #000000;
+  background-color: #333333;
+  color: white;
+}
+
+button:hover {
+  background-color: rgb(116, 116, 116);
+}
+
+button:focus {
+  background-color: red;
+}
+
+a {
+  color: orange;
+}
+
+a.button {
+  color: green;
+  text-decoration: none;
+}
+
+a:visited {
+  color: purple;
+}
+
+a:active {
+  color: blue;
+}
+
+.choose::-webkit-file-upload-button {
+  color: white;
+  display: inline-block;
+  background: #424242;
+  border: none;
+  padding: 7px 15px;
+  font-weight: 700;
+  border-radius: 5px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 10pt;
+}

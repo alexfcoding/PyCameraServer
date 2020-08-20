@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = set(
     ["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"]
 )
 
-class RenderState:
+class State:
     # Working states and lock commands
     view_source = False
     source_image = ""
@@ -104,7 +104,7 @@ settings_ajax = {
     "urlSource": "default"
 }
 
-server_states = RenderState() # Global instance for accessing settings from requests and rendering loop
+server_states = State() # Global instance for accessing settings from requests and rendering loop
 
 timer_start = 0 # Start timer for stopping rendering if user closed tab
 timer_end = 0 # End timer for stopping rendering if user closed tab
