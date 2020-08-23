@@ -63,9 +63,9 @@ function resetSettings() {
     document.getElementById("rcnnSizeId").value = 10;
     document.getElementById("rcnnBlurId").value = 9;
     document.getElementById("sobelId").value = 3;
-    document.getElementById("asciiSizeId").value = 8;
-    document.getElementById("asciiIntervalId").value = 24;
-    document.getElementById("asciiThicknessId").value = 3;
+    document.getElementById("asciiSizeId").value = 4;
+    document.getElementById("asciiIntervalId").value = 10;
+    document.getElementById("asciiThicknessId").value = 1;
     document.getElementById("colorCountId").value = 0;
     document.getElementById("resizeId").value = 1;
     document.getElementById("saturationId").value = 100;
@@ -95,6 +95,12 @@ function resetSettings() {
     }
     if (document.getElementById("modesId").value == "s") {
         document.getElementById("denoise2Id").value = 25;
+    }
+
+    if (document.getElementById("modesId").value == "q") {
+        document.getElementById("contrastId").value = 200;
+        document.getElementById("saturationId").value = 200;
+        document.getElementById("rcnnBlurId").value = 1;
     }
 }
 

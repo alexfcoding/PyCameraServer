@@ -217,6 +217,7 @@ def render_with_mode(modes_ajax, sliders_ajax, main_frame, frame_background,
             int(sliders_ajax["asciiIntervalSliderValue"]),
             int(sliders_ajax["asciiThicknessSliderValue"]),
             int(sliders_ajax["rcnnBlurSliderValue"]),
+            attach_to_color=True
         )
 
     # Denoise and sharpen

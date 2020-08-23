@@ -1531,7 +1531,7 @@ def ascii_paint_zoom(input_frame, font_size, ascii_distance_value, ascii_thickne
     return blk
 
 
-def ascii_paint(input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value):
+def ascii_paint(input_frame, font_size, ascii_distance_value, ascii_thickness_value, blur_value, attach_to_color):
     font_size /= 10
     input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
 
@@ -1546,8 +1546,11 @@ def ascii_paint(input_frame, font_size, ascii_distance_value, ascii_thickness_va
             avg_brightness = sum([pixel_b, pixel_g, pixel_r]) / 3
             position = int(avg_brightness / 255 * 20)
 
-            char = render_str[randint(0, len(render_str)) - 1]
-            char = render_str[position]
+            if (attach_to_color):
+                char = render_str[position]
+            else:
+                char = render_str[randint(0, len(render_str)) - 1]
+
             cv2.putText(
                 blk,
                 str(char),
