@@ -89,15 +89,43 @@ Simultaneous work on different devices / browser tabs provided by reserving uniq
 
 ## How to run
 
-Main demo page example (redirects user to editor with specific port):
+Main page example (redirects user to editor with specific port and mode):
 
 `python main.py -i 192.168.0.12 -o 8000`
 
-Direct editor page launch:
+Manual editor page launch:
 
 `python processing.py -i 192.168.0.12 -o 8001 -s my_source -c a -m video`
 
-`"my_source"` - video / image file, Youtube or IP Camera URL
+Args:
+
+- `-i`: server ip
+
+- `-o`: user port
+
+- `-s`: video / image file, Youtube or IP Camera URL. File should be placed in folder "user_uploads"
+
+- `-c`: rendering mode (letters 'a-z')
+
+- `m`: source mode ("ipcam", "youtube", "video", "image")
+
+Ipcam with YOLO detector:
+
+`python processing.py -i 192.168.0.12 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam`
+
+Youtube with ASCII mode:
+
+`python processing.py -i 192.168.0.12 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c q -m youtube`
+
+Video with frame interpolation:
+
+`python processing.py -i 192.168.0.12 -o 8002 -s my_video.avi -c z -m video`
+
+Image with ESRGAN upscaler:
+
+`python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c a -t image`
+
+Check processing.py for other modes
 
 ## Dependencies and GPU support
 Follow this manual to compile OpenCV with GPU acceleration (YOLO, Mask R-CNN) and create python virtual environment in Linux: https://github.com/alexfcoding/OpenCV-cuDNN-manual
@@ -203,5 +231,13 @@ $ ./build.sh
 ### Pencil drawer
 
 ![](images/pencil.jpg)
+
+### Two-colored
+
+![](images/two_colored.jpg)
+
+### Sobel filter
+
+![](images/sobel.jpg)
 
 ---

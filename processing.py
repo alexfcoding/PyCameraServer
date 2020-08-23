@@ -1,4 +1,8 @@
-# python processing.py -i 192.168.0.12 -o 8002 -s fabio.webm -c a -m video
+# Examples:
+# python processing.py -i 192.168.0.12 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam
+# python processing.py -i 192.168.0.12 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c a -m video
+# python processing.py -i 192.168.0.12 -o 8002 -s my_video.avi -c a -m video
+# python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c a -m image
 
 from flask import jsonify
 from flask import Flask
@@ -188,6 +192,7 @@ def process_frame():
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
+    # Set source for ip camera capturing
     if server_states.source_mode == "ipcam":
         cap = cv2.VideoCapture()
         cap.open(server_states.source_url)
@@ -690,7 +695,7 @@ def index(device=None, action=None):
 
         # print(textbox_string.find("you"))
 
-        if textbox_string.find("you") != -1:
+        if textbox_string.find("youtu") != -1:
             server_states.source_mode = "youtube"
             server_states.source_url = textbox_string
             vPafy = pafy.new(textbox_string)

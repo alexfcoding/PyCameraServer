@@ -88,7 +88,7 @@ def upload_file():
         file = request.files["file"]
         url = request.form.get("urlInput")
 
-        if url.find("you") != -1:
+        if url.find("youtu") != -1:
             source_type = "youtube"
             mode = request.form.getlist("check")
             connection_port += 1
@@ -105,6 +105,7 @@ def upload_file():
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             file_extension = filename.rsplit(".", 1)[1]
             source_type = ""
+
             if file_extension in ("png", "jpg", "jpeg"):
                 source_type = "image"
             if file_extension in ("gif", "mp4", "avi", "m4v", "webm", "mkv"):
