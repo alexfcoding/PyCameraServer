@@ -134,8 +134,14 @@ def render_with_mode(modes_ajax, sliders_ajax, main_frame, frame_background,
                 int(sliders_ajax["rcnnBlurSliderValue"]),
                 int(sliders_ajax["cannyBlurSliderValue"]),
                 int(sliders_ajax["cannyThresSliderValue"]),
-                int(sliders_ajax["cannyThresSliderValue2"])
+                int(sliders_ajax["cannyThresSliderValue2"]),
+                int(sliders_ajax["lineThicknessSliderValue"])
             )
+
+            main_frame = denoise(
+                main_frame,
+                int(sliders_ajax["denoiseSliderValue"]),
+                int(sliders_ajax["denoiseSliderValue2"]))
 
         # Draw MASK R-CNN objects with canny edge detection on source background
         if modes_ajax["color_canny_on_background"]:

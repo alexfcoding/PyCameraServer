@@ -57,7 +57,7 @@ function resetSettings() {
     document.getElementById("contrastId").value = 100;
     document.getElementById("confidenceId").value = 20;
     document.getElementById("brightnessId").value = 0;
-    document.getElementById("lineThicknessId").value = 2;
+    document.getElementById("lineThicknessId").value = 1;
     document.getElementById("denoiseId").value = 7;
     document.getElementById("denoise2Id").value = 10;
     document.getElementById("rcnnSizeId").value = 10;
@@ -92,6 +92,8 @@ function resetSettings() {
     if (document.getElementById("modesId").value == "r") {
         document.getElementById("denoise2Id").value = 30;
         document.getElementById("cannyBlurId").value = 5;
+        document.getElementById("cannyThres1Id").value = 71;
+        document.getElementById("cannyThres2Id").value = 1;
     }
     if (document.getElementById("modesId").value == "s") {
         document.getElementById("denoise2Id").value = 25;
@@ -101,6 +103,15 @@ function resetSettings() {
         document.getElementById("contrastId").value = 200;
         document.getElementById("saturationId").value = 200;
         document.getElementById("rcnnBlurId").value = 1;
+    }
+
+    if (document.getElementById("modesId").value == "j") {
+        document.getElementById("contrastId").value = 130;
+        document.getElementById("saturationId").value = 150;
+        document.getElementById("rcnnBlurId").value = 3;
+        document.getElementById("cannyBlurId").value = 5;
+        document.getElementById("lineThicknessId").value = 2;
+        document.getElementById("denoise2Id").value = 50;
     }
 }
 
@@ -193,11 +204,11 @@ var myTimer = setInterval(function () {
             // CANNY AND GAUSSIAN BLUR COLOR
             if (currentMode == "j") {
                 $("#cannyBlurIdBlock").show()
-                $("#lineThicknessIdBlock").hide()
+                $("#lineThicknessIdBlock").show()
                 $("#sharpenIdBlock").hide()
                 $("#sharpenIdBlock2").hide()
-                $("#denoiseIdBlock").hide()
-                $("#denoise2IdBlock").hide()
+                $("#denoiseIdBlock").show()
+                $("#denoise2IdBlock").show()
                 $("#rcnnSizeIdBlock").hide()
                 $("#sobelIdBlock").hide()
                 $("#confidenceIdBlock").show()
@@ -348,8 +359,8 @@ var myTimer = setInterval(function () {
                 $("#downloadObjectsId").hide()
                 $("#superresIdBlock").hide()
                 $("#esrganIdBlock").hide()
-                $("#cannyThres1IdBlock").hide()
-                $("#cannyThres2IdBlock").hide()
+                $("#cannyThres1IdBlock").show()
+                $("#cannyThres2IdBlock").show()
             }
             // TWO-COLORED
             if (currentMode == "s") {

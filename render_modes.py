@@ -914,15 +914,17 @@ def color_canny_rcnn(
         rcnn_blur_value,
         canny_blur,
         canny_thres1,
-        canny_thres2
+        canny_thres2,
+        line_thickness
 ):
     confidence_value /= 100
     classes_out = []
     # frame_canny = auto_canny(input_frame)
     input_frame = cv2.GaussianBlur(input_frame, (canny_blur, canny_blur), canny_blur)
 
-    frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
-    # frame_canny = auto_canny(input_frame, 0)
+    # frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
+    frame_canny = auto_canny(input_frame, 0)
+
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2BGR)
     frame_out = np.zeros(input_frame.shape, np.uint8)
 
@@ -947,21 +949,18 @@ def color_canny_rcnn(
             mask = cv2.resize(mask, (box_w, box_h), interpolation=cv2.INTER_CUBIC)
             mask = mask > 0.1
 
-            # if (labels[class_id] == "person"):
-            frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-            frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
-            input_frame[start_y:end_y, start_x:end_x][mask] = frm
+            if (labels[class_id] == "person"):
+                frm = frame_canny[start_y:end_y, start_x:end_x][mask]
+                kernel = np.ones((line_thickness), np.uint8)
+                frm = cv2.dilate(frm, kernel, iterations=1)
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+                input_frame[start_y:end_y, start_x:end_x][mask] = frm
+
             if (labels[class_id] == "car"):
                 frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
-                input_frame[start_y:end_y, start_x:end_x][mask] = frm
-            if (labels[class_id] == "truck"):
-                frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
-                input_frame[start_y:end_y, start_x:end_x][mask] = frm
-            if (labels[class_id] == "bus"):
-                frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-                frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
+                kernel = np.ones((line_thickness), np.uint8)
+                frm = cv2.dilate(frm, kernel, iterations=1)
+                frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
                 input_frame[start_y:end_y, start_x:end_x][mask] = frm
 
     # frame_out = cv2.addWeighted(input_frame, 1, frame_canny, 1, 0)
@@ -1583,7 +1582,8 @@ def cartoon_effect(input_frame,
     else:
         input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
 
-    input_frame = cv2.Canny(input_frame, canny_thres, canny_thres2)
+    # input_frame = cv2.Canny(input_frame, canny_thres, canny_thres2)
+    input_frame = auto_canny(input_frame)
     input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2BGR)
     kernel = np.ones((line_thickness, line_thickness), np.uint8)
     input_frame = cv2.dilate(input_frame, kernel, iterations=1)

@@ -2,7 +2,7 @@
 # python processing.py -i 192.168.0.12 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam
 # python processing.py -i 192.168.0.12 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c a -m video
 # python processing.py -i 192.168.0.12 -o 8002 -s my_video.avi -c a -m video
-# python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c a -m image
+# python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c t -m image
 
 from flask import jsonify
 from flask import Flask
@@ -188,7 +188,7 @@ def process_frame():
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
         vPafy = pafy.new(server_states.source_url)
-        play = vPafy.streams[0]
+        play = vPafy.streams[1]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
@@ -364,7 +364,7 @@ def process_frame():
 
                 need_mode_reset = False
         
-        # Prepare settings if source is a video file or youtube url
+        # Prepare settings if source is a video file or youtube/ipcam url
         if server_states.source_mode in ("video", "youtube", "ipcam"):
             # If stopped rendering
             if not started_rendering_video:
@@ -382,9 +382,9 @@ def process_frame():
             else:
                 # If started rendering
                 if need_to_create_writer or file_changed:
-                    cap.set(1, 1)
+                    # cap.set(1, 1)
                     server_states.frame_processed = 0
-                    cap.release()
+                    # cap.release()
                     if writer is not None:
                         writer.release()
                     if server_states.source_mode == "video":
@@ -412,8 +412,8 @@ def process_frame():
 
                     if server_states.source_mode == "youtube":
                         vPafy = pafy.new(server_states.source_url)
-                        play = vPafy.streams[0]
-                        cap = cv2.VideoCapture(play.url)
+                        play = vPafy.streams[1]
+                        # cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
                         if (render_modes_dict['boost_fps_dain']):
@@ -699,7 +699,7 @@ def index(device=None, action=None):
             server_states.source_mode = "youtube"
             server_states.source_url = textbox_string
             vPafy = pafy.new(textbox_string)
-            play = vPafy.streams[0]
+            play = vPafy.streams[1]
             cap = cv2.VideoCapture(play.url)
             server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
             file_changed = True
