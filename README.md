@@ -1,6 +1,8 @@
 # PyCameraServer
 PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor with live streaming preview for applying effects, extracting objects and enhancing quality using OpenCV and neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
 
+[[Output renders gallery]](https://alexfcoding.github.io/PyCameraServer/)
+
 ## Example: Depth-Aware Video Frame Interpolation and ASCII mode
 
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii.gif" width="415"/>
@@ -128,9 +130,11 @@ Image with ESRGAN upscaler:
 Check processing.py for other modes
 
 ## Dependencies and GPU support
-Follow this manual to compile OpenCV with GPU acceleration (YOLO, Mask R-CNN) and create python virtual environment in Linux: https://github.com/alexfcoding/OpenCV-cuDNN-manual
+- Follow this manual to compile OpenCV with GPU acceleration (YOLO, Mask R-CNN) and create python virtual environment in Linux: https://github.com/alexfcoding/OpenCV-cuDNN-manual
 
-Install libraries:
+- Unpack files to folder "models" [[Google Drive](https://drive.google.com/file/d/1GUS7VrHNfc_3oVv-oNEaSUMxWlsUDA4d/view?usp=sharing)]
+
+- Install libraries:
 ```
 $ workon opencv_gpu
 $ pip install flask
@@ -140,7 +144,7 @@ $ pip install torch==1.4.0+cu100 torchvision==0.5.0+cu100 -f https://download.py
 $ pip install pafy
 $ pip install youtube-dl
 ```            
-Generate PyTorch extensions and correlation package required by PWCNet for DAIN as described [here](https://github.com/baowenbo/DAIN):    
+- Generate PyTorch extensions and correlation package required by PWCNet for DAIN as described [here](https://github.com/baowenbo/DAIN):    
 ```
 $ workon opencv_gpu
 $ cd DAIN
@@ -168,10 +172,16 @@ $ ./build.sh
 ---
 
 ### Mask R-CNN: Object Detection and Segmentation
- - Drawing R-CNN masks with classes and applying Canny edge detection
+ - Drawing R-CNN masks with classes and edge detection
 
 ![](images/canny_rcnn.jpg)
 
+---
+
+- Animating background with secondary video and applying colored edge detection to masks
+
+![](images/replace_back.jpg)
+  
 ---
 
 - Drawing R-CNN masks with grayscale background
@@ -184,12 +194,6 @@ $ ./build.sh
 
 ![](images/blur_rcnn.jpg)
 
----
-
-- Animating background with secondary video and applying colored Canny edge detection to masks
-
-![](images/replace_back.jpg)
-  
 ---
   
 ### Caffe: neural network colorizer
@@ -225,6 +229,12 @@ $ ./build.sh
 ### Cartoon style
 
 ![](images/cartoon.jpg)
+
+---
+
+### ASCII drawer
+
+![](images/ascii.jpg)
 
 ---
 
