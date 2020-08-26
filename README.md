@@ -232,12 +232,6 @@ $ ./build.sh
 
 ---
 
-### ASCII drawer
-
-![](images/ascii.jpg)
-
----
-
 ### Pencil drawer
 
 ![](images/pencil.jpg)
