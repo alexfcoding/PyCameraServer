@@ -125,7 +125,7 @@ Video with frame interpolation:
 
 Image with ESRGAN upscaler:
 
-`python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c a -t image`
+`python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c t -m image`
 
 Check processing.py for other modes
 
