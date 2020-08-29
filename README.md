@@ -6,7 +6,7 @@ PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor 
 ## Example: Depth-Aware Video Frame Interpolation and ASCII mode
 
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain_slower.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii.gif" width="415"/>
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/cartoon2.jpg" width="840"/>
+
 ## Main page
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/main.gif" width="840"/>
 
