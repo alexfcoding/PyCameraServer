@@ -83,7 +83,7 @@
 
         <div style="display:inline-block; margin: 5px; font-size: 14px; color: #ffa600;">RENDER MODE:</div>
         <div style="display:inline-block; margin-bottom: 5px; margin-top: 5px; box-shadow: 6px 4px 8px #000000;">
-            <select id="modesId" onchange="sendStopCommand(), resetSettings(), sendModeChangeCommand()">
+            <select id="modesId" onchange="resetSettings(), sendModeChangeCommand()">
                 <optgroup label="YOLO MODEL">
                     <option value="a">OBJECTS EXTRACTOR</option>
                     <option value="b">BLUR OBJECTS WITH ASCII</option>

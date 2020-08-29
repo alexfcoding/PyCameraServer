@@ -72,8 +72,7 @@ function resetSettings() {
     document.getElementById("sharpenId").value = 0;
     document.getElementById("sharpenId2").value = 0;
 
-    if (document.getElementById("modesId").value == "e") {
-        console.log("CARTOON");
+    if (document.getElementById("modesId").value == "e") {       
         document.getElementById("denoise2Id").value = 50;
         document.getElementById("saturationId").value = 170;
         document.getElementById("contrastId").value = 120;
@@ -133,7 +132,7 @@ var myTimer = setInterval(function () {
             maxFrames = response["totalFrames"]
             currentMode = response["currentMode"]
 
-            if (response["screenshotReady"] == true) {
+            if (response["screenshotReady"]) {
                 window.open(response["screenshotPath"], '_blank');
             }
 
@@ -777,7 +776,6 @@ var myTimer2 = setInterval(function () {
         }),
         dataType: "json"
     });
-    console.log(screenshotCommand);
 
     screenshotCommand = false;
     videoResetCommand = false;

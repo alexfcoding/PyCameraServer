@@ -5,8 +5,8 @@ PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor 
 
 ## Example: Depth-Aware Video Frame Interpolation and ASCII mode
 
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii.gif" width="415"/>
-
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain_slower.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii.gif" width="415"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/cartoon2.jpg" width="840"/>
 ## Main page
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/main.gif" width="840"/>
 
@@ -44,7 +44,7 @@ Depth-Aware Video Frame Interpolation (DAIN): [GitHub](https://github.com/baowen
 - Stylize with ASCII drawer, cartoon effect, pencil drawer, sobel filter
 
 ## Main page
-- Animated demo for rendering modes 
+- Animated demo for rendering modes
 - Launches separate editor process with selected mode, source and unique port for multiple user connections
 
 ## Editor page
@@ -82,10 +82,10 @@ Simultaneous work on different devices / browser tabs provided by reserving uniq
 - OS: Ubuntu 20.04 LTS
 - GPU: NVIDIA RTX 2060
 - NVIDIA driver: 440
-- OpenCV: 4.3
-- CUDA: 10.0
-- cuDNN: 7.6.4
-- Python: 3.8
+- OpenCV 4.3
+- CUDA 10.0
+- cuDNN 7.6.4
+- Python 3.8
 - Flask 1.1.2
 - PyTorch 1.4.0
 

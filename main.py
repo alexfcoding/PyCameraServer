@@ -57,7 +57,7 @@ def start_process(auto_start, port, source_type, source, mode, delay=5):
             if out == "started\n":
                 process_started = True
                 # process.stdout.close()
-                time.sleep(2)
+                time.sleep(1)
     else:
         process = subprocess.Popen(
             [

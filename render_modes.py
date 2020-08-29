@@ -922,8 +922,8 @@ def color_canny_rcnn(
     # frame_canny = auto_canny(input_frame)
     input_frame = cv2.GaussianBlur(input_frame, (canny_blur, canny_blur), canny_blur)
 
-    # frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
-    frame_canny = auto_canny(input_frame, 0)
+    frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
+    # frame_canny = auto_canny(input_frame, 0)
 
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2BGR)
     frame_out = np.zeros(input_frame.shape, np.uint8)
@@ -1582,8 +1582,8 @@ def cartoon_effect(input_frame,
     else:
         input_frame = cv2.GaussianBlur(input_frame, (blur_value, blur_value), blur_value)
 
-    # input_frame = cv2.Canny(input_frame, canny_thres, canny_thres2)
-    input_frame = auto_canny(input_frame)
+    input_frame = cv2.Canny(input_frame, canny_thres, canny_thres2)
+    # input_frame = auto_canny(input_frame)
     input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2BGR)
     kernel = np.ones((line_thickness, line_thickness), np.uint8)
     input_frame = cv2.dilate(input_frame, kernel, iterations=1)

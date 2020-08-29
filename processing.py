@@ -104,7 +104,6 @@ settings_ajax = {
     "mode" : "a",
     "superresModel" : "LapSRN",
     "esrganModel" : "FALCOON",
-    "positionSliderValue" : 1,
     "urlSource": "default"
 }
 
@@ -188,7 +187,7 @@ def process_frame():
     # Set source for youtube capturing
     if server_states.source_mode == "youtube":
         vPafy = pafy.new(server_states.source_url)
-        play = vPafy.streams[1]
+        play = vPafy.streams[0]
         cap = cv2.VideoCapture(play.url)
         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
@@ -217,7 +216,7 @@ def process_frame():
     caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
-    rcnn_network = initialize_rcnn_network(True)
+    rcnn_network = initialize_rcnn_network(False)
     dain_network = initialize_dain_network(True)
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
         classes, True
@@ -378,7 +377,6 @@ def process_frame():
                     zip_is_opened = False
                     need_to_stop_new_zip = False
                     need_to_create_new_zip = True
-
             else:
                 # If started rendering
                 if need_to_create_writer or file_changed:
@@ -388,7 +386,7 @@ def process_frame():
                     if writer is not None:
                         writer.release()
                     if server_states.source_mode == "video":
-                        cap = cv2.VideoCapture(f"{app.config['UPLOAD_FOLDER']}{file_to_render}")
+                        # cap = cv2.VideoCapture(f"{app.config['UPLOAD_FOLDER']}{file_to_render}")
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
                         if (render_modes_dict['boost_fps_dain']):
@@ -412,7 +410,7 @@ def process_frame():
 
                     if server_states.source_mode == "youtube":
                         vPafy = pafy.new(server_states.source_url)
-                        play = vPafy.streams[1]
+                        play = vPafy.streams[0]
                         # cap = cv2.VideoCapture(play.url)
                         server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
@@ -567,7 +565,7 @@ def process_frame():
 
                         for frame in frame_boost_list:
                             writer.write(frame)
-                            cv2.imshow("video", frame)
+                            # cv2.imshow("video", frame)
                             key = cv2.waitKey(1) & 0xFF
 
                             if key == ord("q"):
@@ -577,7 +575,7 @@ def process_frame():
                         writer.write(main_frame)
 
                 # Preview rendering on server
-                cv2.imshow("video", main_frame)
+                # cv2.imshow("video", main_frame)
                 key = cv2.waitKey(1) & 0xFF
 
                 if key == ord("q"):
@@ -632,6 +630,8 @@ def process_frame():
 
                 # Take screenshot if needed
                 if server_states.need_to_create_screenshot:
+                    server_states.need_to_create_screenshot = False
+
                     print("Taking screenshot...")
                     cv2.imwrite(
                         f"static/user_renders/output{args['port']}Screenshot.png", main_frame
@@ -699,7 +699,7 @@ def index(device=None, action=None):
             server_states.source_mode = "youtube"
             server_states.source_url = textbox_string
             vPafy = pafy.new(textbox_string)
-            play = vPafy.streams[1]
+            play = vPafy.streams[0]
             cap = cv2.VideoCapture(play.url)
             server_states.total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
             file_changed = True
@@ -774,7 +774,6 @@ def send_stats():
     if server_states.screenshot_ready:
         screenshot_ready_local = True
         server_states.screenshot_ready = False
-        server_states.need_to_create_screenshot = False
 
     if server_states.source_mode in ("video", "youtube", "ipcam"):
         if (cap != None):
@@ -830,6 +829,7 @@ def receive_settings():
         if not server_states.screenshot_lock:
             if bool(settings_ajax["screenshotCommand"]):
                 server_states.screenshot_lock = True
+                print("screenshot_lock")
 
     return "", 200
 
