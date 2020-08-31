@@ -61,6 +61,7 @@ Note: rendering process stops after a few seconds if user closed browser tab.
 Simultaneous work on different devices / browser tabs provided by reserving unique user port generated from main page
 
 ## Rendering modes
+Using neural networks:
 - (GPU/CPU) YOLO: Extract objects in frames (download zip with images), draw detected boxes and labels
 - (GPU/CPU) YOLO: Blur objects with ASCII chars
 - (GPU/CPU) Mask R-CNN: Convert background to gray
@@ -71,7 +72,10 @@ Simultaneous work on different devices / browser tabs provided by reserving uniq
 - (CPU) EDSR / LapSRN / FSRCNN: x4 resolution upscale
 - (GPU) ESRGAN / RRDB_PSNR: x4 resolution upscale (models included: FALCOON, MANGA109, ESRGAN/RRDB_PSNR interpolation 0.2, 0.4, 0.6, 0.8)
 - (GPU) Depth-Aware Video Frame Interpolation: create smooth video by creating new frames (boost x2, x4, x8 fps)
-- (CPU) OpenCV denoiser with two sharpening methods
+
+Without neural networks:
+
+- (CPU) Denoiser with two sharpening methods
 - (CPU) ASCII painter
 - (CPU) Cartoon style
 - (CPU) Pencil drawer

@@ -216,7 +216,7 @@ def process_frame():
     caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
-    rcnn_network = initialize_rcnn_network(False)
+    rcnn_network = initialize_rcnn_network(True)
     dain_network = initialize_dain_network(True)
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
         classes, True

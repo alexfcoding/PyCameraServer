@@ -86,7 +86,9 @@ function resetSettings() {
         document.getElementById("sharpenId2").value = 0;
     }
     if (document.getElementById("modesId").value == "k") {
-        document.getElementById("rcnnSizeId").value = 150;
+        document.getElementById("rcnnSizeId").value = 20;
+        document.getElementById("rcnnBlurId").value = 1;
+
     }
     if (document.getElementById("modesId").value == "r") {
         document.getElementById("denoise2Id").value = 30;
@@ -111,6 +113,14 @@ function resetSettings() {
         document.getElementById("cannyBlurId").value = 5;
         document.getElementById("lineThicknessId").value = 2;
         document.getElementById("denoise2Id").value = 50;
+    }
+
+     if (document.getElementById("modesId").value == "i") {
+        document.getElementById("contrastId").value = 130;
+        document.getElementById("saturationId").value = 150;
+        document.getElementById("rcnnBlurId").value = 3;
+        document.getElementById("cannyBlurId").value = 5;
+        document.getElementById("lineThicknessId").value = 2;
     }
 }
 
@@ -226,11 +236,11 @@ var myTimer = setInterval(function () {
             // CANNY + ANIMATE BACKGROUND
             if (currentMode == "i") {
                 $("#cannyBlurIdBlock").show()
-                $("#lineThicknessIdBlock").hide()
+                $("#lineThicknessIdBlock").show()
                 $("#sharpenIdBlock").hide()
                 $("#sharpenIdBlock2").hide()
-                $("#denoiseIdBlock").hide()
-                $("#denoise2IdBlock").hide()
+                $("#denoiseIdBlock").show()
+                $("#denoise2IdBlock").show()
                 $("#rcnnSizeIdBlock").hide()
                 $("#rcnnBlurIdBlock").hide()
                 $("#sobelIdBlock").hide()
@@ -277,7 +287,7 @@ var myTimer = setInterval(function () {
                 $("#sharpenIdBlock2").hide()
                 $("#denoiseIdBlock").hide()
                 $("#denoise2IdBlock").hide()
-                $("#rcnnBlurIdBlock").hide()
+                $("#rcnnBlurIdBlock").show()
                 $("#sobelIdBlock").hide()
                 $("#rcnnSizeIdBlock").show()
                 $("#confidenceIdBlock").show()

@@ -288,7 +288,8 @@ def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
-    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.2)
+
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, confidence_value, 0.3)
 
     for i in range(len(boxes)):
         if i in indexes:
@@ -842,7 +843,8 @@ def extract_and_replace_background_rcnn(
         confidence_value,
         canny_blur,
         canny_thres1,
-        canny_thres2
+        canny_thres2,
+        line_thickness
 ):
     confidence_value /= 100
     classes_out = []
@@ -885,6 +887,8 @@ def extract_and_replace_background_rcnn(
 
             # if (labels[class_id] == "person"):
             frm = frame_canny[start_y:end_y, start_x:end_x][mask]
+            kernel = np.ones((line_thickness), np.uint8)
+            frm = cv2.dilate(frm, kernel, iterations=1)
             frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 255, 0)
             input_frame[start_y:end_y, start_x:end_x][mask] = frm
             # if (labels[class_id] == "car"):
@@ -1077,7 +1081,7 @@ def color_canny_on_color_background_rcnn(input_frame, boxes, masks, labels, conf
     return frame_out
 
 
-def colorizer_people_rcnn(input_frame, boxes, masks, confidence_value, rcnn_size_value):
+def colorizer_people_rcnn(input_frame, boxes, masks, confidence_value, rcnn_size_value, rcnn_blur_value):
     confidence_value /= 100
     classes_out = []
     need_gray_to_bgr = True
@@ -1090,7 +1094,7 @@ def colorizer_people_rcnn(input_frame, boxes, masks, confidence_value, rcnn_size
     # frame_copy = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
 
     input_frame = cv2.cvtColor(input_frame, cv2.COLOR_BGR2GRAY)
-    # input_frame = cv2.GaussianBlur(input_frame, (19, 19), 19)
+    input_frame = cv2.GaussianBlur(input_frame, (rcnn_blur_value, rcnn_blur_value), rcnn_blur_value)
     frame_canny = auto_canny(input_frame)
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2RGB)
     frame_canny *= np.array((1, 1, 0), np.uint8)
