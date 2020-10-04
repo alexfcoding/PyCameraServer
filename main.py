@@ -2,19 +2,19 @@
 
 import os
 import argparse
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 from flask import render_template
 import subprocess
 import time
 
+
 UPLOAD_FOLDER = "static/user_uploads/"
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"])
 
 app = Flask(__name__, static_url_path="/static")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-connection_port = 8000
 
 
 def allowed_file(filename):
@@ -34,7 +34,7 @@ def start_process(auto_start, port, source_type, source, mode, delay=5):
                 "-u",
                 "processing.py",
                 "-i",
-                "192.168.0.12",
+                args["ip"],
                 "-o",
                 str(port),
                 "-s",
@@ -65,7 +65,7 @@ def start_process(auto_start, port, source_type, source, mode, delay=5):
                 "-u",
                 "processing.py",
                 "-i",
-                "192.168.0.12",
+                args["ip"],
                 "-o",
                 str(port),
                 "-s",
@@ -91,13 +91,11 @@ def upload_file():
         if url.find("youtu") != -1:
             source_type = "youtube"
             mode = request.form.getlist("check")
-            connection_port += 1
             return start_analysis(connection_port, url, mode, source_type)
 
         if url.find("mjpg") != -1:
             source_type = "ipcam"
             mode = request.form.getlist("check")
-            connection_port += 1
             return start_analysis(connection_port, url, mode, source_type)
 
         if file and allowed_file(file.filename):
@@ -122,9 +120,9 @@ def upload_file():
                 + CEND
             )
 
-            connection_port = connection_port + 1
             return start_analysis(connection_port, filename, mode, source_type)
 
+    connection_port += 1
     return render_template("main.html")
 
 
@@ -149,9 +147,10 @@ def start_analysis(port_to_render, file_to_render, mode, source_type):
 
     start_process(True, connection_port, source_type, source, mode_str)
 
-    return redirect(f"http://192.168.0.12:{connection_port}")
+    return redirect((f"http://{ip}:{connection_port}"))
 
 if __name__ == "__main__":
+
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "-i", "--ip", type=str, required=True, help="ip address of the device"
@@ -166,6 +165,9 @@ if __name__ == "__main__":
 
     args = vars(ap.parse_args())
 
+    connection_port = args["port"]
+    ip = str(args["ip"])
+    
     app.run(
         host=args["ip"],
         port=args["port"],

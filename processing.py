@@ -395,7 +395,7 @@ def process_frame():
                             writer = cv2.VideoWriter(
                                 f"static/user_renders/output{args['port']}{file_to_render}.avi",
                                 fourcc,
-                                90,
+                                60,
                                 (main_frame.shape[1], main_frame.shape[0]),
                                 True,
                             )
@@ -420,7 +420,7 @@ def process_frame():
                             writer = cv2.VideoWriter(
                                 f"static/user_renders/output{args['port']}youtube.avi",
                                 fourcc,
-                                90,
+                                60,
                                 (main_frame.shape[1], main_frame.shape[0]),
                                 True,
                             )
@@ -464,6 +464,7 @@ def process_frame():
             if (render_modes_dict['boost_fps_dain']):
                 if (started_rendering_video):
                     if (frame_interp_num == 0):
+                        cap.set(1, 0)
                         ret, f = cap.read()
                         ret, f1 = cap.read()
                         if (f1 is not None):
@@ -575,7 +576,7 @@ def process_frame():
                         writer.write(main_frame)
 
                 # Preview rendering on server
-                # cv2.imshow("video", main_frame)
+                cv2.imshow("video", main_frame)
                 key = cv2.waitKey(1) & 0xFF
 
                 if key == ord("q"):
