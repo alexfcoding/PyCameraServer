@@ -1481,9 +1481,7 @@ def boost_fps_with_dain(dain_network, f, f1, fps_boost, use_cuda):
 
         # imageio.imwrite(arguments_strOut, np.round(y_).astype(numpy.uint8))
         f2 = np.round(y_).astype(numpy.uint8)
-
         frames.append(f2)
-
         frame_index += 1
 
     frame_index = 0

@@ -562,10 +562,10 @@ def process_frame():
                     if render_modes_dict['boost_fps_dain'] and started_rendering_video:
                         frame_boost_sequence, frame_boost_list = zip(
                             *sorted(zip(frame_boost_sequence, frame_boost_list)))
-                        frameEdge = frame_boost_list[len(frame_boost_list) - 1]
+                        frameEdge = frame_boost_list[len(frame_boost_list)-1]
 
-                        for frame in frame_boost_list:
-                            writer.write(frame)
+                        for i in range (len(frame_boost_list) - 1):
+                            writer.write(frame_boost_list[i])
                             # cv2.imshow("video", frame)
                             key = cv2.waitKey(1) & 0xFF
 
