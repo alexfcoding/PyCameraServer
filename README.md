@@ -1,8 +1,7 @@
 # PyCameraServer
 PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor with live streaming preview for applying effects, extracting objects and enhancing quality using OpenCV and neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
 
-[[
-page with demo]](https://alexfcoding.github.io/PyCameraServer/)
+[[Project page with demo]](https://alexfcoding.github.io/PyCameraServer/)
 
 ## Example: Depth-Aware Video Frame Interpolation and ASCII mode
 
