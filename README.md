@@ -3,6 +3,8 @@ PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor 
 
 [[Project page with demo]](https://alexfcoding.github.io/PyCameraServer/)
 
+[[Compiling OpenCV with Nvidia GPU support]](https://github.com/alexfcoding/OpenCV-cuDNN-manual)
+
 ## Example: Depth-Aware Video Frame Interpolation and ASCII mode
 
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain_slower.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii.gif" width="415"/>
