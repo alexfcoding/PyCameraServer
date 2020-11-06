@@ -1,22 +1,23 @@
 # PyCameraServer
-PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor with live streaming preview for objects recognition, extraction, segmentation, resolution upscaling, styling, colorization, interpolation, using OpenCV with neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
+PyCameraServer is a Flask video / image / Youtube / IP Camera frames online web-editor with live streaming preview for objects recognition, extraction, segmentation, resolution upscaling, styling, colorization, interpolation, using OpenCV with neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
 
 [[View gallery]](https://alexfcoding.github.io/PyCameraServer/)
 
 [[Compiling OpenCV with Nvidia GPU support]](https://github.com/alexfcoding/OpenCV-cuDNN-manual)
 
-## Editor Demo
+## Editor Demo #1 ([other modes](https://alexfcoding.github.io/PyCameraServer/))
 
 [![Editor Demo](images/demo_preview.jpg?raw=true)](https://youtu.be/7jnovy0PbYs "Editor Demo")
 
-## Depth-Aware Video Frame Interpolation and ASCII
+## Examples: YOLO, ESRGAN, Cartoon
 
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/dain_slower_mini.gif"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/ascii_optimized.gif" width="415"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/yolo_sliders_600px.gif"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/esrgan_sliders_600px.gif"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/cartoon_sliders_600px.gif"/>
 
-## YOLO, ESRGAN, Cartoon
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/yolo_sliders_600px.gif" width="840"/>
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/esrgan_sliders_600px.gif" width="840"/>
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/cartoon_sliders_600px.gif" width="840"/>
+## Examples: Depth-Aware Video Frame Interpolation (x8 FPS) and ASCII Mode
+
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/dain_slower_mini.gif"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/ascii_optimized.gif"/>
 
 ## Models
 YOLO v3 object detector: [Website](https://pjreddie.com/darknet/yolo/) | [GitHub](https://github.com/pjreddie/darknet) | [Paper](https://arxiv.org/pdf/1804.02767.pdf)
