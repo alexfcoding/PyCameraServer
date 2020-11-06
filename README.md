@@ -7,16 +7,16 @@ PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor 
 
 ## Editor Demo
 
-[![Editor Demo](demo_preview.jpg?raw=true)](https://youtu.be/7jnovy0PbYs "Editor Demo")
+[![Editor Demo](images/demo_preview.jpg?raw=true)](https://youtu.be/7jnovy0PbYs "Editor Demo")
 
 ## Depth-Aware Video Frame Interpolation and ASCII
 
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain_slower_mini.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii_optimized.gif" width="415"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/dain_slower_mini.gif"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/ascii_optimized.gif" width="415"/>
 
 ## YOLO, ESRGAN, Cartoon
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/yolo_sliders_600px.gif" width="840"/>
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/esrgan_sliders_600px.gif" width="840"/>
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/cartoon_sliders_600px.gif" width="840"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/yolo_sliders_600px.gif" width="840"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/esrgan_sliders_600px.gif" width="840"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/cartoon_sliders_600px.gif" width="840"/>
 
 ## Models
 YOLO v3 object detector: [Website](https://pjreddie.com/darknet/yolo/) | [GitHub](https://github.com/pjreddie/darknet) | [Paper](https://arxiv.org/pdf/1804.02767.pdf)
@@ -158,21 +158,16 @@ $ ./build.sh
 ```
 
 ## Examples
-### YOLO: Real-Time Object Detection:
+### YOLO: Real-Time Object Detection
 - Downloading zip with detected YOLO image objects
 - Rendering and classes counting
+- Blurring with ASCII
 
-![](images/yolo.gif)
-
----
-
-### YOLO: bluring detected objects with ASCII effect
-
-![](images/ascii_yolo.jpg)
+![](images/yolo.jpg)
 
 ---
 
-### Mask R-CNN: Object Detection and Segmentation
+### Mask R-CNN: Object Recognition and Segmentation
  - Drawing R-CNN masks with classes and edge detection
 
 ![](images/canny_rcnn.jpg)
@@ -197,51 +192,51 @@ $ ./build.sh
 
 ---
 
-### Caffe: neural network colorizer
+### Caffe: Neural Network Colorizer
 
 ![](images/colorizer_caffe.jpg)
 
 ---
 
-### ESRGAN / RRDB_PSNR: x4 resolution upscaler (GPU)
+### ESRGAN / RRDB_PSNR: x4 Resolution Upscaler (GPU)
 
 ![](images/esrgan.jpg)
 
 ---
 
-### EDSR / LapSRN / FSRCNN: Super Resolution x4 upscaler (CPU)  
+### EDSR / LapSRN / FSRCNN: Super Resolution x4 Upscaler (CPU)  
 
 ![](images/edsr.jpg)
 
 ---
 
-### Denoise: OpenCV denoiser with two sharpening methods
+### Denoise: OpenCV Denoiser with Two Sharpening Methods
 
 ![](images/denoise.jpg)
 
 ---
 
-### ASCII Painter: drawing with colored ASCII chars
+### ASCII Painter: Drawing with Colored ASCII Chars
 
 ![](images/ascii.jpg)
 
 ---
 
-### Cartoon style
+### Cartoon Style
 
 ![](images/cartoon.jpg)
 
 ---
 
-### Pencil drawer
+### Pencil Drawer
 
 ![](images/pencil.jpg)
 
-### Two-colored
+### Two-Colored
 
 ![](images/two_colored.jpg)
 
-### Sobel filter
+### Sobel Filter
 
 ![](images/sobel.jpg)
 
