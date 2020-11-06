@@ -1,21 +1,24 @@
 # PyCameraServer
-PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor with live streaming preview for applying effects, extracting objects and enhancing quality using OpenCV and neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
+PyCameraServer is a Flask video / image / Youtube / IP Camera frames web-editor with live streaming preview for objects recognition, extraction, segmentation, resolution upscaling, styling, colorization, interpolation, using OpenCV with neural network models: YOLO, Mask R-CNN, Caffe, DAIN, EDSR, LapSRN, FSRCNN, ESRGAN.
 
-[[Project page with demo]](https://alexfcoding.github.io/PyCameraServer/)
+[[View gallery]](https://alexfcoding.github.io/PyCameraServer/)
 
 [[Compiling OpenCV with Nvidia GPU support]](https://github.com/alexfcoding/OpenCV-cuDNN-manual)
 
-## Example: Depth-Aware Video Frame Interpolation and ASCII mode
+## Editor Demo
 
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain_slower.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii.gif" width="415"/>
+[![Editor Demo](demo_preview.jpg?raw=true)](https://youtu.be/7jnovy0PbYs "Editor Demo")
 
-## Main page
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/main.gif" width="840"/>
+## Depth-Aware Video Frame Interpolation and ASCII
 
-## Working editor example
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/cartoon.gif" width="840"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/dain_slower_mini.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/ascii_optimized.gif" width="415"/>
 
-## Models included
+## YOLO, ESRGAN, Cartoon
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/yolo_sliders_600px.gif" width="840"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/esrgan_sliders_600px.gif" width="840"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/cartoon_sliders_600px.gif" width="840"/>
+
+## Models
 YOLO v3 object detector: [Website](https://pjreddie.com/darknet/yolo/) | [GitHub](https://github.com/pjreddie/darknet) | [Paper](https://arxiv.org/pdf/1804.02767.pdf)
 
 Mask R-CNN segmentation: [GitHub](https://github.com/matterport/Mask_RCNN) | [Paper](https://arxiv.org/pdf/1703.06870.pdf)
@@ -34,36 +37,10 @@ Depth-Aware Video Frame Interpolation (DAIN): [GitHub](https://github.com/baowen
 - **Youtube:** URL (video, stream)
 - **IP Cameras**: URL for MJPEG camera without login
 
-## Features
-16 rendering modes [[Project page with demo]](https://alexfcoding.github.io/PyCameraServer/)
-- Detecting and extracting YOLO objects from source (downloading zip with images and labels)
-- Fast and easy testing YOLO and Mask R-CNN on different sources
-- Applying effects to detected objects and background
-- Colorizing grayscale source with Caffe model (old movies for example)
-- Restoring resolution with neural network upscalers ESRGAN / PSNR, EDSR / LapSRN / FSRCNN) and selected pre-trained model from page
-- Improving smoothness of video or gif and creating slo-mo with Depth-Aware Video Frame Interpolation (DAIN)
-- Cleaning with denoise and sharpen
-- Stylize with ASCII drawer, cartoon effect, pencil drawer, sobel filter
+## Rendering modes [[View gallery]](https://alexfcoding.github.io/PyCameraServer/)
 
-## Main page
-- Animated demo for rendering modes
-- Launches separate editor process with selected mode, source and unique port for multiple user connections
-
-## Editor page
-- Live Flask streaming preview
-- Processing frames with selected mode / settings and downloading video
-- Taking screenshot
-- Rewinding video file (or Youtube) with slider
-- Toggling original / rendered view
-- Render mode and settings changing without page reload (AJAX)
-- Viewing source info, progress and server stats in real-time (RAM, CPU load, FPS, frame size) 
-
-Note: rendering process stops after a few seconds if user closed browser tab.
- 
-Simultaneous work on different devices / browser tabs provided by reserving unique user port generated from main page
-
-## Rendering modes
 Using neural networks:
+
 - (GPU/CPU) YOLO: Extract objects in frames (download zip with images), draw detected boxes and labels
 - (GPU/CPU) YOLO: Blur objects with ASCII chars
 - (GPU/CPU) Mask R-CNN: Convert background to gray
@@ -83,7 +60,25 @@ Without neural networks:
 - (CPU) Pencil drawer
 - (CPU) Sobel filter
 - (CPU) Two-colored
- 
+
+## Main page
+
+- Animated demo for rendering modes
+- Launches separate editor process with selected mode, source and unique port for multiple user connections
+
+## Editor page
+- Live Flask streaming preview
+- Processing frames with selected mode/settings and downloading video/objects
+- Taking a screenshot
+- Rewinding with slider
+- Original / rendered view switching 
+- Render mode, model and settings changing without page reload (AJAX)
+- Viewing a source info, progress and server stats in real-time (RAM, CPU load, FPS, frame size) 
+
+Note: rendering process stops after a few seconds if user closed browser tab.
+
+Simultaneous work on different devices / browser tabs provided by reserving unique user port, generated from main page.
+
  ## Tested on
 - OS: Ubuntu 20.04 LTS
 - GPU: NVIDIA RTX 2060
@@ -149,7 +144,7 @@ $ pip install sklearn
 $ pip install torch==1.4.0+cu100 torchvision==0.5.0+cu100 -f https://download.pytorch.org/whl/torch_stable.html
 $ pip install pafy
 $ pip install youtube-dl
-```            
+```
 - Generate PyTorch extensions and correlation package required by PWCNet for DAIN as described [here](https://github.com/baowenbo/DAIN):    
 ```
 $ workon opencv_gpu
@@ -187,7 +182,7 @@ $ ./build.sh
 - Animating background with secondary video and applying colored edge detection to masks
 
 ![](images/replace_back.jpg)
-  
+
 ---
 
 - Drawing R-CNN masks with grayscale background
@@ -201,7 +196,7 @@ $ ./build.sh
 ![](images/blur_rcnn.jpg)
 
 ---
-  
+
 ### Caffe: neural network colorizer
 
 ![](images/colorizer_caffe.jpg)
@@ -213,7 +208,7 @@ $ ./build.sh
 ![](images/esrgan.jpg)
 
 ---
-  
+
 ### EDSR / LapSRN / FSRCNN: Super Resolution x4 upscaler (CPU)  
 
 ![](images/edsr.jpg)
