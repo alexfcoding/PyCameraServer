@@ -9,7 +9,7 @@ PyCameraServer is a Flask video / image / Youtube / IP Camera frames online web-
 
 [![Editor Demo](images/demo_preview.jpg?raw=true)](https://youtu.be/7jnovy0PbYs "Editor Demo")
 
-## Examples: YOLO, ESRGAN, Cartoon
+## Examples: YOLO, ESRGAN, Cartoon Mode
 
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/yolo_sliders_600px.gif"/>
 <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/esrgan_sliders_600px.gif"/>
@@ -17,7 +17,7 @@ PyCameraServer is a Flask video / image / Youtube / IP Camera frames online web-
 
 ## Examples: Depth-Aware Video Frame Interpolation (x8 FPS) and ASCII Mode
 
-<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/dain_slower_mini.gif"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/ascii_optimized.gif"/>
+<img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/dain_slower.gif" width="415"/> <img src="https://github.com/alexfcoding/PyCameraServer/blob/master/images/gifs/ascii_optimized.gif" width="415"/>
 
 ## Models
 YOLO v3 object detector: [Website](https://pjreddie.com/darknet/yolo/) | [GitHub](https://github.com/pjreddie/darknet) | [Paper](https://arxiv.org/pdf/1804.02767.pdf)
