@@ -1,4 +1,4 @@
-# example: python main.py -i 192.168.0.12 -o 8000
+# example: python main.py -i 0.0.0.0 -o 8000
 
 import os
 import argparse
@@ -9,10 +9,8 @@ from flask import render_template
 import subprocess
 import time
 
-
 UPLOAD_FOLDER = "static/user_uploads/"
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"])
-
 app = Flask(__name__, static_url_path="/static")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -26,27 +24,11 @@ def start_process(auto_start, port, source_type, source, mode, delay=5):
     Starts processing.py with user port, source and mode
     auto_start=False for debug mode (manual launch with delay)
     """
+    arg_list = [f"python", "-u", "editor.py", "-i", args["ip"], "-o", str(port), "-s", str(source), "-c", mode, "-m",
+                source_type]
     if auto_start:
         process_started = False
-        process = subprocess.Popen(
-            [
-                f"python",
-                "-u",
-                "processing.py",
-                "-i",
-                args["ip"],
-                "-o",
-                str(port),
-                "-s",
-                str(source),
-                "-c",
-                mode,
-                "-m",
-                source_type,
-            ],
-            bufsize=0,
-            stdout=subprocess.PIPE,
-        )
+        process = subprocess.Popen(arg_list, bufsize=0, stdout=subprocess.PIPE)
 
         while process.poll() is None and not process_started:
             output = process.stdout.readline()
@@ -59,24 +41,7 @@ def start_process(auto_start, port, source_type, source, mode, delay=5):
                 # process.stdout.close()
                 time.sleep(1)
     else:
-        process = subprocess.Popen(
-            [
-                f"python",
-                "-u",
-                "processing.py",
-                "-i",
-                args["ip"],
-                "-o",
-                str(port),
-                "-s",
-                source,
-                "-c",
-                mode,
-                "-m",
-                source_type,
-            ],
-            bufsize=0
-        )
+        process = subprocess.Popen(arg_list, bufsize=0)
         time.sleep(delay)
 
 
@@ -160,14 +125,14 @@ if __name__ == "__main__":
         "--port",
         type=int,
         required=True,
-        help="port number of the server (1024 to 65535)",
+        help="port number of the server",
     )
 
     args = vars(ap.parse_args())
 
     connection_port = args["port"]
     ip = str(args["ip"])
-    
+
     app.run(
         host=args["ip"],
         port=args["port"],

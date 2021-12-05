@@ -7,15 +7,15 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
                      zipped_images, server_states, started_rendering_video
                      ):
     # YOLO Modes
-    # if modes_ajax["using_yolo_network"]:
     # Find all boxes with classes
-    boxes, indexes, class_ids, confidences, classes_out = find_yolo_classes(
-        main_frame,
-        yolo_network,
-        output_layers,
-        int(sliders_ajax["confidenceSliderValue"])
-    )
-    classes_index.append(classes_out)
+    if rendering_mode in ("extract_objects_yolo_mode", "text_render_yolo", "canny_people_on_black", "canny_people_on_background"):
+        boxes, indexes, class_ids, confidences, classes_out = find_yolo_classes(
+            main_frame,
+            yolo_network,
+            output_layers,
+            int(sliders_ajax["confidenceSliderValue"])
+        )
+        classes_index.append(classes_out)
 
     # Draw boxes with labels on frame
     # Extract all image regions with objects and add them to zip
@@ -64,12 +64,9 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
         main_frame = canny_people_on_background_yolo(main_frame, boxes, indexes, class_ids)
 
     # MASK R-CNN Modes
-    # if modes_ajax["using_mask_rcnn_network"]:
-    # Find all masks with classes
-    boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
-
     # Convert background to grayscale and add color objects
     if rendering_mode == 'color_objects_on_gray':
+        boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
         main_frame = colorizer_people_rcnn(
             main_frame,
             boxes,
@@ -81,6 +78,7 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
 
     # Convert background to grayscale with blur and add color objects
     if rendering_mode == 'color_objects_on_gray_blur':
+        boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
         main_frame = colorizer_people_with_blur_rcnn(
             main_frame,
             boxes,
@@ -90,6 +88,7 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
 
     # Blur background behind RCNN objects
     if rendering_mode == 'color_objects_blur':
+        boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
         main_frame = people_with_blur_rcnn(
             main_frame,
             boxes,
@@ -102,6 +101,7 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
 
     # Draw MASK R-CNN objects with canny edge detection on black background
     if rendering_mode == 'extract_and_cut_background':
+        boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
         main_frame = extract_and_cut_background_rcnn(
             main_frame,
             boxes,
@@ -112,6 +112,7 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
 
     # Draw MASK R-CNN objects on animated background
     if rendering_mode == 'extract_and_replace_background':
+        boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
         main_frame = extract_and_replace_background_rcnn(
             main_frame,
             frame_background,
@@ -133,6 +134,7 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
 
     # Draw MASK R-CNN objects with canny edge detection on canny blurred background
     if rendering_mode == 'color_canny':
+        boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
         main_frame = color_canny_rcnn(
             main_frame,
             boxes,
@@ -153,6 +155,7 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
 
     # Draw MASK R-CNN objects with canny edge detection on source background
     if rendering_mode == 'color_canny_on_background':
+        boxes, masks, labels, colors = find_rcnn_classes(main_frame, rcnn_network)
         main_frame = color_canny_on_color_background_rcnn(
             main_frame,
             boxes,
@@ -162,7 +165,6 @@ def render_with_mode(rendering_mode, sliders_ajax, main_frame, frame_background,
         )
 
     # Grayscale frame color restoration with caffe neural network
-    # if modes_ajax["using_caffe_network"]:
     if rendering_mode == 'caffe_colorization':
         main_frame = colorizer_caffe(caffe_network, main_frame)
 

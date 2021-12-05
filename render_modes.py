@@ -9,7 +9,6 @@ from torch.autograd import Variable
 import torch
 from cv2 import cv2
 import random
-
 # import DAIN.networks
 
 with open("models/yolo/coco.names", "r") as f:
@@ -36,7 +35,6 @@ def initialize_yolo_network(classes, use_cuda):
 
 def draw_yolo_stats(input_frame, classes_index, font):
     # Draw YOLO stats on frame
-
     # class_index_count = [
     #     [0 for x in range(80)] for x in range(len(stream_list))
     # ]
@@ -141,6 +139,7 @@ def initialize_caffe_network():
     pts = pts.transpose().reshape(2, 313, 1, 1)
     net.getLayer(class8).blobs = [pts.astype("float32")]
     net.getLayer(conv8).blobs = [np.full([1, 313], 2.606, dtype="float32")]
+
     return net
 
 
@@ -150,15 +149,19 @@ def initialize_superres_network(model_type):
     if model_type == "EDSR":
         sr.readModel("models/upscalers/EDSR_x4.pb")
         sr.setModel("edsr", 4)
+
     if model_type == "LAPSRN":
         sr.readModel("models/upscalers/LapSRN_x4.pb")
         sr.setModel("lapsrn", 4)
+
     if model_type == "FSRCNN":
         sr.readModel("models/upscalers/FSRCNN_x4.pb")
         sr.setModel("fsrcnn", 4)
+
     if model_type == "FSRCNN_SMALL":
         sr.readModel("models/upscalers/FSRCNN-small_x4.pb")
         sr.setModel("fsrcnn", 4)
+
     return sr
 
 
@@ -213,8 +216,10 @@ def initialize_esrgan_network(model_type, use_cuda):
     )
     model.load_state_dict(torch.load(model_path), strict=True)
     model.eval()
+
     for k, v in model.named_parameters():
         v.requires_grad = False
+
     model = model.to(device)
 
     return model, device
@@ -228,8 +233,10 @@ def initialize_dain_network(use_cuda):
         model = model.cuda()
 
     SAVED_MODEL = 'DAIN/model_weights/best.pth'
+
     if os.path.exists(SAVED_MODEL):
         print("The testing model weight is: " + SAVED_MODEL)
+
         if not use_cuda:
             pretrained_dict = torch.load(SAVED_MODEL, map_location=lambda storage, loc: storage)
             # model.load_state_dict(torch.load(args.SAVED_MODEL, map_location=lambda storage, loc: storage))
@@ -247,9 +254,7 @@ def initialize_dain_network(use_cuda):
         # 4. release the pretrained dict for saving memory
         pretrained_dict = []
     else:
-        print("*****************************************************************")
-        print("**** We don't load any trained weights **************************")
-        print("*****************************************************************")
+        print("We don't load any trained weights")
 
     model = model.eval()  # deploy mode
 
@@ -300,7 +305,6 @@ def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value
 def find_rcnn_classes(input_frame, rcnn_network):
     labels_path = "models/mask-rcnn/object_detection_classes_coco.txt"
     labels = open(labels_path).read().strip().split("\n")
-
     np.random.seed(46)
     colors = np.random.randint(0, 255, size=(len(labels), 3), dtype="uint8")
     blob = cv2.dnn.blobFromImage(input_frame, swapRB=True, crop=False)
@@ -468,7 +472,6 @@ def objects_to_text_yolo(
 
             cv2.rectangle(blk, (x, y), (x + w, y + h), (0, 255, 0), cv2.FILLED)
             input_frame[y: y + h, x: x + w] = crop_img
-
             object_index += 1
 
     return input_frame
@@ -535,7 +538,7 @@ def canny_people_on_black_yolo(input_frame, boxes, indexes, class_ids):
 
             blk2[y: y + h, x: x + w] = result
 
-            # if (mult<1):
+            # if (mult < 1):
             # 	blk2[blk2 != 0] = 255 * mult
 
             if label == "person":
@@ -718,15 +721,10 @@ def canny_people_on_background_yolo(input_frame, boxes, indexes, class_ids):
             crop_img = auto_canny(crop_img)
             # crop_img = cv2.Canny(crop_img, 100, 200)
             blank_image = np.zeros((crop_img.shape[0], crop_img.shape[1], 3), np.uint8)
-
             myStr = "abcdefghijklmnopqrstuvwxyz0123456789"
-
             blk = np.zeros(input_frame.shape, np.uint8)
-
             blk2 = np.zeros(input_frame.shape, np.uint8)
-
             crop_img = cv2.cvtColor(crop_img, cv2.COLOR_GRAY2RGB)
-
             mask = np.zeros_like(crop_img)
             rows, cols, _ = mask.shape
             mask = cv2.ellipse(
@@ -923,8 +921,8 @@ def color_canny_rcnn(
     confidence_value /= 100
     classes_out = []
     # frame_canny = auto_canny(input_frame)
-    input_frame = cv2.GaussianBlur(input_frame, (canny_blur, canny_blur), canny_blur)
 
+    input_frame = cv2.GaussianBlur(input_frame, (canny_blur, canny_blur), canny_blur)
     frame_canny = cv2.Canny(input_frame, canny_thres1, canny_thres2)
     # frame_canny = auto_canny(input_frame, 0)
 
@@ -1162,6 +1160,7 @@ def colorizer_people_rcnn(input_frame, boxes, masks, confidence_value, rcnn_size
         input_frame = cv2.cvtColor(input_frame, cv2.COLOR_GRAY2RGB)
 
     frame_out = input_frame
+
     return frame_out
 
 
@@ -1176,7 +1175,6 @@ def colorizer_people_with_blur_rcnn(input_frame, boxes, masks, confidence_value)
     input_frame = cv2.GaussianBlur(input_frame, (17, 17), 17)
     frame_canny = auto_canny(input_frame)
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2RGB)
-
     frame_canny *= np.array((1, 1, 0), np.uint8)
 
     for i in range(0, boxes.shape[2]):
@@ -1247,7 +1245,6 @@ def colorizer_people_with_blur_rcnn(input_frame, boxes, masks, confidence_value)
 
 def people_with_blur_rcnn(input_frame, boxes, masks, labels, confidence_value, rcnn_size_value, rcnn_blur_value):
     confidence_value /= 100
-
     classes_out = []
     need_gray_to_bgr = True
     already_bgr = False
@@ -1256,7 +1253,6 @@ def people_with_blur_rcnn(input_frame, boxes, masks, labels, confidence_value, r
     input_frame = cv2.GaussianBlur(input_frame, (rcnn_blur_value, rcnn_blur_value), rcnn_blur_value)
     frame_canny = auto_canny(input_frame)
     frame_canny = cv2.cvtColor(frame_canny, cv2.COLOR_GRAY2RGB)
-
     frame_canny *= np.array((1, 1, 0), np.uint8)
 
     for i in range(0, boxes.shape[2]):
@@ -1758,6 +1754,7 @@ def adjust_saturation(input_frame, saturation=1):
     hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], saturation)
     hsv[:, :, 2] = cv2.multiply(hsv[:, :, -1], 1)
     input_frame = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
     return input_frame
 
 

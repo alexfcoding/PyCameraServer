@@ -1,43 +1,24 @@
-# Examples:
-# python processing.py -i 192.168.0.12 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam
-# python processing.py -i 192.168.0.12 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c a -m video
-# python processing.py -i 192.168.0.12 -o 8002 -s my_video.avi -c a -m video
-# python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c t -m image
-
-from flask import jsonify
-from flask import Flask
-from flask import render_template
 import threading
-import argparse
-from flask import request, Response
 import psutil
 from mode_selector import *
-from werkzeug.utils import secure_filename
 from zipfile import ZipFile
 import pafy
 from cv2 import cv2
 from settings import states_dict, render_modes_dict, settings_ajax
-
-app = Flask(__name__, static_url_path="/static")
-app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
-
-UPLOAD_FOLDER = "static/user_uploads/"
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "mp4", "avi", "m4v", "webm", "mkv"}
 
 timer_start = 0  # Start timer for stopping rendering if user closed tab
 timer_end = 0  # End timer for stopping rendering if user closed tab
 user_time = 0  # For user timer debug
 output_frame = None  # Frame to preview on page
 progress = 0  # Rendering progress 0-100%
+fps = 0  # Rendering fps
 cap = None  # VideoCapture object for user frames
 cap2 = None  # VideoCapture object for secondary video (need for some effects)
 lock = threading.Lock()  # Lock for thread (multiple browser connections viewing)
 main_frame = None  # Processing frame from video, image or youtube URL
 frame_background = None  # Frame for secondary video
-
 fourcc = cv2.VideoWriter_fourcc(*"MJPG")  # Format for video saving
 writer = None  # Writer for video saving
-
 url = ""
 
 
@@ -51,10 +32,9 @@ def check_if_user_is_connected(timer_start, seconds_to_disconnect):
     global user_time
     timer_end = time.perf_counter()
     user_time = str(round(timer_end)) + ":" + str(round(timer_start))
-    # print(timer_start)
 
     if not (timer_end - timer_start < seconds_to_disconnect and timer_start != 0):
-        # print("User is connected")
+        print("User is connected")
         if timer_start != 0:
             print(
                 "User disconnected, shutting down!"
@@ -64,7 +44,7 @@ def check_if_user_is_connected(timer_start, seconds_to_disconnect):
             p.terminate()  # or p.kill()
 
 
-def process_frame():
+def process_frame(args, app):
     """
     Main rendering function
     :return:
@@ -73,16 +53,13 @@ def process_frame():
 
     frame_boost_list = []  # List for Depth-Aware Video Frame Interpolation frames
     frame_boost_sequence = []  # Interpolated frame sequence for video writing
-
     states_dict['frame_processed'] = 0  # Total frames processed
     states_dict['total_frames'] = 0  # Total frames in video
-
     received_zip_command = False  # Trigger for receiving YOLO objects downloading command by user
     file_changed = False  # Trigger for file changing by user
     started_rendering_video = False  # Trigger for start rendering video by user
     need_mode_reset = True  # Trigger for rendering mode changing by user
     states_dict['working_on'] = True  # Rendering state is ON
-
     concated = None
     need_to_create_new_zip = True  # Loop state to open new zip archive
     need_to_stop_new_zip = False  # Loop state to close zip archive
@@ -91,17 +68,13 @@ def process_frame():
     font = cv2.FONT_HERSHEY_SIMPLEX  # Font for rendering stats on frame by OpenCV
     resized = None  # Resized frame to put on page
     fps = 0  # FPS rate
-    frameEdge = None  # Last frame of interpolation sequence
-
+    frame_edge = None  # Last frame of interpolation sequence
     path_to_file, file_to_render = os.path.split(args["source"])  # Get filename from full path
     print("Processing file: " + file_to_render)
     states_dict['source_url'] = args["source"]  # Youtube URL
-
     states_dict['render_mode'] = args["optionsList"]  # Rendering mode from command line
-
     # Set rendering mode from args and settings dictionary
     rendering_mode = [k for k, v in render_modes_dict.items() if v == args['optionsList']][0]
-
     states_dict['source_mode'] = args["mode"]  # Source type from command line
 
     # Set source for youtube capturing
@@ -140,17 +113,13 @@ def process_frame():
 
     # dain_network = initialize_dain_network(True)
     dain_network = None
-
-    yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(
-        classes, True
-    )
+    yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(classes, True)
 
     frame_interp_num = 0  # Interpolated frame number
     main_frame = None
     f = f1 = None  # Two source frames for interpolation
 
-    # =============================== Main processing loop ===============================
-
+    # Main processing loop
     while states_dict['working_on']:
         # Receive all HTML slider values from JSON dictionary
         if settings_ajax is not None:
@@ -198,7 +167,6 @@ def process_frame():
         # If user changed rendering mode
         if need_mode_reset:
             frame_interp_num = 0
-
             # Reinitialize upscale networks with user models from page
             superres_network = initialize_superres_network(states_dict['superres_model'])
             esrgan_network, device = initialize_esrgan_network(states_dict['esrgan_model'], True)
@@ -312,7 +280,7 @@ def process_frame():
                             main_frame = f1.copy()
                             frame_interp_num += 1
                     else:
-                        f = frameEdge
+                        f = frame_edge
                         ret, f1 = cap.read()
 
                         if f1 is not None:
@@ -350,8 +318,7 @@ def process_frame():
         classes_index = []
         start_moment = time.time()  # Timer for FPS calculation
 
-        # =============================== Draw frame with render modes and settings ===============================
-
+        # Draw frame with render modes and settings
         if main_frame is not None:
             if not states_dict['view_source']:
                 main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened = \
@@ -364,16 +331,14 @@ def process_frame():
             with lock:
                 check_if_user_is_connected(timer_start, 7)  # Terminate process if browser tab was closed
                 states_dict['frame_processed'] += 1
-
                 elapsed_time = time.time()
                 fps = 1 / (elapsed_time - start_moment)
-
                 # Resize frame for HTML preview with correct aspect ratio
                 x_coeff = 460 / main_frame.shape[0]
                 x_size = round(x_coeff * main_frame.shape[1])
                 resized = cv2.resize(main_frame, (x_size, 460))
 
-                if render_modes_dict['extract_objects_yolo_mode'] and not states_dict['view_source']:
+                if rendering_mode == 'extract_objects_yolo_mode' and not states_dict['view_source']:
                     resized = draw_yolo_stats(resized, classes_index, font)
 
                 if states_dict['source_mode'] == "image":
@@ -384,7 +349,7 @@ def process_frame():
 
                 if (
                         states_dict['source_mode'] == "image"
-                        and render_modes_dict['extract_and_replace_background']
+                        and rendering_mode == 'extract_and_replace_background'
                         and writer is not None
                 ):
                     writer.write(main_frame)
@@ -404,7 +369,7 @@ def process_frame():
                     if rendering_mode == 'boost_fps_dain' and started_rendering_video:
                         frame_boost_sequence, frame_boost_list = zip(
                             *sorted(zip(frame_boost_sequence, frame_boost_list)))
-                        frameEdge = frame_boost_list[len(frame_boost_list) - 1]
+                        frame_edge = frame_boost_list[len(frame_boost_list) - 1]
 
                         for i in range(len(frame_boost_list) - 1):
                             writer.write(frame_boost_list[i])
@@ -434,7 +399,6 @@ def process_frame():
                         )
 
                 # Draw stats on frame
-
                 cv2.putText(
                     resized,
                     f"FPS: {str(round(fps, 2))} ({str(main_frame.shape[1])}x{str(main_frame.shape[0])})",
@@ -496,222 +460,3 @@ def process_frame():
                 writer.release()
             position_value = 1
             # print("==================== finished ====================")
-
-
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
-
-
-def generate():
-    global output_frame, lock, states_dict
-
-    while states_dict['working_on']:
-        with lock:
-            if output_frame is None:
-                continue
-            (flag, encoded_image) = cv2.imencode(".jpg", output_frame)
-            if not flag:
-                continue
-        yield (
-                b"--frame\r\n"
-                b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encoded_image) + b"\r\n"
-        )
-    print("yield finished")
-
-
-@app.route("/", methods=["GET", "POST"])
-def index(device=None, action=None):
-    global cap, cap2, file_to_render, file_changed, states_dict
-
-    if request.method == "POST":
-        file = None
-        textbox_string = ""
-
-        if 'file' in request.files:
-            file = request.files["file"]
-            print("in file")
-
-        if 'textbox' in request.form:
-            textbox_string = request.form.get("textbox")
-
-        # print(textbox_string.find("you"))
-
-        if textbox_string.find("youtu") != -1:
-            states_dict['source_mode'] = "youtube"
-            states_dict['source_url'] = textbox_string
-            vPafy = pafy.new(textbox_string)
-            play = vPafy.streams[0]
-            cap = cv2.VideoCapture(play.url)
-            states_dict['total_frames'] = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-            file_changed = True
-
-        if textbox_string.find("mjpg") != -1:
-            states_dict['source_mode'] = "ipcam"
-            states_dict['source_url'] = textbox_string
-            cap = cv2.VideoCapture()
-            cap.open(textbox_string)
-            states_dict['total_frames'] = 1
-            file_changed = True
-
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-
-            file_extension = filename.rsplit(".", 1)[1]
-
-            if file_extension in ("png", "jpg", "jpeg"):
-                states_dict['source_mode'] = "image"
-                states_dict['source_image'] = filename
-                cap2 = cv2.VideoCapture("input_videos/space.webm")
-            if file_extension in ("gif", "mp4", "avi", "m4v", "webm", "mkv"):
-                states_dict['source_mode'] = "video"
-                cap = cv2.VideoCapture(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-                states_dict['total_frames'] = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-                cap2 = cv2.VideoCapture("input_videos/space.webm")
-
-            CRED = "\033[91m"
-            CEND = "\033[0m"
-            print(
-                CRED
-                + f"==============  file {filename} uploaded ============== "
-                + CEND
-            )
-
-            file_to_render = filename
-            file_changed = True
-
-    if states_dict['source_mode'] == "video":
-        states_dict['output_file_page'] = file_to_render + ".avi"
-    if states_dict['source_mode'] == "youtube":
-        states_dict['output_file_page'] = "youtube.avi"
-    if states_dict['source_mode'] == "ipcam":
-        states_dict['output_file_page'] = "ipcam.avi"
-
-    # print("states_dict['source_mode']")
-
-    return render_template(
-        "index.html",
-        frame_processed=states_dict['frame_processed'],
-        pathToRenderedFile=f"static/user_renders/output{args['port']}{states_dict['output_file_page']}",
-        pathToZipFile=f"static/user_renders/output{args['port']}.zip",
-    )
-
-
-@app.route("/video")
-def video_feed():
-    # redirect(f"http://192.168.0.12:8000/results")
-    return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
-
-
-@app.route("/stats", methods=["POST"])
-def send_stats():
-    global states_dict, user_time
-
-    # timer_start = time.perf_counter()
-    frame_width_to_page = 0
-    frame_height_to_page = 0
-    screenshot_ready_local = False
-
-    if states_dict['screenshot_ready']:
-        screenshot_ready_local = True
-        states_dict['screenshot_ready'] = False
-
-    if states_dict['source_mode'] in ("video", "youtube", "ipcam"):
-        if cap != None:
-            frame_width_to_page = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-            frame_height_to_page = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
-    if states_dict['source_mode'] == "image":
-        frame_width_to_page = 0
-        frame_height_to_page = 0
-
-    return jsonify(
-        {
-            "value": states_dict['frame_processed'],
-            "totalFrames": states_dict['total_frames'],
-            "progress": round(progress, 2),
-            "fps": round(fps, 2),
-            "workingOn": states_dict['working_on'],
-            "cpuUsage": psutil.cpu_percent(),
-            "freeRam": round((psutil.virtual_memory()[1] / 2.0 ** 30), 2),
-            "ramPercent": psutil.virtual_memory()[2],
-            "frameWidth": frame_width_to_page,
-            "frameHeight": frame_height_to_page,
-            "currentMode": states_dict['render_mode'],
-            "userTime": user_time,
-            "screenshotReady": screenshot_ready_local,
-            "screenshotPath": states_dict['screenshot_path']
-            # 'time': datetime.datetime.now().strftime("%H:%M:%S"),
-        }
-    )
-
-
-@app.route("/settings", methods=["GET", "POST"])
-def receive_settings():
-    global settings_ajax, timer_start, timer_end, writer, states_dict, commands
-
-    if request.method == "POST":
-        # print("POST")
-        timer_start = time.perf_counter()
-        settings_ajax = request.get_json()
-
-        if not states_dict['mode_reset_lock']:
-            if bool(settings_ajax["modeResetCommand"]):
-                states_dict['mode_reset_lock'] = True
-
-        if not states_dict['video_stop_lock']:
-            if bool(settings_ajax["videoStopCommand"]):
-                states_dict['video_stop_lock'] = True
-
-        if not states_dict['video_reset_lock']:
-            if bool(settings_ajax["videoResetCommand"]):
-                states_dict['video_reset_lock'] = True
-
-        if not states_dict['screenshot_lock']:
-            if bool(settings_ajax["screenshotCommand"]):
-                states_dict['screenshot_lock'] = True
-                print("screenshot_lock")
-
-    return "", 200
-
-
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "-i", "--ip", type=str, required=True, help="ip address of the device"
-    )
-    ap.add_argument(
-        "-o",
-        "--port",
-        type=int,
-        required=True,
-        help="port number of the server",
-    )
-    ap.add_argument("-s", "--source", type=str, default=32, help="file to render")
-    ap.add_argument(
-        "-c", "--optionsList", type=str, required=True, help="rendering options"
-    )
-    ap.add_argument(
-        "-m",
-        "--mode",
-        type=str,
-        required=True,
-        help="rendering mode: 'video' or 'image'",
-    )
-
-    args = vars(ap.parse_args())
-
-    t = threading.Thread(target=process_frame)
-    t.daemon = True
-    t.start()
-
-    app.run(
-        host=args["ip"],
-        port=args["port"],
-        debug=False,
-        threaded=True,
-        use_reloader=False,
-    )
