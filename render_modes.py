@@ -7,11 +7,10 @@ import time
 import os
 from torch.autograd import Variable
 import torch
-import cv2
+from cv2 import cv2
 import random
-import DAIN.networks
 
-classes = []
+# import DAIN.networks
 
 with open("models/yolo/coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
@@ -23,12 +22,13 @@ object_index = 0
 def initialize_yolo_network(classes, use_cuda):
     yolo_network = cv2.dnn.readNet("models/yolo/yolov3.weights", "models/yolo/yolov3.cfg")
 
+    use_cuda = False
     if use_cuda:
         yolo_network.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         yolo_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     layers_names = yolo_network.getLayerNames()
-    output_layers = [layers_names[i[0] - 1] for i in yolo_network.getUnconnectedOutLayers()]
+    output_layers = [layers_names[i - 1] for i in yolo_network.getUnconnectedOutLayers()]
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
     return yolo_network, layers_names, output_layers, colors
@@ -147,16 +147,16 @@ def initialize_caffe_network():
 def initialize_superres_network(model_type):
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
 
-    if (model_type == "EDSR"):
+    if model_type == "EDSR":
         sr.readModel("models/upscalers/EDSR_x4.pb")
         sr.setModel("edsr", 4)
-    if (model_type == "LAPSRN"):
+    if model_type == "LAPSRN":
         sr.readModel("models/upscalers/LapSRN_x4.pb")
         sr.setModel("lapsrn", 4)
-    if (model_type == "FSRCNN"):
+    if model_type == "FSRCNN":
         sr.readModel("models/upscalers/FSRCNN_x4.pb")
         sr.setModel("fsrcnn", 4)
-    if (model_type == "FSRCNN_SMALL"):
+    if model_type == "FSRCNN_SMALL":
         sr.readModel("models/upscalers/FSRCNN-small_x4.pb")
         sr.setModel("fsrcnn", 4)
     return sr
@@ -166,28 +166,28 @@ def initialize_esrgan_network(model_type, use_cuda):
     model_path = ""
     device = torch.device("cpu")
 
-    if (model_type == "FALCOON"):
+    if model_type == "FALCOON":
         model_path = "models/esrgan/falcoon.pth"
 
-    if (model_type == "MANGA"):
+    if model_type == "MANGA":
         model_path = "models/esrgan/Manga109Attempt.pth"
 
-    if (model_type == "RRDB_ESRGAN"):
+    if model_type == "RRDB_ESRGAN":
         model_path = "models/esrgan/RRDB_ESRGAN_x4_old_arch.pth"
 
-    if (model_type == "RRDB_PSNR"):
+    if model_type == "RRDB_PSNR":
         model_path = "models/esrgan/RRDB_PSNR_x4_old_arch.pth"
 
-    if (model_type == "RRDB_INTERP_0.2"):
+    if model_type == "RRDB_INTERP_0.2":
         model_path = "models/esrgan/interp_02.pth"
 
-    if (model_type == "RRDB_INTERP_0.4"):
+    if model_type == "RRDB_INTERP_0.4":
         model_path = "models/esrgan/interp_04.pth"
 
-    if (model_type == "RRDB_INTERP_0.6"):
+    if model_type == "RRDB_INTERP_0.6":
         model_path = "models/esrgan/interp_06.pth"
 
-    if (model_type == "RRDB_INTERP_0.8"):
+    if model_type == "RRDB_INTERP_0.8":
         model_path = "models/esrgan/interp_08.pth"
 
     if use_cuda:
@@ -287,7 +287,6 @@ def find_yolo_classes(input_frame, yolo_network, output_layers, confidence_value
                 boxes.append([x, y, w, h])
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
-
 
     indexes = cv2.dnn.NMSBoxes(boxes, confidences, confidence_value, 0.3)
 
@@ -887,7 +886,7 @@ def extract_and_replace_background_rcnn(
 
             # if (labels[class_id] == "person"):
             frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-            kernel = np.ones((line_thickness), np.uint8)
+            kernel = np.ones(line_thickness, np.uint8)
             frm = cv2.dilate(frm, kernel, iterations=1)
             frm[np.all(frm == (255, 0, 255), axis=-1)] = (255, 255, 0)
             input_frame[start_y:end_y, start_x:end_x][mask] = frm
@@ -953,16 +952,16 @@ def color_canny_rcnn(
             mask = cv2.resize(mask, (box_w, box_h), interpolation=cv2.INTER_CUBIC)
             mask = mask > 0.1
 
-            if (labels[class_id] == "person"):
+            if labels[class_id] == "person":
                 frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-                kernel = np.ones((line_thickness), np.uint8)
+                kernel = np.ones(line_thickness, np.uint8)
                 frm = cv2.dilate(frm, kernel, iterations=1)
                 frm[np.all(frm == (255, 255, 0), axis=-1)] = (0, 255, 0)
                 input_frame[start_y:end_y, start_x:end_x][mask] = frm
 
-            if (labels[class_id] == "car"):
+            if labels[class_id] == "car":
                 frm = frame_canny[start_y:end_y, start_x:end_x][mask]
-                kernel = np.ones((line_thickness), np.uint8)
+                kernel = np.ones(line_thickness, np.uint8)
                 frm = cv2.dilate(frm, kernel, iterations=1)
                 frm[np.all(frm == (255, 255, 0), axis=-1)] = (255, 0, 255)
                 input_frame[start_y:end_y, start_x:end_x][mask] = frm
@@ -1381,15 +1380,15 @@ def boost_fps_with_dain(dain_network, f, f1, fps_boost, use_cuda):
     frame_sequence = None
     frame_write_sequence = None
 
-    if (fps_boost == 8):
+    if fps_boost == 8:
         frame_sequence = [0, 1, 2, 0, 2, 3, 0, 3, 4, 3, 2, 5, 2, 1, 6, 2, 6, 7, 6, 1, 8]
         frame_write_sequence = [0, 8, 4, 2, 1, 3, 6, 5, 7]
 
-    if (fps_boost == 4):
+    if fps_boost == 4:
         frame_sequence = [0, 1, 2, 0, 2, 3, 2, 1, 4]
         frame_write_sequence = [0, 4, 2, 1, 3]
 
-    if (fps_boost == 2):
+    if fps_boost == 2:
         frame_sequence = [0, 1, 2]
         frame_write_sequence = [0, 2, 1]
 
@@ -1506,7 +1505,7 @@ def ascii_paint_zoom(input_frame, font_size, ascii_distance_value, ascii_thickne
     blk = np.zeros(input_frame.shape, np.uint8)
 
     render_str = "abcdefghkmnopqstuwxyz"
-    if (ascii_distance_value > 3):
+    if ascii_distance_value > 3:
         for xx in range(0, input_frame.shape[1], ascii_distance_value):
             for yy in range(0, input_frame.shape[0], ascii_distance_value):
                 char = randint(0, 1)
@@ -1547,7 +1546,7 @@ def ascii_paint(input_frame, font_size, ascii_distance_value, ascii_thickness_va
             avg_brightness = sum([pixel_b, pixel_g, pixel_r]) / 3
             position = int(avg_brightness / 255 * 20)
 
-            if (attach_to_color):
+            if attach_to_color:
                 char = render_str[position]
             else:
                 char = render_str[randint(0, len(render_str)) - 1]
@@ -1640,6 +1639,7 @@ def two_colored(input_frame, sharpen, sharpen2, denoise_value, denoise_value2):
     input_frame = sharpening(input_frame, sharpen, sharpen2)
     input_frame = denoise(input_frame, denoise_value, denoise_value2)
     return input_frame
+
 
 def sobel(input_frame, denoise_value, denoise_value2, sharpen, sharpen2, sobel_value):
     input_frame = denoise(input_frame, denoise_value, denoise_value2)

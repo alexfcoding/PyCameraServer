@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import torch
 import torch.nn as nn
-from DAIN.my_package.FilterInterpolation import  FilterInterpolationModule
-from DAIN.my_package.FlowProjection import  FlowProjectionModule #,FlowFillholeModule
+from DAIN.my_package.FilterInterpolation import FilterInterpolationModule
+from DAIN.my_package.FlowProjection import FlowProjectionModule #,FlowFillholeModule
 from DAIN.my_package.DepthFlowProjection import DepthFlowProjectionModule
 
 from DAIN.Stack import Stack

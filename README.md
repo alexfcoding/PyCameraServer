@@ -95,11 +95,11 @@ Simultaneous work on different devices / browser tabs provided by reserving uniq
 
 Main page example (redirects user to editor with specific port and mode):
 
-`python main.py -i 192.168.0.12 -o 8000`
+`python main.py -i 0.0.0.0 -o 8000`
 
 Manual editor page launch:
 
-`python processing.py -i 192.168.0.12 -o 8001 -s my_source -c a -m video`
+`python processing.py -i 0.0.0.0 -o 8001 -s my_source -c a -m video`
 
 Args:
 
@@ -115,19 +115,19 @@ Args:
 
 Ipcam with YOLO detector:
 
-`python processing.py -i 192.168.0.12 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam`
+`python processing.py -i 0.0.0.0 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam`
 
 Youtube with ASCII mode:
 
-`python processing.py -i 192.168.0.12 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c q -m youtube`
+`python processing.py -i 0.0.0.0 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c q -m youtube`
 
 Video with frame interpolation:
 
-`python processing.py -i 192.168.0.12 -o 8002 -s my_video.avi -c z -m video`
+`python processing.py -i 0.0.0.0 -o 8002 -s my_video.avi -c z -m video`
 
 Image with ESRGAN upscaler:
 
-`python processing.py -i 192.168.0.12 -o 8002 -s my_image.jpg -c t -m image`
+`python processing.py -i 0.0.0.0 -o 8002 -s my_image.jpg -c t -m image`
 
 Check processing.py for other modes
 

@@ -26,7 +26,7 @@ def start_process(auto_start, port, source_type, source, mode, delay=5):
     Starts processing.py with user port, source and mode
     auto_start=False for debug mode (manual launch with delay)
     """
-    if (auto_start):
+    if auto_start:
         process_started = False
         process = subprocess.Popen(
             [
@@ -147,10 +147,10 @@ def start_analysis(port_to_render, file_to_render, mode, source_type):
 
     start_process(True, connection_port, source_type, source, mode_str)
 
-    return redirect((f"http://{ip}:{connection_port}"))
+    return redirect(f"http://{ip}:{connection_port}")
+
 
 if __name__ == "__main__":
-
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "-i", "--ip", type=str, required=True, help="ip address of the device"
