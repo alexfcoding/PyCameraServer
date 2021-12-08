@@ -3,7 +3,7 @@ import psutil
 from mode_selector import *
 from zipfile import ZipFile
 import pafy
-from cv2 import cv2
+import cv2
 from settings import states_dict, render_modes_dict, settings_ajax
 
 timer_start = 0  # Start timer for stopping rendering if user closed tab
@@ -109,10 +109,8 @@ def process_frame(args, app):
     caffe_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     superres_network = initialize_superres_network("LAPSRN")
     esrgan_network, device = initialize_esrgan_network("FALCOON", True)
-    rcnn_network = initialize_rcnn_network(True)
-
-    # dain_network = initialize_dain_network(True)
-    dain_network = None
+    rcnn_network = initialize_rcnn_network(False)
+    dain_network = initialize_dain_network(True)
     yolo_network, layers_names, output_layers, colors_yolo = initialize_yolo_network(classes, True)
 
     frame_interp_num = 0  # Interpolated frame number
@@ -276,7 +274,7 @@ def process_frame(args, app):
                         cap.set(1, 0)
                         ret, f = cap.read()
                         ret, f1 = cap.read()
-                        if (f1 is not None):
+                        if f1 is not None:
                             main_frame = f1.copy()
                             frame_interp_num += 1
                     else:
@@ -322,8 +320,7 @@ def process_frame(args, app):
         if main_frame is not None:
             if not states_dict['view_source']:
                 main_frame, frame_boost_sequence, frame_boost_list, classes_index, zipped_images, zip_obj, zip_is_opened = \
-                    render_with_mode(rendering_mode, settings_ajax, main_frame, frame_background, f, f1,
-                                     yolo_network,
+                    render_with_mode(rendering_mode, settings_ajax, main_frame, frame_background, f, f1, yolo_network,
                                      rcnn_network, caffe_network, superres_network, dain_network, esrgan_network,
                                      device, output_layers, classes_index, zip_obj, zip_is_opened, zipped_images,
                                      states_dict, started_rendering_video)
@@ -459,4 +456,3 @@ def process_frame(args, app):
             if writer:
                 writer.release()
             position_value = 1
-            # print("==================== finished ====================")

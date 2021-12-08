@@ -1,6 +1,6 @@
 resetSettings();
 
-var started = 0;
+let started = 0;
 let working = 0;
 let frameWidth = 0;
 let frameHeight = 0;
@@ -124,7 +124,7 @@ function resetSettings() {
     }
 }
 
-var myTimer = setInterval(function () {
+var toggleSlidersTimer = setInterval(function () {
     $.ajax({
         url: '/stats',
         type: 'POST',
@@ -162,6 +162,8 @@ var myTimer = setInterval(function () {
                 })
 
             working = response["workingOn"];
+
+            // hideSliders();
 
             // SHOW ALL YOLO OBJECTS
             if (currentMode == "a") {
@@ -535,11 +537,6 @@ var myTimer = setInterval(function () {
                 $("#esrganIdBlock").hide()
 
             }
-
-            //if (working == false) {
-            //clearInterval(myTimer);
-            //}
-
         },
         error: function (error) {
             console.log(error);
@@ -547,8 +544,8 @@ var myTimer = setInterval(function () {
     })
 }, 1000);
 
-var myTimer2 = setInterval(function () {
-    var viewSource = false;
+let sendSettingsTimer = setInterval(function () {
+    let viewSource = false;
     if (document.getElementById("viewSourceId").checked) {
         viewSource = true;
     }
@@ -556,89 +553,89 @@ var myTimer2 = setInterval(function () {
         viewSource = false;
     }
 
-    var positionSlider = document.getElementById("positionId");
-    var outputPosition = document.getElementById("positionValue");
-    var positionSliderValue = positionSlider.value;
+    let positionSlider = document.getElementById("positionId");
+    let outputPosition = document.getElementById("positionValue");
+    let positionSliderValue = positionSlider.value;
 
-    var saturationSlider = document.getElementById("saturationId");
-    var saturationOutput = document.getElementById("saturationValue");
-    var saturationSliderValue = saturationSlider.value;
+    let saturationSlider = document.getElementById("saturationId");
+    let saturationOutput = document.getElementById("saturationValue");
+    let saturationSliderValue = saturationSlider.value;
 
-    var cannyBlurSlider = document.getElementById("cannyBlurId");
-    var cannyBlurOutput = document.getElementById("cannyBlurValue");
-    var cannyBlurSliderValue = cannyBlurSlider.value;
+    let cannyBlurSlider = document.getElementById("cannyBlurId");
+    let cannyBlurOutput = document.getElementById("cannyBlurValue");
+    let cannyBlurSliderValue = cannyBlurSlider.value;
 
-    var cannyThres1Slider = document.getElementById("cannyThres1Id");
-    var cannyThres1Output = document.getElementById("cannyThres1Value");
-    var cannyThresSliderValue = cannyThres1Slider.value;
+    let cannyThres1Slider = document.getElementById("cannyThres1Id");
+    let cannyThres1Output = document.getElementById("cannyThres1Value");
+    let cannyThresSliderValue = cannyThres1Slider.value;
 
-    var cannyThres2Slider = document.getElementById("cannyThres2Id");
-    var cannyThres2Output = document.getElementById("cannyThres2Value");
-    var cannyThresSliderValue2 = cannyThres2Slider.value;
+    let cannyThres2Slider = document.getElementById("cannyThres2Id");
+    let cannyThres2Output = document.getElementById("cannyThres2Value");
+    let cannyThresSliderValue2 = cannyThres2Slider.value;
 
-    var contrastSlider = document.getElementById("contrastId");
-    var contrastOutput = document.getElementById("contrastValue");
-    var contrastSliderValue = contrastSlider.value;
+    let contrastSlider = document.getElementById("contrastId");
+    let contrastOutput = document.getElementById("contrastValue");
+    let contrastSliderValue = contrastSlider.value;
 
-    var confidenceSlider = document.getElementById("confidenceId");
-    var confidenceOutput = document.getElementById("confidenceValue");
-    var confidenceSliderValue = confidenceSlider.value;
+    let confidenceSlider = document.getElementById("confidenceId");
+    let confidenceOutput = document.getElementById("confidenceValue");
+    let confidenceSliderValue = confidenceSlider.value;
 
-    var brightnessSlider = document.getElementById("brightnessId");
-    var brightnessOutput = document.getElementById("brightnessValue");
-    var brightnessSliderValue = brightnessSlider.value;
+    let brightnessSlider = document.getElementById("brightnessId");
+    let brightnessOutput = document.getElementById("brightnessValue");
+    let brightnessSliderValue = brightnessSlider.value;
 
-    var lineThicknessSlider = document.getElementById("lineThicknessId");
-    var lineThicknessOutput = document.getElementById("lineThicknessValue");
-    var lineThicknessSliderValue = lineThicknessSlider.value;
+    let lineThicknessSlider = document.getElementById("lineThicknessId");
+    let lineThicknessOutput = document.getElementById("lineThicknessValue");
+    let lineThicknessSliderValue = lineThicknessSlider.value;
 
-    var denoiseSlider = document.getElementById("denoiseId");
-    var denoiseOutput = document.getElementById("denoiseValue");
-    var denoiseSliderValue = denoiseSlider.value;
+    let denoiseSlider = document.getElementById("denoiseId");
+    let denoiseOutput = document.getElementById("denoiseValue");
+    let denoiseSliderValue = denoiseSlider.value;
 
-    var denoise2Slider = document.getElementById("denoise2Id");
-    var denoise2Output = document.getElementById("denoise2Value");
-    var denoiseSliderValue2 = denoise2Slider.value;
+    let denoise2Slider = document.getElementById("denoise2Id");
+    let denoise2Output = document.getElementById("denoise2Value");
+    let denoiseSliderValue2 = denoise2Slider.value;
 
-    var sharpenSlider = document.getElementById("sharpenId");
-    var sharpenOutput = document.getElementById("sharpenValue");
-    var sharpenSliderValue = sharpenSlider.value;
+    let sharpenSlider = document.getElementById("sharpenId");
+    let sharpenOutput = document.getElementById("sharpenValue");
+    let sharpenSliderValue = sharpenSlider.value;
 
-    var sharpenSlider2 = document.getElementById("sharpenId2");
-    var sharpenOutput2 = document.getElementById("sharpenValue2");
-    var sharpenSliderValue2 = sharpenSlider2.value;
+    let sharpenSlider2 = document.getElementById("sharpenId2");
+    let sharpenOutput2 = document.getElementById("sharpenValue2");
+    let sharpenSliderValue2 = sharpenSlider2.value;
 
-    var rcnnSizeSlider = document.getElementById("rcnnSizeId");
-    var rcnnSizeOutput = document.getElementById("rcnnSizeValue");
-    var rcnnSizeSliderValue = rcnnSizeSlider.value;
+    let rcnnSizeSlider = document.getElementById("rcnnSizeId");
+    let rcnnSizeOutput = document.getElementById("rcnnSizeValue");
+    let rcnnSizeSliderValue = rcnnSizeSlider.value;
 
-    var rcnnBlurSlider = document.getElementById("rcnnBlurId");
-    var rcnnBlurOutput = document.getElementById("rcnnBlurValue");
-    var rcnnBlurSliderValue = rcnnBlurSlider.value;
+    let rcnnBlurSlider = document.getElementById("rcnnBlurId");
+    let rcnnBlurOutput = document.getElementById("rcnnBlurValue");
+    let rcnnBlurSliderValue = rcnnBlurSlider.value;
 
-    var sobelSlider = document.getElementById("sobelId");
-    var sobelOutput = document.getElementById("sobelValue");
-    var sobelSliderValue = sobelSlider.value;
+    let sobelSlider = document.getElementById("sobelId");
+    let sobelOutput = document.getElementById("sobelValue");
+    let sobelSliderValue = sobelSlider.value;
 
-    var asciiSizeSlider = document.getElementById("asciiSizeId");
-    var asciiSizeOutput = document.getElementById("asciiSizeValue");
-    var asciiSizeSliderValue = asciiSizeSlider.value;
+    let asciiSizeSlider = document.getElementById("asciiSizeId");
+    let asciiSizeOutput = document.getElementById("asciiSizeValue");
+    let asciiSizeSliderValue = asciiSizeSlider.value;
 
-    var asciiIntervalSlider = document.getElementById("asciiIntervalId");
-    var asciiIntervalOutput = document.getElementById("asciiIntervalValue");
-    var asciiIntervalSliderValue = asciiIntervalSlider.value;
+    let asciiIntervalSlider = document.getElementById("asciiIntervalId");
+    let asciiIntervalOutput = document.getElementById("asciiIntervalValue");
+    let asciiIntervalSliderValue = asciiIntervalSlider.value;
 
-    var asciiThicknessSlider = document.getElementById("asciiThicknessId");
-    var asciiThicknessOutput = document.getElementById("asciiThicknessValue");
-    var asciiThicknessSliderValue = asciiThicknessSlider.value;
+    let asciiThicknessSlider = document.getElementById("asciiThicknessId");
+    let asciiThicknessOutput = document.getElementById("asciiThicknessValue");
+    let asciiThicknessSliderValue = asciiThicknessSlider.value;
 
-    var resizeSlider = document.getElementById("resizeId");
-    var resizeOutput = document.getElementById("resizeValue");
-    var resizeSliderValue = resizeSlider.value;
+    let resizeSlider = document.getElementById("resizeId");
+    let resizeOutput = document.getElementById("resizeValue");
+    let resizeSliderValue = resizeSlider.value;
 
-    var colorCountSlider = document.getElementById("colorCountId");
-    var colorCountOutput = document.getElementById("colorCountValue");
-    var colorCountSliderValue = colorCountSlider.value;
+    let colorCountSlider = document.getElementById("colorCountId");
+    let colorCountOutput = document.getElementById("colorCountValue");
+    let colorCountSliderValue = colorCountSlider.value;
 
     outputPosition.innerHTML = positionSlider.value;
     saturationOutput.innerHTML = saturationSlider.value;

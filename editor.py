@@ -1,8 +1,8 @@
 # Examples:
-# python processing.py -i 0.0.0.0 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam
-# python processing.py -i 0.0.0.0 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c a -m video
-# python processing.py -i 0.0.0.0 -o 8002 -s my_video.avi -c a -m video
-# python processing.py -i 0.0.0.0 -o 8002 -s my_image.jpg -c t -m image
+# python editor.py -i 0.0.0.0 -o 8002 -s http://192.82.150.11:8083/mjpg/video.mjpg -c a -m ipcam
+# python editor.py -i 0.0.0.0 -o 8002 -s https://youtu.be/5JJu-CTDLoc -c a -m video
+# python editor.py -i 0.0.0.0 -o 8002 -s my_video.avi -c a -m video
+# python editor.py -i 0.0.0.0 -o 8002 -s my_image.jpg -c t -m image
 
 from flask import jsonify
 from flask import Flask
@@ -10,7 +10,7 @@ from flask import render_template
 import argparse
 from flask import request, Response
 from werkzeug.utils import secure_filename
-from cv2 import cv2
+import cv2
 import pafy
 import os
 import psutil

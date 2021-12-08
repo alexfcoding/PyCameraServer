@@ -7,9 +7,9 @@ import time
 import os
 from torch.autograd import Variable
 import torch
-from cv2 import cv2
+import cv2
 import random
-# import DAIN.networks
+import DAIN.networks
 
 with open("models/yolo/coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
@@ -21,13 +21,12 @@ object_index = 0
 def initialize_yolo_network(classes, use_cuda):
     yolo_network = cv2.dnn.readNet("models/yolo/yolov3.weights", "models/yolo/yolov3.cfg")
 
-    use_cuda = False
     if use_cuda:
         yolo_network.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         yolo_network.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     layers_names = yolo_network.getLayerNames()
-    output_layers = [layers_names[i - 1] for i in yolo_network.getUnconnectedOutLayers()]
+    output_layers = [layers_names[i[0] - 1] for i in yolo_network.getUnconnectedOutLayers()]
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
     return yolo_network, layers_names, output_layers, colors
