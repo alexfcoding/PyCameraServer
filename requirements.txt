@@ -6,7 +6,7 @@ joblib==1.1.0
 MarkupSafe==2.0.1
 numpy==1.21.4
 pafy==0.5.5
-Pillow==8.4.0
+Pillow==9.0.1
 psutil==5.8.0
 scikit-learn==1.0.1
 scipy==1.7.3
