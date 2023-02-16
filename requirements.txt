@@ -15,5 +15,5 @@ sklearn==0.0
 threadpoolctl==3.0.0
 torch==1.4.0+cu100
 torchvision==0.5.0+cu100
-Werkzeug==2.0.2
+Werkzeug==2.2.3
 youtube-dl==2021.6.6
